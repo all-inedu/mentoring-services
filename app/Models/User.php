@@ -44,9 +44,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $casts = [
-        'status' => 'not verified',
-        'email_verified_at' => 'datetime',
-        'total_exp' => 0
+        'email_verified_at' => 'datetime'
     ];
 
     public function getJWTIdentifier()
