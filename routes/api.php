@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Api\V1\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,12 +19,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
+Route::prefix('v1')->group(function () {
+    Route::post('auth/register', [AuthController::class, 'register'])->name('register');
+    Route::post('auth/login', [AuthController::class, 'login'])->name('login');
 
-Route::group(['middleware' => ['jwt.verify']], function () {
-    Route::get('user', [UserController::class, 'user']);
+    Route::group(['middleware' => ['jwt.verify']], function () {
+        Route::get('user', [UserController::class, 'user']);
+    });
 });
+
 
 // Route::get('userall', 'UserController@userAuth')->middleware('jwt.verify');
 // Route::get('user', 'AuthController@getAuthenticatedUser')->middleware('jwt.verify');

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\v1;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -11,7 +11,12 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-    //
+
+    public function test(Request $request)
+    {
+        echo 'Hello World';
+    }
+
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');

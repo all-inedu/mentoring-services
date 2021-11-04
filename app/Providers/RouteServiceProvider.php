@@ -19,6 +19,9 @@ class RouteServiceProvider extends ServiceProvider
      */
     public const HOME = '/home';
 
+    /** @var string #apiNamespace */
+    protected $apiNamespace = 'App\Http\Controllers\Api';
+
     /**
      * The controller namespace for the application.
      *
