@@ -23,7 +23,7 @@ Route::prefix('v1')->group(function () {
     Route::get('test', [AuthController::class, 'test']);
 
     Route::post('register', [AuthController::class, 'register']);
-    Route::post('auth/login', [AuthController::class, 'login'])->name('login');
+    Route::post('login', [AuthController::class, 'login']);
 
     Route::group(['middleware' => ['jwt.verify']], function () {
         Route::get('user', [UserController::class, 'user']);
