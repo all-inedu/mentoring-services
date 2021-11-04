@@ -9,7 +9,7 @@ use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Models\User;
 
-class AuthController extends Controller
+class AuthController
 {
 
     public function test(Request $request)
