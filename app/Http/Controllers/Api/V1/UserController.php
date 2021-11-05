@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Auth;
-
+use App\Models\User;
 class UserController extends Controller
 {
     public function user()
     {
-        $data = "Data All User";
+        $data = User::all();
         return response()->json($data, 200);
     }
 

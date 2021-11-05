@@ -2,19 +2,25 @@
 
 namespace App\Http\Controllers\Api\v1;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 
-class AuthController
+class AuthController extends Controller
 {
 
-    public function test(Request $request)
+    public function emailVerificationHandler(EmailVerificationRequest $request)
     {
-        echo 'Hello World';
+        $request->fulfill();
+        $response = array(
+            "success" => true
+        );
+        return response()->json($response, 200);
     }
 
     public function login(Request $request)
@@ -34,14 +40,15 @@ class AuthController
 
     public function register(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'birthday' => 'required',
+            'first_name'   => 'required|string|max:255',
+            'last_name'    => 'required|string|max:255',
+            'birthday'     => 'required',
             'phone_number' => 'required|numeric',
-            'role_id' => 'required|integer',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
+            'role_id'      => 'required|integer',
+            'email'        => 'required|string|email|max:255|unique:users',
+            'password'     => 'required|string|min:6|confirmed',
         ]);
 
         if ($validator->fails()) {
@@ -49,18 +56,18 @@ class AuthController
         }
 
         $user = User::create([
-            'first_name' => $request->get('first_name'),
-            'last_name' => $request->get('last_name'),
-            'birthday' => $request->get('birthday'),
+            'first_name'   => $request->get('first_name'),
+            'last_name'    => $request->get('last_name'),
+            'birthday'     => $request->get('birthday'),
             'phone_number' => $request->get('phone_number'),
-            'role_id' => $request->get('role_id'),
-            'email' => $request->get('email'),
-            'password' => Hash::make($request->get('password')),
+            'role_id'      => $request->get('role_id'),
+            'email'        => $request->get('email'),
+            'password'     => Hash::make($request->get('password')),
         ]);
 
-        $token = JWTAuth::fromUser($user);
+        event(new Registered($user));
 
-        return response()->json(compact('user', 'token'), 201);
+        return response()->json(compact('user'), 201);
     }
 
     public function getAuthenticatedUser()
