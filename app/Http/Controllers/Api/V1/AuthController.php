@@ -130,7 +130,10 @@ class AuthController extends Controller
             'password'     => Hash::make($request->get('password')),
         ]);
 
-        $verification_code = Str::random(4); //! Generate verification Code
+        // $verification_code = Str::random(4); 
+        //! Generate verification Code
+        $verification_code = rand(1000, 9999);
+
         DB::table('user_verifications')->insert([
             'user_id' => $user->id,
             'token' => $verification_code,
