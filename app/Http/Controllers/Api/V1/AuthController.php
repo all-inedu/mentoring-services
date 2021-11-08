@@ -45,10 +45,6 @@ class AuthController extends Controller
             $user->is_verified = 1;
             $user->save();
 
-            // print("<pre>".print_r($user, true)."</pre>");exit;
-
-            // $user->update(['is_verified' => 1]);
-
             DB::table('user_verifications')->where('token',$verification_code)->delete();
 
             return response()->json([
@@ -69,6 +65,7 @@ class AuthController extends Controller
             'password' => 'required',
         ];
 
+        $validator = Validator::make($credentials, $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->messsage()], 401);
         }
