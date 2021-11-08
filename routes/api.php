@@ -35,7 +35,7 @@ Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
 
     Route::group(['middleware' => ['jwt.verify']], function () {
-        Route::get('user', [UserController::class, 'user']);
+        Route::get('user/{type}', [UserController::class, 'user']);
     });
 });
 

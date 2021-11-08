@@ -8,9 +8,17 @@ use Auth;
 use App\Models\User;
 class UserController extends Controller
 {
-    public function user()
+    public function user($id)
     {
-        $data = User::all();
+        if ($id == "all") {
+
+            $data = User::all();
+
+        } else {
+            
+            $data = User::where('id', $id)->first();
+
+        }
         return response()->json($data, 200);
     }
 

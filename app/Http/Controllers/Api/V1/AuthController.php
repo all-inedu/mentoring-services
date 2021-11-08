@@ -29,10 +29,10 @@ class AuthController extends Controller
 
         try {
             if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'invalid_credentials'], 400);
+                return response()->json(['error' => 'Invalid credentials'], 400);
             }
         } catch (JWTException $e) {
-            return response()->json(['error' => 'could_not_create_token'], 500);
+            return response()->json(['error' => 'Could not create token'], 500);
         }
 
         return response()->json(compact('token'));
@@ -52,7 +52,8 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors()->toJson(), 400);
+
+            return response()->json(['error' => $validator->errors()], 400);
         }
 
         $user = User::create([
