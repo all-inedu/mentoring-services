@@ -20,16 +20,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-//     $request->fulfill();
 
-//     return redirect('/home');
-// })->middleware(['auth', 'signed'])->name('verification.verify');
-
-
-Route::get('email/verify/{id}/{hash}', [AuthController::class, 'emailVerificationHandler']);
+// Route::get('email/verify/{id}/{hash}', [AuthController::class, 'emailVerificationHandler'])->name('verification.verify');
 
 Route::prefix('v1')->group(function () {
+
+    Route:: get('user/verify/{verification_code}', [AuthController::class, 'verifyUser'])->name('user.verify');
+    Route:: get('password/reset/{token}', 'Auth\ResetPasswordController@showResetForm')->name('password.request');
+    Route:: post('password/reset', 'Auth\ResetPasswordController@postReset')->name('password.reset');
 
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
