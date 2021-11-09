@@ -25,6 +25,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::group(['prefix' => 'v1', 'middleware' => 'throttle:60,1'], function () {
 
+    Route::get('view-email-template', function() {
+        $verification_code = 1021;
+        return view("email/verify", ['verification_code' => $verification_code]);
+    });
+
     //! Verification
     Route::post('email/verification-notification', [VerificationController::class, 'verificationNotification'])->middleware(['auth:api'])->name('verification.send');
     Route::get('user/verify/{verification_code}', [VerificationController::class, 'verifyUser'])->name('user.verify');
@@ -33,6 +38,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'throttle:60,1'], function () {
     Route::get('password/reset/{token}', [ResetPasswordController::class, 'submitResetPassword'])->name('password.request');
     Route::post('password/reset', [ResetPasswordController::class, 'sendResetPasswordLink'])->name('password.reset');
 
+    //! Authentication
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 

@@ -103,7 +103,6 @@ class AuthController extends Controller
 
         $token = JWTAuth::fromUser($user);
 
-        // $verification_code = Str::random(4); 
         //! Generate verification Code
         $verification_code = rand(1000, 9999);
 
