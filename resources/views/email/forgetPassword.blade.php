@@ -8,11 +8,7 @@
             margin: 0;
             padding: 0;
         }
-        .header {
-            background: rgb(163, 238, 255);
-            width: 100%;
-            padding: 10px ;
-        }
+        
     </style>
 </head>
 <body>

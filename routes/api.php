@@ -26,8 +26,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['prefix' => 'v1', 'middleware' => 'throttle:60,1'], function () {
 
     Route::get('view-email-template', function() {
-        $verification_code = 1021;
-        return view("email/verify", ['verification_code' => $verification_code]);
+        $token = 1021;
+        return view("email/forgetPassword", ['token' => $token]);
     });
 
     //! Verification
