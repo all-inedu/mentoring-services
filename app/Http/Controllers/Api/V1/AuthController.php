@@ -53,9 +53,9 @@ class AuthController extends Controller
             return response()->json(['error' => 'Failed to login, please try again.'], 500);
         }
 
-        $role_id = $credentials['role_id'];
-        $is_verified = $credentials['is_verified'];
-        return response()->json(['success' => true, 'data' => ['token' => $token, 'role_id' => $role_id, 'is_verified' => $is_verified]], 200);
+        // $role_id = $credentials['role_id'];
+        // $is_verified = $credentials['is_verified'];
+        return response()->json(['success' => true, 'data' => ['token' => $token]], 200);
     }
 
     public function logout(Request $request)
