@@ -14,6 +14,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -41,7 +42,7 @@ class AuthController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 401);
         }
 
-        $credentials['is_verified'] = 1;
+        // $credentials['is_verified'] = 1;
 
         try {
             // attempt to verify the credentials and create a token for the user
@@ -53,9 +54,11 @@ class AuthController extends Controller
             return response()->json(['error' => 'Failed to login, please try again.'], 500);
         }
 
-        // $role_id = $credentials['role_id'];
-        // $is_verified = $credentials['is_verified'];
-        return response()->json(['success' => true, 'data' => ['token' => $token]], 200);
+        $currentUser = Auth::user();
+        $role_id = $currentUser->role_id;
+        $is_verified = $currentUser->is_verified;
+
+        return response()->json(['success' => true, 'data' => ['token' => $token, 'role_id' => $role_id, 'is_verified' => $is_verified]], 200);
     }
 
     public function logout(Request $request)
