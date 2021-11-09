@@ -24,17 +24,22 @@
     </tr>
     <tr>
         <td>
-            Hey {{ $name }}!
+            Hey!
         </td>
     </tr>
     <tr>
         <td>
-            Thank you for creating an account with us. Don't forget to complete your registration!
+            You are receiving this email because we received a password reset request for your account.
         </td>
     </tr>
     <tr>
         <td>
-            Verification code : {{ $verification_code }}
+            <a href="{{ route('password.request', ['token' => $token]) }}"><button>Reset Password</button></a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            If you did not request a password reset, no further action is required.
         </td>
     </tr>
     <tr>

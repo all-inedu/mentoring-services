@@ -27,35 +27,6 @@ class AuthController extends Controller
         return response()->json($response, 200);
     }
 
-    public function verifyUser($verification_code)
-    {
-        $check = DB::table('user_verifications')->where('token',$verification_code)->first();
-
-        if(!is_null($check)){
-            $user = User::find($check->user_id);
-
-            if($user->is_verified == 1){
-                return response()->json([
-                    'success'=> true,
-                    'message'=> 'Account already verified.'
-                ]);
-            }
-
-            $user->email_verified_at = date('Y-m-d H:i:s');
-            $user->is_verified = 1;
-            $user->save();
-
-            DB::table('user_verifications')->where('token',$verification_code)->delete();
-
-            return response()->json([
-                'success'=> true,
-                'message'=> 'You have successfully verified your email address.'
-            ]);
-        }
-
-        return response()->json(['success'=> false, 'error'=> "Verification code is invalid."]);
-    }
-
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -130,6 +101,8 @@ class AuthController extends Controller
             'password'     => Hash::make($request->get('password')),
         ]);
 
+        $token = JWTAuth::fromUser($user);
+
         // $verification_code = Str::random(4); 
         //! Generate verification Code
         $verification_code = rand(1000, 9999);
@@ -149,7 +122,7 @@ class AuthController extends Controller
                 $mail->subject($subject);
             });
 
-        return response()->json(compact('user'), 201);
+        return response()->json(compact('user', 'token'), 201);
     }
 
     public function getAuthenticatedUser()

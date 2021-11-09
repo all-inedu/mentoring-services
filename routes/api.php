@@ -4,6 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\ResetPasswordController;
+use App\Http\Controllers\Api\V1\VerificationController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -20,14 +23,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::group(['prefix' => 'v1', 'middleware' => 'throttle:60,1'], function () {
 
-// Route::get('email/verify/{id}/{hash}', [AuthController::class, 'emailVerificationHandler'])->name('verification.verify');
+    //! Verification
+    Route::post('email/verification-notification', [VerificationController::class, 'verificationNotification'])->middleware(['auth:api'])->name('verification.send');
+    Route::get('user/verify/{verification_code}', [VerificationController::class, 'verifyUser'])->name('user.verify');
 
-Route::prefix('v1')->group(function () {
-
-    Route:: get('user/verify/{verification_code}', [AuthController::class, 'verifyUser'])->name('user.verify');
-    Route:: get('password/reset/{token}', 'Auth\ResetPasswordController@showResetForm')->name('password.request');
-    Route:: post('password/reset', 'Auth\ResetPasswordController@postReset')->name('password.reset');
+    //! Reset Password
+    Route::get('password/reset/{token}', [ResetPasswordController::class, 'submitResetPassword'])->name('password.request');
+    Route::post('password/reset', [ResetPasswordController::class, 'sendResetPasswordLink'])->name('password.reset');
 
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);

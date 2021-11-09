@@ -38,6 +38,12 @@ class RoleSeeder extends Seeder
                 'status' => 'active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
+            ),
+            array(
+                'role_name' => 'admin',
+                'status' => 'active',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             )
         );
 
