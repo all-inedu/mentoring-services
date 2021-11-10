@@ -50,17 +50,6 @@ class ResetPasswordController extends Controller
         ]);
     }
 
-    public function handleResetPassword(Request $request)
-    {
-        $token = $request->token;
-        $get = DB::table('password_resets')->where('token', $token)->first();
-        if(!$get) {
-            return response()->json('error', 'Invalid token!');
-        }
-
-        return response()->json(['success' => true, 'data' => ['email' => $get->email]]);
-    }
-
     public function submitResetPassword(Request $request)
     {
         $request->validate([
