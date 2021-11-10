@@ -29,7 +29,11 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('address')->nullable();
             $table->bigInteger("total_exp")->default('0');
+            $table->text('profile_picture')->nullable();
+            $table->string('imported_from')->nullable();
+            $table->string('ext_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
             
