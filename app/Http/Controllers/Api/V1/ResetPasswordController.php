@@ -22,7 +22,7 @@ class ResetPasswordController extends Controller
 
         if ($validator->fails()) {
 
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
         $user = User::where('email', $request->email)->first();
