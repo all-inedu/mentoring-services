@@ -34,6 +34,7 @@ class CreateUsersTable extends Migration
             $table->text('profile_picture')->nullable();
             $table->string('imported_from')->nullable();
             $table->string('ext_id')->nullable();
+            $table->boolean('status')->default(true);
             $table->rememberToken();
             $table->timestamps();
             

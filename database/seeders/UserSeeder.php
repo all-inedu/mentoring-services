@@ -30,6 +30,7 @@ class UserSeeder extends Seeder
                 'profile_picture' => null,
                 'imported_from' => null,
                 'ext_id' => null,
+                'status' => true,
                 'remember_token' => null,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
