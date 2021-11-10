@@ -19,15 +19,6 @@ use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
 
-    public function emailVerificationHandler(EmailVerificationRequest $request)
-    {
-        $request->fulfill();
-        $response = array(
-            "success" => true
-        );
-        return response()->json($response, 200);
-    }
-
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
