@@ -23,26 +23,30 @@ class AuthController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        $rules = [
-            'email' => 'required|email',
-            'password' => 'required',
+        //Error messages
+        $messages = [
+            "email.exists" => "Email doesn't exists"
         ];
 
-        $validator = Validator::make($credentials, $rules);
+        $rules = [
+            'email' => 'required|email|exists:users',
+            'password' => 'required|min:6',
+        ];
+
+        $validator = Validator::make($credentials, $rules, $messages);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 401);
         }
 
-        // $credentials['is_verified'] = 1;
-
         try {
             // attempt to verify the credentials and create a token for the user
             if (!$token = JWTAuth::attempt($credentials)) {
+                return response()->json(['success' => false, 'error' => 'Wrong password'], 400);
                 return response()->json(['error' => 'We can\'t find an account with this credentials. Please make sure you entered the right information and you have verified your email address'], 400);
             }
         } catch (JWTException $e) {
             // something went wrong while attempting to encode the token
-            return response()->json(['error' => 'Failed to login, please try again.'], 500);
+            return response()->json(['success' => false, 'error' => 'Failed to login, please try again.'], 500);
         }
 
         $currentUser = Auth::user();
@@ -57,7 +61,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), ['token' => 'required']);
         if ($validator->fails()) {
 
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
         
         try {
@@ -84,7 +88,7 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
 
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
         $name = $request->first_name.' '.$request->last_name;
