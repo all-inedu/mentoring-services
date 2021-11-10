@@ -30,7 +30,8 @@
     </tr>
     <tr>
         <td>
-            <a href="{{ route('password.request', ['token' => $token]) }}"><button>Reset Password</button></a>
+            {{-- <a href="{{ route('password.request', ['token' => $token]) }}"><button>Reset Password</button></a> --}}
+            <a href="http://localhost:8080/reset/{{ $token }}"><button>Reset Password</button></a>
         </td>
     </tr>
     <tr>
