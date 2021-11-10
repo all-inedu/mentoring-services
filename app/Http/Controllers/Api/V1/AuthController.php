@@ -63,7 +63,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $this->validate($request, ['token' => 'required']);
+        $validator = Validator::make($request->all(), ['token' => 'required']);
+        if ($validator->fails()) {
+
+            return response()->json(['error' => $validator->errors()], 400);
+        }
         
         try {
             JWTAuth::invalidate($request->input('token'));

@@ -12,12 +12,18 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class ResetPasswordController extends Controller
 {
     public function sendResetPasswordLink(Request $request)
     {
-        $request->validate(['email' => 'required|email|exists:users']);
+        $validator = Validator::make($request->all(), ['email' => 'required|email|exists:users']);
+
+        if ($validator->fails()) {
+
+            return response()->json(['error' => $validator->errors()], 400);
+        }
 
         $user = User::where('email', $request->email)->first();
         if (!$user) {
@@ -63,11 +69,16 @@ class ResetPasswordController extends Controller
 
     public function submitResetPassword(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users',
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required'
         ]);
+
+        if ($validator->fails()) {
+
+            return response()->json(['error' => $validator->errors()], 400);
+        }
 
         $updatePassword = DB::table('password_resets')
                             ->where([
