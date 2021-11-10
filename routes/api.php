@@ -35,7 +35,7 @@ Route::group(['prefix' => 'v1', 'middleware' => 'throttle:60,1'], function () {
     Route::get('user/verify/{verification_code}', [VerificationController::class, 'verifyUser'])->name('user.verify');
 
     //! Reset Password
-    Route::get('password/reset/{token}', [ResetPasswordController::class, 'submitResetPassword'])->name('password.submit');
+    Route::post('password/reset/{token}', [ResetPasswordController::class, 'submitResetPassword'])->name('password.submit');
     Route::get('reset/{token}', [ResetPasswordController::class, 'handleResetPassword'])->name('password.request');
     Route::post('password/reset', [ResetPasswordController::class, 'sendResetPasswordLink'])->name('password.reset');
 
