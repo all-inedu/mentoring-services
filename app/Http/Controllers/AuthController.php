@@ -38,8 +38,8 @@ class AuthController extends Controller
 
     public function handleProviderCallback(Request $request)
     {
-        Socialite::driver('linkedin')->stateless()->user();
-        Socialite::driver('google')->stateless()->user();
+        // Socialite::driver('linkedin')->stateless()->user();
+        // Socialite::driver('google')->stateless()->user();
 
         $provider = $request->provider;
         $userSocial =   Socialite::driver($provider)->user();
