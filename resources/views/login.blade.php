@@ -11,7 +11,7 @@
     @csrf
     <a target="_blank" href="{{ url('api/auth/login/google') }}" style="text-decoration: none"> <div id="my-signin2" >Google</div></a>
     <a target="_blank" href="{{ url('api/auth/login/linkedin') }}" style="text-decoration: none" > <div>Linked In</div></a>
-    <a target="_blank" href="https://www.facebook.com/v12.0/dialog/oauth?client_id=991942834731542&redirect_uri='https://services.all-inedu.com/api/auth/login/facebook'" style="text-decoration: none"><div>Facebook</div></a>
+    <a target="_blank" href="{{ url('api/auth/login/facebook') }}" style="text-decoration: none"><div>Facebook</div></a>
 
     <a href="{{ url('api/auth/login/apple') }}">
         <img src="{{ asset('Logo - SIWA - Logo-only - White@1x.png') }}" alt="">
