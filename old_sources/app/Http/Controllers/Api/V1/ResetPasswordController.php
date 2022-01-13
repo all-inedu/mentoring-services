@@ -61,7 +61,7 @@ class ResetPasswordController extends Controller
         $token = $request->token;
         $get = DB::table('password_resets')->where('token', $token)->first();
         if(!$get) {
-            return response()->json('error', 'Invalid token!');
+            return response()->json(['success' => false, 'error', 'Invalid token!']);
         }
 
         return response()->json(['success' => true, 'data' => ['email' => $get->email]]);
@@ -77,7 +77,7 @@ class ResetPasswordController extends Controller
 
         if ($validator->fails()) {
 
-            return response()->json(['error' => $validator->errors()], 400);
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
         $updatePassword = DB::table('password_resets')
@@ -88,7 +88,7 @@ class ResetPasswordController extends Controller
                             ->first();
 
         if(!$updatePassword){
-            return response()->json('error', 'Invalid token!');
+            return response()->json(['success' => false, 'error' => 'Invalid token!']);
         }
 
         User::where('email', $request->email)
