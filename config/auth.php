@@ -44,6 +44,15 @@ return [
             'driver' => 'passport',
             'provider' => 'users',
         ],
+
+        'student' => [
+            'driver' => 'session',
+            'provider' => 'students',
+        ],
+        'student-api' => [
+            'driver' => 'passport',
+            'provider' => 'students',
+        ]
     ],
 
     /*
@@ -68,6 +77,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
+        'students' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Students::class,
+        ]
 
         // 'users' => [
         //     'driver' => 'database',
@@ -97,6 +110,12 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+        'students' => [
+            'provider' => 'students',
+            'table' => 'password_resets',
+            'expire' => 60,
+            'throttle' => 60,
+        ]
     ],
 
     /*

@@ -16,7 +16,7 @@ class RoleSeeder extends Seeder
     {
         $data = array(
             array(
-                'role_name' => 'student',
+                'role_name' => 'admin',
                 'status' => 'active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
@@ -35,12 +35,6 @@ class RoleSeeder extends Seeder
             ),
             array(
                 'role_name' => 'alumni',
-                'status' => 'active',
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            ),
-            array(
-                'role_name' => 'admin',
                 'status' => 'active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')

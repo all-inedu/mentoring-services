@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Medias;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,9 +18,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index']);
+
 Route::group(['middleware' => ['web']], function () {
     
     Route::get('/login', function() {
         return view('login');
     })->name('login');
+
+    Route::get('reset-password/{token}', function($token) {
+        return view('templates.mail.reset-password', ['token' => $token]);
+    });
 });

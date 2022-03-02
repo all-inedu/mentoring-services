@@ -21,11 +21,13 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'role_id',
+        'phone_number',
         'email',
         'image',
         'provider',
         'provider_id',
         'password',
+        'is_verified'
     ];
 
     /**
@@ -46,4 +48,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
+    }
+
+    public function user_schedules()
+    {
+        return $this->hasMany(UserSchedule::class, 'user_id', 'id');
+    }
 }

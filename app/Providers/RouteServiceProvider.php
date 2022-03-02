@@ -19,6 +19,10 @@ class RouteServiceProvider extends ServiceProvider
      */
     public const HOME = '/home';
     public const SYSTEM_NAME = 'mentoring';
+    public const RESET_PASSWORD_LINK = 'https://mentoring.all-inedu.com/reset/';
+    
+    public const USER_PUBLIC_ASSETS_PATH = 'storage/media';
+    public const USER_STORE_MEDIA_PATH = 'public/media/system';
 
     /**
      * The controller namespace for the application.

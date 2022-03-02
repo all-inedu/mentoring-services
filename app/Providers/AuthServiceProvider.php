@@ -26,9 +26,23 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
         Passport::routes();
+        Passport::setDefaultScope([
+            'student',
+            'user',
+        ]);
+        Passport::tokensCan([
+            'user' => 'Access User App',
+            'student' => 'Access Student App',
+            'admin' => 'Access Admin Menu',
+            'mentor' => 'Access Mentor Menu',
+            'editor' => 'Access Editor Menu',
+            'alumni' => 'Access Alumni Menu',
+            'super-admin' => 'Access Admin, Mentor, Editor, Alumni Menu'
+        ]);
 
         Passport::tokensExpireIn(now()->addDays(15));
         Passport::refreshTokensExpireIn(now()->addDays(30));
-        Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+        // Passport::personalAccessTokensExpireIn(now()->addMonths(6));
+        Passport::personalAccessTokensExpireIn(now()->addDays(7));
     }
 }

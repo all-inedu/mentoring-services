@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
+// use App\Models\User;
+use App\Models\Students;
+use App\Models\Verification;
 use App\Providers\RouteServiceProvider;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -44,16 +46,15 @@ class AuthController extends Controller
         $provider = $request->provider;
         $userSocial =   Socialite::driver($provider)->user();
 
-        $users = User::where(['email' => $userSocial->getEmail()])->first();
+        $users = Students::where(['email' => $userSocial->getEmail()])->first();
         if ($users) {
-            Auth::login($users);
+            Auth::guard('student')->login($users);
         } else {
             $socialName = explode(" ", $userSocial->getName());
 
-            $users = User::create([
+            $users = Students::create([
                         'first_name'        => $socialName[0],
                         'last_name'         => $socialName[1],
-                        'role_id'           => 1,
                         'email'             => $userSocial->getEmail(),
                         'email_verified_at' => Carbon::now(),
                         'image'             => $userSocial->getAvatar(),
@@ -65,7 +66,7 @@ class AuthController extends Controller
         $state = $request->get('state');
         $request->session()->put('state',$state);
 
-        if(Auth::check()==false){
+        if(Auth::guard('student')->check()==false){
           session()->regenerate();
         }
         
@@ -73,113 +74,12 @@ class AuthController extends Controller
             'success' => true,
             'data' => array(
                 'users' => $users,
-                'token' => $users->createToken($this->system_name)->accessToken
+                'token' => $users->createToken('Student Token', ['student'])->accessToken
             )
         ]);
     }
 
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
-
-        //Error messages
-        $messages = [
-            "email.exists" => "Email doesn't exists"
-        ];
-
-        $rules = [
-            'email' => 'required|email|exists:users',
-            'password' => 'required|min:6',
-        ];
-
-        $validator = Validator::make($credentials, $rules, $messages);
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'error' => $validator->errors()], 401);
-        }
-
-        try {
-            // attempt to verify the credentials and create a token for the user
-            if (!Auth::attempt($credentials)) {
-                return response()->json(['success' => false, 'error' => 'Wrong password'], 400);
-            }
-        } catch (Exception $e) {
-            // something went wrong while attempting to encode the token
-            return response()->json(['success' => false, 'error' => 'Failed to login, please try again.'], 500);
-        }
-
-        $currentUser = Auth::user();
-        $role_id = $currentUser->role_id;
-        $is_verified = $currentUser->is_verified;
-
-        if (!$token = $currentUser->createToken($this->system_name)->accessToken) {
-            return response()->json(['success' => false, 'error' => 'Failed to generate token']);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Successfuly Login',
-            'data' => array(
-                'token'       => $token,
-                'role_id'     => $role_id,
-                'is_verified' => $is_verified
-            )
-        ]);
-    }
-
-    public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'first_name'   => 'required|string|max:255',
-            'last_name'    => 'required|string|max:255',
-            'birthday'     => 'required',
-            'phone_number' => 'required|numeric',
-            'role_id'      => 'required|integer',
-            'email'        => 'required|string|email|max:255|unique:users',
-            'password'     => 'required|string|min:6|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'error' => $validator->errors()], 422);
-        }
-        
-        $name = $request->first_name.' '.$request->last_name;
-        $email = $request->email;
-        $password = $request->password;
-
-        $user = User::create([
-            'first_name'   => $request->get('first_name'),
-            'last_name'    => $request->get('last_name'),
-            'birthday'     => $request->get('birthday'),
-            'phone_number' => $request->get('phone_number'),
-            'role_id'      => $request->get('role_id'),
-            'email'        => $request->get('email'),
-            'password'     => Hash::make($request->get('password')),
-        ]);
-
-        //! Generate verification Code
-        $verification_code = rand(1000, 9999);
-
-        DB::table('user_verifications')->insert([
-            'user_id' => $user->id,
-            'token' => $verification_code,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
-
-        $subject = "Please verify your email address.";
-        Mail::send('email.verify', ['name' => $name, 'verification_code' => $verification_code],
-            function($mail) use ($email, $name, $subject) {
-                $mail->from(getenv('FROM_EMAIL_ADDRESS'), "no-reply@all-inedu.com");
-                $mail->to($email, $name);
-                $mail->subject($subject);
-            });
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Successfuly Registered'
-        ], 200);
-        
-    }
+    /* NOT USED */
 
     public function profile()
     {
