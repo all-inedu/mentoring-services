@@ -184,7 +184,7 @@ class ProgrammeController extends Controller
             $programme = Programmes::findOrFail($prog_id);
         } catch (Exception $e) {
             Log::error('Find Program by Id Issue : ['.$prog_id.'] '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to find programme module by Id. Please try again.']);
+            return response()->json(['success' => false, 'error' => 'Failed to find programme by Id. Please try again.']);
         }
 
         //initialize variable

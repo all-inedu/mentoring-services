@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateProgrammeSchedulesTable extends Migration
+class CreateSpeakersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,13 @@ class CreateProgrammeSchedulesTable extends Migration
      */
     public function up()
     {
-        Schema::create('programme_schedules', function (Blueprint $table) {
+        Schema::create('speakers', function (Blueprint $table) {
             $table->id();
-            //! TODO - add foreign key to 'roles'
             $table->unsignedBigInteger('prog_dtl_id');
             $table->foreign('prog_dtl_id')->references('id')->on('programme_details')->onUpdate('cascade')->onDelete('cascade');
-            $table->date('prog_sch_start_date');
-            $table->time('prog_sch_start_time');
-            $table->date('prog_sch_end_date')->nullable();
-            $table->time('prog_sch_end_time');
+            $table->string('sp_name');
+            $table->string('sp_title');
+            $table->text('sp_short_desc');
             $table->string('status')->default('active');
             $table->timestamps();
         });
@@ -34,6 +32,6 @@ class CreateProgrammeSchedulesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('programme_schedules');
+        Schema::dropIfExists('speakers');
     }
 }

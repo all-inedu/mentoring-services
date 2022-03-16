@@ -5,12 +5,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Google\GoogleCalendarController;
 use App\Http\Controllers\MailLogController;
+use App\Http\Controllers\PartnershipController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProgrammeController;
 use App\Http\Controllers\ProgrammeDetailController;
 use App\Http\Controllers\ProgrammeModuleController;
 use App\Http\Controllers\ProgrammeScheduleController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\SpeakerController;
 use App\Http\Controllers\Student\AuthController as StudentAuthController;
 use App\Http\Controllers\Student\ForgotPasswordController as StudentForgotPasswordController;
 use App\Http\Controllers\Student\VerificationController as StudentVerificationController;
@@ -115,6 +117,8 @@ Route::prefix('v1')->group(function(){
             Route::post('programme', [ProgrammeController::class, 'store']);
             Route::post('programme/schedule', [ProgrammeScheduleController::class, 'store']);
             Route::post('programme/detail', [ProgrammeDetailController::class, 'store']);
+            Route::post('speaker', [SpeakerController::class, 'store']);
+            Route::post('partner', [PartnershipController::class, 'store']);
 
             Route::post('promotion', [PromotionController::class, 'store']);
         });
@@ -125,6 +129,8 @@ Route::prefix('v1')->group(function(){
             Route::put('programme/{prog_id}', [ProgrammeController::class, 'update']);
             Route::put('programme/schedule/{prog_sch_id}', [ProgrammeScheduleController::class, 'update']);
             Route::put('programme/detail/{prog_dtl_id}', [ProgrammeDetailController::class, 'update']);
+            Route::put('speaker/{sp_id}', [SpeakerController::class, 'update']);
+            Route::put('partner/{pt_id}', [PartnershipController::class, 'update']);
         });
 
         Route::prefix('delete')->group(function() {
@@ -134,6 +140,8 @@ Route::prefix('v1')->group(function(){
             Route::delete('programme/schedule/{prog_sch_id}', [ProgrammeScheduleController::class, 'delete']);
             Route::get('promotion/{promo_id}', [PromotionController::class, 'delete']);
             Route::delete('role/assignment/{user_role_id}', [UserRolesController::class, 'delete']);
+            Route::delete('speaker/{sp_id}', [SpeakerController::class, 'delete']);
+            Route::delete('partner/{pt_id}', [PartnershipController::class, 'delete']);
         });
     });
 

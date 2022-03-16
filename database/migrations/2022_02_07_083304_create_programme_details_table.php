@@ -17,7 +17,7 @@ class CreateProgrammeDetailsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('prog_id');
             $table->foreign('prog_id')->references('id')->on('programmes')->onUpdate('cascade')->onDelete('cascade');
-            $table->string('dtl_category');
+            $table->string('dtl_category')->nullable();
             $table->string('dtl_name');
             $table->string('dtl_desc');
             $table->string('dtl_price')->default(0);

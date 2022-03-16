@@ -33,4 +33,14 @@ class ProgrammeDetails extends Model
     {
         return $this->hasMany(ProgrammeSchedules::class, 'prog_dtl_id', 'id');
     }
+
+    public function speakers()
+    {
+        return $this->hasMany(Speakers::class, 'prog_dtl_id', 'id');
+    }
+
+    public function partners()
+    {
+        return $this->hasMany(Partners::class, 'prog_dtl_id', 'id');
+    }
 }
