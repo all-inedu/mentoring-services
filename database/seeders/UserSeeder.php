@@ -31,7 +31,7 @@ class UserSeeder extends Seeder
                 'first_name'   => 'ALL-In',
                 'last_name'    => 'Mentor',
                 'phone_number' => '8123123123',
-                'email'        => 'n.hendra@all-inedu.com',
+                'email'        => 'mentor@example.com',
                 'password'     => Hash::make('12345678'),
                 'status'       => true,
                 'is_verified'  => true,

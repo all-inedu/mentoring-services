@@ -15,13 +15,13 @@ class Permissions extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
+        'role_id',
         'per_scope_access',
         'per_desc'
     ];
 
     public function roles()
     {
-        return $this->belongsTo(Roles::class, 'role_id', 'id');
+        return $this->belongsTo(Role::class, 'role_id', 'id');
     }
 }

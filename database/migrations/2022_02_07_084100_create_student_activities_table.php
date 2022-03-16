@@ -15,14 +15,14 @@ class CreateStudentActivitiesTable extends Migration
     {
         Schema::create('student_activities', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('programme_id');
-            $table->foreign('programme_id')->references('id')->on('programmes')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('prog_id');
+            $table->foreign('prog_id')->references('id')->on('programmes')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('student_id');
             $table->foreign('student_id')->references('id')->on('students')->onUpdate('cascade')->onDelete('cascade');
-            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onUpdate('cascade')->onDelete('cascade');
 
-            $table->integer('std_act_status');
+            $table->string('std_act_status')->default('waiting');
             // $table->date('std_act_date');
             $table->timestamps();
         });

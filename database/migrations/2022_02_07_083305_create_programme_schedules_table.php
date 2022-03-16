@@ -16,8 +16,8 @@ class CreateProgrammeSchedulesTable extends Migration
         Schema::create('programme_schedules', function (Blueprint $table) {
             $table->id();
             //! TODO - add foreign key to 'roles'
-            $table->unsignedBigInteger('prog_id');
-            $table->foreign('prog_id')->references('id')->on('programmes')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('prog_dtl_id');
+            $table->foreign('prog_dtl_id')->references('id')->on('prog_dtl_id')->onUpdate('cascade')->onDelete('cascade');
             $table->date('prog_sch_start_date');
             $table->time('prog_sch_start_time');
             $table->date('prog_sch_end_date')->nullable();

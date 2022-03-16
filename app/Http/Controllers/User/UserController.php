@@ -22,7 +22,7 @@ class UserController extends Controller
 {
 
     public function index($role_name = 'all')
-    {
+    {   
         $user = User::whereHas('roles', function($query) use ($role_name) {
             $query->when($role_name != 'all', function($q) use ($role_name) {
                 $q->where('role_name', $role_name);
@@ -133,10 +133,12 @@ class UserController extends Controller
         //** create role access token */
         foreach ($currentUser->roles as $data) {
             $permission = $data->permissions;
-            
-            foreach ($permission as $value) {
-                $scope[] = $value->per_scope_access;
-            }
+            $scope[] = $permission->per_scope_access;
+
+            //if 1 role has many permission
+            // foreach ($permission as $value) {
+            //     $scope[] = $value->per_scope_access;
+            // }
         }
         
         $scope = str_replace(array('[',']'), "", str_replace('"', '', array_unique($scope)));

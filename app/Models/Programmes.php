@@ -34,9 +34,14 @@ class Programmes extends Model
         'updated_at',
     ];
 
-    public function programme_schedules()
+    public function programme_modules()
     {
-        return $this->hasMany(ProgrammeSchedules::class, 'prog_id', 'id');
+        return $this->belongsTo(ProgrammeModules::class, 'prog_mod_id', 'id');
+    }
+
+    public function programme_details()
+    {
+        return $this->hasMany(ProgrammeDetails::class, 'prog_id', 'id');
     }
 
     public function scopeWithAndWhereHas($query, $relation, $constraint){

@@ -12,6 +12,43 @@ use Illuminate\Support\Facades\Log;
 class ProgrammeModuleController extends Controller
 {
 
+    public function switch($status, Request $request) 
+    {
+        $rules = [
+            'prog_mod_id' => 'required|exists:programme_modules,id',
+            'status'   => 'in:active,inactive'
+        ];
+
+        $custom_message = [
+            'prog_mod_id.required' => 'Programme Module Id is required.',
+            'prog_mod_id.exists' => 'Programme Module Id is invalid'
+        ];
+
+        $validator = Validator::make($request->all() + ['status' => $status], $rules, $custom_message);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+
+            if (!$programme_modules = ProgrammeModules::find($request->prog_mod_id)) {
+                return response()->json(['success' => false, 'error' => 'The programme modules does not exists']);
+            }
+            $programme_modules->prog_mod_status = $request->status;
+            $programme_modules->save();
+            DB::commit();
+
+        } catch (Exception $e) {
+
+            DB::rollBack();
+            Log::error('Switch status Issue : ['.$request->prog_mod_id.', '.$status.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to switch programme module status. Please try again.']);
+        }
+        
+        return response()->json(['success' => true, 'message' => 'The programme module has been changed to '.$status]);
+    }
+
     public function find($prog_mod_id)
     {
         try {
@@ -34,7 +71,7 @@ class ProgrammeModuleController extends Controller
         $rules = [
             'prog_mod_name'   => 'required|string|unique:programme_modules,prog_mod_name|max:255',
             'prog_mod_desc'   => 'required',
-            'prog_mod_status' => 'required|in:active,deactive'
+            'prog_mod_status' => 'required|in:active,inactive'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -75,7 +112,7 @@ class ProgrammeModuleController extends Controller
         $rules = [
             'prog_mod_name'   => 'required|string|unique:programme_modules,prog_mod_name,'.$prog_mod_id.'|max:255',
             'prog_mod_desc'   => 'required',
-            'prog_mod_status' => 'required|in:active,deactive'
+            'prog_mod_status' => 'required|in:active,inactive'
         ];
 
         $validator = Validator::make($request->all(), $rules);

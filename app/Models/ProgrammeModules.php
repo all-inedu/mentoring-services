@@ -29,4 +29,9 @@ class ProgrammeModules extends Model
         'created_at',
         'updated_at',
     ];
+
+    public function programmes()
+    {
+        return $this->hasMany(Programmes::class, 'prog_mod_id', 'id');
+    }
 }

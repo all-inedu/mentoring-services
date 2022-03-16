@@ -24,7 +24,7 @@ class PromotionController extends Controller
                     return $query->where('deleted_at', '!=', NULL);
                 }),
             ],
-            'status'   => 'in:active,deactive'
+            'status'   => 'in:active,inactive'
         ];
 
         $custom_message = [
@@ -36,11 +36,11 @@ class PromotionController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        // DB::beginTransaction();
+        DB::beginTransaction();
         try {
 
             if (!$promotion = Promotion::find($request->promo_id)) {
-                return response()->json(['success' => false, 'error' => '']);
+                return response()->json(['success' => false, 'error' => 'The promotion does not exists']);
             }
             $promotion->status = $request->status;
             $promotion->save();
@@ -98,7 +98,7 @@ class PromotionController extends Controller
             'promo_end_date'   => 'nullable|required_with:promo_start_date|date|date_format:Y-m-d|after:promo_start_date',
             'limited'          => 'required|boolean',
             'total_used'       => 'nullable|required_if:limited,true|integer|min:0',
-            'status'           => 'required|in:active,deactive'
+            'status'           => 'required|in:active,inactive'
         ];
 
         $validator = Validator::make($request->all(), $rules);

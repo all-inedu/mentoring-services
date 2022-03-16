@@ -7,7 +7,9 @@ use App\Http\Controllers\Google\GoogleCalendarController;
 use App\Http\Controllers\MailLogController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProgrammeController;
+use App\Http\Controllers\ProgrammeDetailController;
 use App\Http\Controllers\ProgrammeModuleController;
+use App\Http\Controllers\ProgrammeScheduleController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\Student\AuthController as StudentAuthController;
 use App\Http\Controllers\Student\ForgotPasswordController as StudentForgotPasswordController;
@@ -16,6 +18,8 @@ use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\UserRolesController;
 use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\VerificationController;
+use App\Models\ProgrammeDetails;
+use App\Models\ProgrammeSchedules;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,11 +76,19 @@ Route::prefix('v1')->group(function(){
     //! Admin Scopes
     Route::middleware(['auth:api', 'scopes:admin'])->group(function() {
         
-        Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
-        Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
+        
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
 
+        Route::prefix('find')->group(function() {
+            Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
+            Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
+            Route::get('programme/detail/{prog_dtl_id}', [ProgrammeDetailController::class, 'find']);
+            Route::get('programme/schedule/{prog_sch_id}', [ProgrammeScheduleController::class, 'find']);
+        });
+
         Route::prefix('switch')->group(function() {
+            Route::post('programme/module/{status}', [ProgrammeModuleController::class, 'switch']);
+            Route::post('programme/{status}', [ProgrammeController::class, 'switch']);
             Route::post('promotion/{status}', [PromotionController::class, 'switch']);
         });
 
@@ -84,12 +96,16 @@ Route::prefix('v1')->group(function(){
             Route::get('mail/log', [MailLogController::class, 'index']);
             Route::get('programme/module', [ProgrammeModuleController::class, 'index']);
             Route::get('programme', [ProgrammeController::class, 'index']);
-            Route::get('user/{user?}', [UserController::class, 'index']); //user = mentor, alumni, editor
+            Route::get('role', [PermissionController::class, 'index']);
+            Route::get('user/{role_name?}', [UserController::class, 'index']); //user = mentor, alumni, editor
             Route::get('promotion', [PromotionController::class, 'index']);
         });
 
         Route::prefix('select')->group(function() {
             Route::get('programme/use/programme-module/{prog_mod_id}', [ProgrammeController::class, 'select']);
+            Route::get('permission/use/role/{role_id}', [PermissionController::class, 'select']);
+            Route::get('programme-details/use/programme/{prog_id}', [ProgrammeDetailController::class, 'select']);
+            Route::get('programme-schedule/use/programme-detail/{prog_dtl_id}', [ProgrammeScheduleController::class, 'select']);
         });
 
         Route::prefix('create')->group(function() {
@@ -97,18 +113,27 @@ Route::prefix('v1')->group(function(){
             Route::post('role/assignment', [UserRolesController::class, 'store']);
             Route::post('programme/module', [ProgrammeModuleController::class, 'store']);
             Route::post('programme', [ProgrammeController::class, 'store']);
+            Route::post('programme/schedule', [ProgrammeScheduleController::class, 'store']);
+            Route::post('programme/detail', [ProgrammeDetailController::class, 'store']);
+
             Route::post('promotion', [PromotionController::class, 'store']);
         });
 
         Route::prefix('update')->group(function() {
+            Route::put('permission/{per_id}', [PermissionController::class, 'update']);
             Route::put('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'update']);
             Route::put('programme/{prog_id}', [ProgrammeController::class, 'update']);
+            Route::put('programme/schedule/{prog_sch_id}', [ProgrammeScheduleController::class, 'update']);
+            Route::put('programme/detail/{prog_dtl_id}', [ProgrammeDetailController::class, 'update']);
         });
 
         Route::prefix('delete')->group(function() {
             Route::delete('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'delete']);
             Route::delete('programme/{prog_id}', [ProgrammeController::class, 'delete']);
+            Route::delete('programme/detail/{prog_dtl_id}', [ProgrammeDetailController::class, 'delete']);
+            Route::delete('programme/schedule/{prog_sch_id}', [ProgrammeScheduleController::class, 'delete']);
             Route::get('promotion/{promo_id}', [PromotionController::class, 'delete']);
+            Route::delete('role/assignment/{user_role_id}', [UserRolesController::class, 'delete']);
         });
     });
 

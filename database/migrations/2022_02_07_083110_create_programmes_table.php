@@ -23,7 +23,7 @@ class CreateProgrammesTable extends Migration
             $table->text('prog_has')->nullable();
             $table->text('prog_href')->nullable();
             $table->bigInteger('prog_price')->default(0);
-            $table->string('status');
+            // $table->string('status');
             $table->timestamps();
         });
     }

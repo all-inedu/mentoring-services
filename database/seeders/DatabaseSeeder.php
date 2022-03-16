@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
             UserAccessSeeder::class,
             ProgrammeModuleSeeder::class,
             ProgrammeSeeder::class,
+            UserRoleSeeder::class,
+            StudentSeeder::class,
+            StudentActivitiesSeeder::class
         ]);
     }
 }
