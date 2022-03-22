@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StudentActivities;
 use App\Models\Transaction;
 use App\Providers\RouteServiceProvider;
 use App\Rules\StatusTransactionChecking;
@@ -44,6 +45,11 @@ class TransactionController extends Controller
             $transaction = Transaction::findOrFail($request->transaction_id);
             $transaction->status = $status;
             $transaction->save();
+
+            $activities = StudentActivities::findOrFail($transaction->st_act_id);
+            $activities->std_act_status = 'confirmed';
+            $activities->save();
+
 
             DB::commit();
         } catch (Exception $e) {
