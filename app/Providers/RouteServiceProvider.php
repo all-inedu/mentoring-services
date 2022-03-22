@@ -20,6 +20,11 @@ class RouteServiceProvider extends ServiceProvider
     public const HOME = '/home';
     public const SYSTEM_NAME = 'mentoring';
     public const RESET_PASSWORD_LINK = 'https://mentoring.all-inedu.com/reset/';
+
+    public const ADMIN_LIST_STUDENT_VIEW_PER_PAGE = 10;
+    public const ADMIN_LIST_USER_VIEW_PER_PAGE = 10;
+    public const ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = 10;
+    public const ADMIN_LIST_PROMOTION_VIEW_PER_PAGE = 10;
     
     public const USER_PUBLIC_ASSETS_PATH = 'storage/media';
     public const USER_PUBLIC_ASSETS_PAYMENT_PROOF_PATH = 'storage/media/payment-proof';

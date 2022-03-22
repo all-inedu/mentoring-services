@@ -27,8 +27,6 @@ use App\Http\Controllers\UserRolesController;
 use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
 use App\Http\Controllers\VerificationController;
-use App\Models\ProgrammeDetails;
-use App\Models\ProgrammeSchedules;
 
 /*
 |--------------------------------------------------------------------------
@@ -116,6 +114,7 @@ Route::prefix('v1')->group(function(){
             Route::get('promotion', [PromotionController::class, 'index']);
             Route::get('speaker', [SpeakerController::class, 'index']);
             Route::get('student', [StudentController::class, 'index']);
+            Route::get('activities/{programme}', [StudentActivitiesController::class, 'index']);
             Route::get('transaction/{status}', [TransactionController::class, 'index']);
         });
 

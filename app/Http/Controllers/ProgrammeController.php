@@ -21,10 +21,12 @@ class ProgrammeController extends Controller
 {
 
     protected $store_media_path;
+    protected $ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
 
     public function __construct()
     {
         $this->store_media_path = RouteServiceProvider::USER_STORE_MEDIA_PATH;
+        $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
 
     public function switch($status, Request $request)
@@ -97,12 +99,12 @@ class ProgrammeController extends Controller
     {   
         switch ($type) {
             case null:
-                $programme = Programmes::orderBy('created_at', 'desc')->get();
+                $programme = Programmes::orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
                 break;
             case ("webinar" OR "event"):
                 $programme = ProgrammeDetails::whereHas('programmes', function($query) use ($type) {
                     $query->where('prog_name', $type);
-                })->get();
+                })->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
                 break;
         }
 

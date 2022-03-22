@@ -15,15 +15,17 @@ class ProgrammeController extends Controller
 {
     
     protected $store_media_path;
+    protected $ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
 
     public function __construct()
     {
         $this->store_media_path = RouteServiceProvider::USER_STORE_MEDIA_PATH;
+        $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
 
     public function index()
     {
-        $programmes = Programmes::orderBy('created_at', 'desc')->get();
+        $programmes = Programmes::orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
         return response()->json(['succes' => true, 'data' => $programmes]);
     }
 

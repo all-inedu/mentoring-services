@@ -17,9 +17,17 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailLogController;
 use App\Http\Controllers\UserAccessController;
 use App\Models\UserRoles;
+use App\Providers\RouteServiceProvider;
 
 class UserController extends Controller
 {
+
+    private $ADMIN_LIST_USER_VIEW_PER_PAGE;
+
+    public function __construct()
+    {
+        $this->ADMIN_LIST_USER_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_USER_VIEW_PER_PAGE;
+    }
 
     public function index($role_name = 'all')
     {   
@@ -27,7 +35,7 @@ class UserController extends Controller
             $query->when($role_name != 'all', function($q) use ($role_name) {
                 $q->where('role_name', $role_name);
             });
-        })->orderBy('created_at', 'desc')->get();
+        })->orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_USER_VIEW_PER_PAGE);
         return response()->json(['success' => true, 'data' => $user]);
     }
 

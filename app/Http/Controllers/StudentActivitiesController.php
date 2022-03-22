@@ -12,10 +12,26 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\TransactionController;
 use App\Models\Students;
+use App\Providers\RouteServiceProvider;
 
 class StudentActivitiesController extends Controller
 {
+    protected $ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
+
+    public function __construct()
+    {
+        $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
+    }
     
+    public function index($programme)
+    {
+        $activities = StudentActivities::whereHas('programmes', function($query) use ($programme) {
+            $query->where('prog_name', $programme);
+        })->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+
+        return response()->json(['success' => true, 'data' => $activities]);
+    }
+
     public function store (Request $request)
     {
         /** list of programmes

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Promotion;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,13 @@ use Illuminate\Validation\Rule;
 
 class PromotionController extends Controller
 {
+
+    protected $ADMIN_LIST_PROMOTION_VIEW_PER_PAGE;
+
+    public function __construct()
+    {
+        $this->ADMIN_LIST_PROMOTION_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROMOTION_VIEW_PER_PAGE;
+    }
 
     public function switch($status, Request $request)
     {
@@ -82,7 +90,7 @@ class PromotionController extends Controller
 
     public function index()
     {
-        $promotion = Promotion::where('deleted_at', NULL)->orderBy('created_at', 'desc')->get();
+        $promotion = Promotion::where('deleted_at', NULL)->orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_PROMOTION_VIEW_PER_PAGE);
         return response()->json(['succes' => true, 'data' => $promotion]);
     }
     
