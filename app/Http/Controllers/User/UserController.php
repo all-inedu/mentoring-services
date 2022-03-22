@@ -31,9 +31,15 @@ class UserController extends Controller
 
     public function index($role_name = 'all')
     {   
+        $role_name = strtolower($role_name);
         $user = User::whereHas('roles', function($query) use ($role_name) {
             $query->when($role_name != 'all', function($q) use ($role_name) {
-                $q->where('role_name', $role_name);
+                
+                // if ($role_name == 'mentor') {
+                //     $q->where('role_name', $role_name)->with('educations');
+                // } else {
+                    $q->where('role_name', $role_name);
+                // }
             });
         })->orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_USER_VIEW_PER_PAGE);
         return response()->json(['success' => true, 'data' => $user]);
