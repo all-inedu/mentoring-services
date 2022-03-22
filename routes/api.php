@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\Google\GoogleCalendarController;
 use App\Http\Controllers\MailLogController;
@@ -85,8 +86,8 @@ Route::prefix('v1')->group(function(){
     //! Admin Scopes
     Route::middleware(['auth:api', 'scopes:admin'])->group(function() {
         
-        
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
+        Route::get('overview/total', [DashboardController::class, 'overview']);
 
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
