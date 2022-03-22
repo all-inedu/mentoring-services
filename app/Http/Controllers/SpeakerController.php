@@ -13,6 +13,34 @@ use Illuminate\Validation\Rule;
 
 class SpeakerController extends Controller
 {
+
+    public function select($prog_dtl_id)
+    {
+        try {
+            $speakers = Speakers::where('prog_dtl_id', $prog_dtl_id)->orderBy('created_at', 'desc')->get();
+        } catch (Exception $e) {
+            Log::error('Select Speakers Use Programme Detail Id  Issue : ['.$prog_dtl_id.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to select speakers by programme detail Id. Please try again.']);
+        }
+        return response()->json(['success' => true, 'data' => $speakers]);
+    }
+
+    public function find($sp_id)
+    {
+        try {
+            $speakers = Speakers::findOrFail($sp_id);
+        } catch (Exception $e) {
+            Log::error('Find Speaker by Id Issue : ['.$sp_id.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to find speaker by Id. Please try again.']);
+        }
+        return response()->json(['success' => true, 'data' => $speakers]);
+    }
+
+    public function index()
+    {
+        $speakers = Speakers::orderBy('created_at', 'desc')->get();
+        return response()->json(['success' => true, 'data' => $speakers]);
+    }
     
     public function store(Request $request)
     {

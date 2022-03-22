@@ -14,6 +14,28 @@ use Exception;
 class PartnershipController extends Controller
 {
     
+    public function select($prog_dtl_id)
+    {
+        try {
+            $partners = Partners::where('prog_dtl_id', $prog_dtl_id)->orderBy('created_at', 'desc')->get();
+        } catch (Exception $e) {
+            Log::error('Select Partners Use Programme Detail Id  Issue : ['.$prog_dtl_id.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to select partners by programme detail Id. Please try again.']);
+        }
+        return response()->json(['success' => true, 'data' => $partners]);
+    }
+
+    public function find($pt_id)
+    {
+        try {
+            $partner = Partners::findOrFail($pt_id);
+        } catch (Exception $e) {
+            Log::error('Find Partner by Id Issue : ['.$pt_id.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to find partner by Id. Please try again.']);
+        }
+        return response()->json(['success' => true, 'data' => $partner]);
+    }
+
     public function store(Request $request)
     {
         $rules = [
@@ -34,6 +56,7 @@ class PartnershipController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        DB::beginTransaction();
         //insert to schedule table
         try {
             $partner = new Partners;
@@ -45,7 +68,7 @@ class PartnershipController extends Controller
             $partner->save();
 
             $data['partner'] = $partner;
-
+            DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Save Partner Issue : ['.$request->prog_dtl_id.', '.json_encode($partner).'] '.$e->getMessage());
@@ -82,6 +105,7 @@ class PartnershipController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        DB::beginTransaction();
         //insert to schedule table
         try {
             $partner->prog_dtl_id = $request->prog_dtl_id;
@@ -92,7 +116,7 @@ class PartnershipController extends Controller
             $partner->save();
 
             $data['partner'] = $partner;
-
+            DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Update Partner Issue : ['.$request->prog_dtl_id.', '.json_encode($partner).'] '.$e->getMessage());
@@ -118,6 +142,6 @@ class PartnershipController extends Controller
             Log::error('Delete Partner Issue : ['.$pt_id.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to delete partner. Please try again.'], 400);
         }
-        return response()->json(['success' => true, 'message' => 'You\'ve successfully deleted partner']);
+        return response()->json(['success' => true, 'message' => 'Partner has been deleted']);
     }
 }

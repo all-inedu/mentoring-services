@@ -22,6 +22,7 @@ class RouteServiceProvider extends ServiceProvider
     public const RESET_PASSWORD_LINK = 'https://mentoring.all-inedu.com/reset/';
     
     public const USER_PUBLIC_ASSETS_PATH = 'storage/media';
+    public const USER_PUBLIC_ASSETS_PAYMENT_PROOF_PATH = 'storage/media/payment-proof';
     public const USER_STORE_MEDIA_PATH = 'public/media/system';
 
     /**

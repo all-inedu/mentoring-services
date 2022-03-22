@@ -19,7 +19,7 @@ class CreateTransactionsTable extends Migration
             $table->unsignedBigInteger('st_act_id');
             $table->foreign('st_act_id')->references('id')->on('student_activities')->onUpdate('cascade')->onDelete('cascade');
 
-            $table->unsignedBigInteger('promo_id');
+            $table->unsignedBigInteger('promo_id')->nullable();
             $table->foreign('promo_id')->references('id')->on('promotions')->onUpdate('cascade')->onDelete('cascade');
 
             $table->bigInteger('amount');
@@ -27,7 +27,7 @@ class CreateTransactionsTable extends Migration
             $table->string('status')->default('waiting');
             $table->text('payment_proof')->nullable();
             $table->string('payment_method')->nullable();
-            $table->datetime('payment_date');
+            $table->datetime('payment_date')->nullable();
             $table->timestamps();
         });
     }

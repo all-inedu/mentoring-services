@@ -43,4 +43,9 @@ class ProgrammeDetails extends Model
     {
         return $this->hasMany(Partners::class, 'prog_dtl_id', 'id');
     }
+
+    public function student_activities()
+    {
+        return $this->hasMany(StudentActivities::class, 'prog_dtl_id', 'id');
+    }
 }

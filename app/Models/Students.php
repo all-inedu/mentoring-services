@@ -52,4 +52,14 @@ class Students extends Authenticatable
     {
         return $this->hasMany(Medias::class, 'student_id', 'id');
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'student_mentors', 'student_id', 'user_id');
+    }
+
+    public function student_activities()
+    {
+        return $this->hasMany(StudentActivities::class, 'student_id', 'id');
+    }
 }

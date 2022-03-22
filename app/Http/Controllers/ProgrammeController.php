@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProgrammeDetails;
 use App\Models\ProgrammeModules;
 use App\Models\Programmes;
 use App\Models\ProgrammeSchedules;
@@ -92,12 +93,20 @@ class ProgrammeController extends Controller
         return response()->json(['success' => true, 'data' => $programme]);
     }
 
-    public function index()
-    {
-        $programme = Programmes::with('programme_modules:id,prog_mod_name')->with('programme_details', function($query) {
-            $query->with('programme_schedules');
-        })->orderBy('created_at', 'desc')->get();
-        return response()->json(['succes' => true, 'data' => $programme]);
+    public function index($type = null)
+    {   
+        switch ($type) {
+            case null:
+                $programme = Programmes::orderBy('created_at', 'desc')->get();
+                break;
+            case ("webinar" OR "event"):
+                $programme = ProgrammeDetails::whereHas('programmes', function($query) use ($type) {
+                    $query->where('prog_name', $type);
+                })->get();
+                break;
+        }
+
+        return response()->json(['succes' => true, 'data' => $programme]);        
     }
 
     public function store(Request $request)

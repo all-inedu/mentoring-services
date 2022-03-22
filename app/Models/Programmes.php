@@ -48,4 +48,9 @@ class Programmes extends Model
         return $query->whereHas($relation, $constraint)
                      ->with([$relation => $constraint]);
     }
+
+    public function student_activities()
+    {
+        return $this->hasMany(StudentActivities::class, 'prog_id', 'id');
+    }
 }
