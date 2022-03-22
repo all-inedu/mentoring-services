@@ -17,6 +17,7 @@ use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\SpeakerController;
 use App\Http\Controllers\Student\AuthController as StudentAuthController;
 use App\Http\Controllers\Student\ForgotPasswordController as StudentForgotPasswordController;
+use App\Http\Controllers\Student\MediaController;
 use App\Http\Controllers\Student\StudentMentorController;
 use App\Http\Controllers\Student\VerificationController as StudentVerificationController;
 use App\Http\Controllers\StudentActivitiesController;
@@ -62,6 +63,7 @@ Route::prefix('v1')->group(function(){
 
     Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scopes:student'] ], function(){
          
+        Route::post('media/add', [MediaController::class, 'store']);
         Route::post('upload/payment-proof', [TransactionController::class, 'upload_payment_proof']);
         
     });

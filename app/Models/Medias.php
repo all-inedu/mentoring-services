@@ -15,7 +15,7 @@ class Medias extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'prog_id',
+        'student_id',
         'med_title',
         'med_desc',
         'med_file_name',

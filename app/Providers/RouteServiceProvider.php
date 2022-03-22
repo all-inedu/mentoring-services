@@ -29,6 +29,7 @@ class RouteServiceProvider extends ServiceProvider
     public const USER_PUBLIC_ASSETS_PATH = 'storage/media';
     public const USER_PUBLIC_ASSETS_PAYMENT_PROOF_PATH = 'storage/media/payment-proof';
     public const USER_STORE_MEDIA_PATH = 'public/media/system';
+    public const STUDENT_STORE_MEDIA_PATH = 'public/media';
 
     /**
      * The controller namespace for the application.
