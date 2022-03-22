@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Providers\RouteServiceProvider;
+use App\Rules\StatusTransactionChecking;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class TransactionController extends Controller
 {
@@ -19,6 +21,60 @@ class TransactionController extends Controller
     public function __construct()
     {
         $this->store_payment_media_path = RouteServiceProvider::USER_PUBLIC_ASSETS_PAYMENT_PROOF_PATH;
+    }
+
+    public function switch($status, Request $request)
+    {   
+        $rules = [
+            'transaction_id' => 'required|exists:transactions,id',
+            'status' => [
+                'required', 
+                'in:pending,paid',
+                new StatusTransactionChecking($status)
+                ]
+        ];
+
+        $validator = Validator::make($request->all() + ['status' => $status], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            $transaction = Transaction::findOrFail($request->transaction_id);
+            $transaction->status = $status;
+            $transaction->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+
+            DB::rollBack();
+            Log::error('Switch Status Transaction Issue : ['.json_encode($request->all() + ['status' => $status]).'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to switch status transaction. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'The transaction has been confirmed', 'data' => $transaction]);
+    }
+
+    public function index($status)
+    {
+        switch (strtolower($status)) {
+            case "pending":
+                $transaction = Transaction::where('status', 'pending')->where('payment_proof', NULL)->orderBy('created_at', 'desc')->get();
+                break;
+
+            case "need-confirmation":
+                $transaction = Transaction::where('status', 'pending')->where(function($query) {
+                    $query->where('payment_proof', '!=', NULL)->orWhere('payment_method', '!=', NULL)->orWhere('payment_date', '!=', NULL);
+                })->orderBy('created_at', 'desc')->get();
+                break;
+            
+            case "paid":
+                $transaction = Transaction::where('status', 'paid')->orderBy('created_at', 'desc')->get();
+                break;
+        }
+        
+        return response()->json(['success' => true, 'data' => $transaction]);
     }
 
     public function upload_payment_proof(Request $request)
@@ -41,11 +97,13 @@ class TransactionController extends Controller
         DB::beginTransaction();
         try {
             if ($request->hasFile('uploaded_file')) {
-                $med_file_name = date('Ymd_His').'_'.str_replace(' ', '-', $request->prog_name);
-                $med_file_format = $request->file('prog_file')->getClientOriginalExtension();
-                $med_file_path = $request->file('prog_file')->storeAs($this->store_payment_media_path, $med_file_name.'.'.$med_file_format);
-
                 $transaction = Transaction::find($request->transaction_id);
+
+                $trx_id = $transaction->trx_id;
+                $med_file_name = $trx_id;
+                $med_file_format = $request->file('uploaded_file')->getClientOriginalExtension();
+                $med_file_path = $request->file('uploaded_file')->storeAs($this->store_payment_media_path, $med_file_name.'.'.$med_file_format);
+
                 $transaction->payment_proof = $med_file_path;
                 $transaction->payment_method = "transfer";
                 $transaction->payment_date = Carbon::now();

@@ -14,6 +14,9 @@ class Transaction extends Model
      *
      * @var array<int, string>
      */
+
+    protected $table = 'transactions';
+
     protected $fillable = [
         'st_act_id',
         'promo_id',

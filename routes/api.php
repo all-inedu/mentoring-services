@@ -89,6 +89,7 @@ Route::prefix('v1')->group(function(){
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
         Route::get('overview/total', [DashboardController::class, 'overview']);
 
+
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
             Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
@@ -103,6 +104,7 @@ Route::prefix('v1')->group(function(){
             Route::post('programme/module/{status}', [ProgrammeModuleController::class, 'switch']);
             Route::post('programme/{status}', [ProgrammeController::class, 'switch']);
             Route::post('promotion/{status}', [PromotionController::class, 'switch']);
+            Route::post('transaction/{status}', [TransactionController::class, 'switch']);
         });
 
         Route::prefix('list')->group(function() {
@@ -114,6 +116,7 @@ Route::prefix('v1')->group(function(){
             Route::get('promotion', [PromotionController::class, 'index']);
             Route::get('speaker', [SpeakerController::class, 'index']);
             Route::get('student', [StudentController::class, 'index']);
+            Route::get('transaction/{status}', [TransactionController::class, 'index']);
         });
 
         Route::prefix('select')->group(function() {
