@@ -27,6 +27,7 @@ use App\Http\Controllers\UserRolesController;
 use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
 use App\Http\Controllers\VerificationController;
+use App\Models\StudentActivities;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,7 +87,6 @@ Route::prefix('v1')->group(function(){
         
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
         Route::get('overview/total', [DashboardController::class, 'overview']);
-
 
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);

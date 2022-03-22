@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProgrammeDetails;
+use App\Models\StudentActivities;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -27,6 +28,9 @@ class ProgrammeDetailController extends Controller
     {
         try {
             $prog_details = ProgrammeDetails::with('programme_schedules', 'speakers', 'partners')->findOrFail($prog_dtl_id);
+
+            $viewer = StudentActivities::where('prog_dtl_id', $prog_dtl_id)->count();
+            $prog_details['viewer'] = $viewer;
         } catch (Exception $e) {
             Log::error('Find Programme Detail by Id Issue : ['.$prog_dtl_id.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to find programme detail by Id. Please try again.']);
