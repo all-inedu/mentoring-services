@@ -42,7 +42,8 @@ class MediaController extends Controller
             if ($request->hasFile('uploaded_file')) {
                 $med_file_name = date('Ymd_His').'_'.str_replace(' ', '-', $request->title);
                 $med_file_format = $request->file('uploaded_file')->getClientOriginalExtension();
-                $med_file_path = $request->file('uploaded_file')->storeAs($this->STUDENT_STORE_MEDIA_PATH.'/'.encrypt($request->student_id), $med_file_name.'.'.$med_file_format);
+                // $med_file_path = $request->file('uploaded_file')->storeAs($this->STUDENT_STORE_MEDIA_PATH.'/'.$request->student_id, $med_file_name.'.'.$med_file_format);
+                $med_file_path = $request->file('uploaded_file')->storeAs($request->student_id, $med_file_name.'.'.$med_file_format, ['disk' => 'student_files']);
 
                 $media = new Medias;
                 $media->student_id = $request->student_id;
