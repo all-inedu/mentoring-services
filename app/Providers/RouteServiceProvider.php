@@ -26,10 +26,10 @@ class RouteServiceProvider extends ServiceProvider
     public const ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = 10;
     public const ADMIN_LIST_PROMOTION_VIEW_PER_PAGE = 10;
     
-    public const USER_PUBLIC_ASSETS_PATH = 'storage/media';
-    public const USER_PUBLIC_ASSETS_PAYMENT_PROOF_PATH = 'storage/media/payment-proof';
+    // public const USER_PUBLIC_ASSETS_PATH = 'storage/media';
+    public const USER_PUBLIC_ASSETS_PAYMENT_PROOF_PATH = 'public/media/payment-proof';
     public const USER_STORE_MEDIA_PATH = 'public/media/system';
-    public const STUDENT_STORE_MEDIA_PATH = 'public/media';
+    public const STUDENT_STORE_MEDIA_PATH = 'public';
 
     /**
      * The controller namespace for the application.

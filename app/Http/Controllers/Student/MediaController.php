@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\Log;
 class MediaController extends Controller
 {
 
-    protected $USER_STORE_MEDIA_PATH;
+    protected $STUDENT_STORE_MEDIA_PATH;
 
     public function __construct()
     {
-        $this->USER_STORE_MEDIA_PATH = RouteServiceProvider::USER_STORE_MEDIA_PATH;
+        $this->STUDENT_STORE_MEDIA_PATH = RouteServiceProvider::STUDENT_STORE_MEDIA_PATH;
     }
     
     public function store(Request $request)
@@ -42,7 +42,7 @@ class MediaController extends Controller
             if ($request->hasFile('uploaded_file')) {
                 $med_file_name = date('Ymd_His').'_'.str_replace(' ', '-', $request->title);
                 $med_file_format = $request->file('uploaded_file')->getClientOriginalExtension();
-                $med_file_path = $request->file('uploaded_file')->storeAs($this->USER_STORE_MEDIA_PATH.'/'.encrypt($request->student_id), $med_file_name.'.'.$med_file_format);
+                $med_file_path = $request->file('uploaded_file')->storeAs($this->STUDENT_STORE_MEDIA_PATH.'/'.encrypt($request->student_id), $med_file_name.'.'.$med_file_format);
 
                 $media = new Medias;
                 $media->student_id = $request->student_id;
