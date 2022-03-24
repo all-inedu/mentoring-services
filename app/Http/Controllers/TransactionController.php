@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use PDF;
+use App\Models\Students;
 
 class TransactionController extends Controller
 {
@@ -75,21 +76,40 @@ class TransactionController extends Controller
         return response()->json(['success' => true, 'message' => 'The transaction has been confirmed', 'data' => $transaction]);
     }
 
-    public function index($status, $recent = NULL)
+    public function index($status, $recent = NULL, Request $request)
     {
+        $student_email = $request->get('mail');
+        $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
+
         switch (strtolower($status)) {
             case "pending":
-                $transaction = Transaction::where('status', 'pending')->where('payment_proof', NULL)->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
+                $transaction = Transaction::when($is_student, function($q) use ($student_email) {
+                    $q->whereHas('student_activities.students', function ($query) use ($student_email) {
+                        $query->where('email', $student_email);
+                    });
+                })->where('status', 'pending')->where('payment_proof', NULL)->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
 
             case "need-confirmation":
-                $transaction = Transaction::where('status', 'pending')->where(function($query) {
-                    $query->where('payment_proof', '!=', NULL)->orWhere('payment_method', '!=', NULL)->orWhere('payment_date', '!=', NULL);
-                })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
+                $transaction = Transaction::
+                    when($is_student, function($q) use ($student_email) {
+                        $q->whereHas('student_activities.students', function ($query) use ($student_email) {
+                            $query->where('email', $student_email);
+                        });
+                    })->
+                    where('status', 'pending')->where(function($query) {
+                        $query->where('payment_proof', '!=', NULL)->orWhere('payment_method', '!=', NULL)->orWhere('payment_date', '!=', NULL);
+                    })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
             
             case "paid":
-                $transaction = Transaction::where('status', 'paid')->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
+                $transaction = Transaction::
+                    when($is_student, function($q) use ($student_email) {
+                        $q->whereHas('student_activities.students', function ($query) use ($student_email) {
+                            $query->where('email', $student_email);
+                        });
+                    })->
+                    where('status', 'paid')->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
         }
         
