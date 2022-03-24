@@ -22,6 +22,7 @@ class MailLog extends Model
         'subject',
         'message',
         'date_sent',
-        'status'
+        'status',
+        'error_message'
     ];
 }

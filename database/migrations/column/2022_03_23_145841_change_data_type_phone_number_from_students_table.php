@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddErrorToMailLogsTable extends Migration
+class ChangeDataTypePhoneNumberFromStudentsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddErrorToMailLogsTable extends Migration
      */
     public function up()
     {
-        Schema::table('mail_logs', function (Blueprint $table) {
-            $table->text('error_message')->nullable();
+        Schema::table('students', function (Blueprint $table) {
+            $table->string('phone_number')->change();
         });
     }
 
@@ -25,8 +25,8 @@ class AddErrorToMailLogsTable extends Migration
      */
     public function down()
     {
-        Schema::table('mail_logs', function (Blueprint $table) {
-            $table->dropColumn('error_message');
+        Schema::table('students', function (Blueprint $table) {
+            //
         });
     }
 }

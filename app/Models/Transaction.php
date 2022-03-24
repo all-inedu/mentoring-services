@@ -32,4 +32,12 @@ class Transaction extends Model
     {
         return $this->belongsTo(StudentActivities::class, 'st_act_id', 'id');
     }
+
+    public function scopeRecent($query, $recent, $paginate)
+    {
+        if (!$recent)
+            return $query->paginate($paginate);
+        else
+            return $query->limit(3)->get();
+    }
 }

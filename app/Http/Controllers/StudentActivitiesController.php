@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\TransactionController;
 use App\Models\Students;
 use App\Providers\RouteServiceProvider;
+use Illuminate\Support\Facades\Auth;
 
 class StudentActivitiesController extends Controller
 {
@@ -23,11 +24,21 @@ class StudentActivitiesController extends Controller
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
     
-    public function index($programme)
+    public function index($programme, $recent = NULL, Request $request)
     {
-        $activities = StudentActivities::whereHas('programmes', function($query) use ($programme) {
-            $query->where('prog_name', $programme);
-        })->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+        // $student_email = Auth::user()->email;
+        $student_email = $request->get('mail') != NULL ? $request->get('mail') : null;
+
+        $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
+
+        $activities = StudentActivities::
+            whereHas('programmes', function($query) use ($programme) {
+                $query->where('prog_name', $programme);
+            })->when($is_student, function($query) use ($student_email) {
+                $query->whereHas('students', function ($q) use ($student_email) {
+                    $q->where('email', $student_email);
+                });
+            })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);
     }

@@ -10,15 +10,62 @@ use Illuminate\Support\Facades\Validator;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Auth;
 
 class MediaController extends Controller
 {
 
     protected $STUDENT_STORE_MEDIA_PATH;
+    protected $STUDENT_LIST_MEDIA_VIEW_PER_PAGE;
 
     public function __construct()
     {
         $this->STUDENT_STORE_MEDIA_PATH = RouteServiceProvider::STUDENT_STORE_MEDIA_PATH;
+        $this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_LIST_MEDIA_VIEW_PER_PAGE;
+    }
+
+    public function index(Request $request)
+    {
+        $student_email = $request->get('mail');
+        if ($student_email) {
+            $media = Medias::whereHas('students', function ($query) use ($student_email) {
+                $query->where('email', $student_email);
+            })->orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
+        } else {
+            $media = Medias::orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
+        }
+
+        return response()->json(['success' => true, 'data' => $media]);
+    }
+
+    public function delete($media_id)
+    {
+        $media = Medias::findOrFail($media_id);
+        if (!$media) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the file']);
+        }
+
+        DB::beginTransaction();
+        try {
+            
+            if (File::exists($media->med_file_path)) {
+                File::delete($media->med_file_path);
+
+                //delete record file from database
+                if ($media->student_id == Auth::user()->id) {
+                    $media->delete();
+                }
+            }
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Delete Student Media Issue : ['.$media_id.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to delete student media. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'File has been deleted.']);
     }
     
     public function store(Request $request)
@@ -49,7 +96,7 @@ class MediaController extends Controller
                 $media->student_id = $request->student_id;
                 $media->med_title = $request->title;
                 $media->med_desc = $request->desc;
-                $media->med_file_path = $med_file_path;
+                $media->med_file_path = public_path('media').'/'.$med_file_path;
                 $media->med_file_name = $med_file_name;
                 $media->med_file_format = $med_file_format;
                 $media->status = $request->status;

@@ -78,11 +78,12 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        $is_error = false;
         $validator = Validator::make($request->all(), [
             'first_name'   => 'required|string|max:255',
             'last_name'    => 'required|string|max:255',
             'birthday'     => 'required',
-            'phone_number' => 'required|numeric',
+            'phone_number' => 'required|string',
             'grade'        => 'required|integer|min:7',
             'email'        => 'required|string|email|max:255|unique:students',
             'password'     => 'required|string|min:6|confirmed',
@@ -95,12 +96,6 @@ class AuthController extends Controller
         $name = $request->first_name.' '.$request->last_name;
         $email = $request->email;
         $password = $request->password;
-        
-        //! changed the first number *0* to *62*
-        $phone_number = $request->get('phone_number');
-        if ( substr($phone_number, 0, 1) == 0) {
-            $phone_number = "62".substr($phone_number, 1);
-        }
 
         DB::beginTransaction();
         try {
@@ -109,7 +104,7 @@ class AuthController extends Controller
                 'first_name'   => $request->get('first_name'),
                 'last_name'    => $request->get('last_name'),
                 'birthday'     => $request->get('birthday'),
-                'phone_number' => $phone_number,
+                'phone_number' => $request->get('phone_number'),
                 'grade'        => $request->get('grade'),
                 'email'        => $request->get('email'),
                 'password'     => Hash::make($password),
@@ -125,7 +120,50 @@ class AuthController extends Controller
                 'updated_at' => Carbon::now()
             ]);
 
-            $subject = "Please verify your email address.";
+            // $subject = "Please verify your email address.";
+            // Mail::send('templates.mail.verify', ['name' => $name, 'verification_code' => $verification_code],
+            //     function($mail) use ($email, $name, $subject) {
+            //         $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+            //         $mail->to($email, $name);
+            //         $mail->subject($subject);
+            //     });
+
+            // $log = array(
+            //     'sender'    => 'system',
+            //     'recipient' => $email,
+            //     'subject'   => $subject,
+            //     'message'   => NULL,
+            //     'date_sent' => Carbon::now(),
+            //     'status'    => Mail::failures() ? "delivered" : "not delivered"
+            // );
+    
+            // $save_log = new MailLogController;
+            // $mailLog = $save_log->saveLogMail($log);
+            
+        } catch (Exception $e) {
+
+            $is_error = true;
+            DB::rollBack();
+            Log::error('Register Issue : ['.$request->get('first_name').' '.$request->get('last_name').'] '.$e->getMessage());
+
+        }
+        
+        DB::commit();
+
+        $subject = "Please verify your email address.";
+        $log = array(
+            'sender'    => 'system',
+            'recipient' => $email,
+            'subject'   => $subject,
+            'message'   => NULL,
+            'date_sent' => Carbon::now(),
+            'status'    => 'not delivered' /*Mail::failures() ? "delivered" : "not delivered"*/
+        );
+
+        $save_log = new MailLogController;
+        $save_log->saveLogMail($log);
+
+        try {
             Mail::send('templates.mail.verify', ['name' => $name, 'verification_code' => $verification_code],
                 function($mail) use ($email, $name, $subject) {
                     $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
@@ -133,28 +171,19 @@ class AuthController extends Controller
                     $mail->subject($subject);
                 });
 
-            $log = array(
-                'sender'    => 'system',
-                'recipient' => $email,
-                'subject'   => $subject,
-                'message'   => NULL,
-                'date_sent' => Carbon::now(),
-                'status'    => count(Mail::failures() == 0) ? "delivered" : "not delivered"
-            );
-    
-            $save_log = new MailLogController;
-            $save_log->saveLogMail($log);
-           
-                
+            $mail_log = MailLog::where('recipient', $email)->first();
+            $mail_log->status = 'delivered';
+            $mail_log->save();
+
         } catch (Exception $e) {
-
-            DB::rollBack();
-            Log::error('Register Issue : ['.$request->get('first_name').' '.$request->get('last_name').'] '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to register. Please try again.'], 400);
-
+            
+            $error_log = new MailLogController;
+            $error_log->record_error_message($email, $e->getMessage());
         }
-        
-        DB::commit();
+
+        if ($is_error === true) {
+            return response()->json(['success' => false, 'error' => 'Failed to register. Please try again.'], 400);
+        }
 
         return response()->json([
             'success' => true,

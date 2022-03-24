@@ -64,7 +64,10 @@ Route::prefix('v1')->group(function(){
     Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scopes:student'] ], function(){
          
         Route::post('media/add', [MediaController::class, 'store']);
+        Route::delete('media/delete/{media_id}', [MediaController::class, 'delete']);
+        Route::get('media/list', [MediaController::class, 'index']);
         Route::post('upload/payment-proof', [TransactionController::class, 'upload_payment_proof']);
+        Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
         
     });
 
@@ -89,6 +92,7 @@ Route::prefix('v1')->group(function(){
         
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
         Route::get('overview/total', [DashboardController::class, 'overview']);
+        Route::get('transaction/{trx_id}/invoice', [TransactionController::class, 'invoice']);
 
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
@@ -116,8 +120,10 @@ Route::prefix('v1')->group(function(){
             Route::get('promotion', [PromotionController::class, 'index']);
             Route::get('speaker', [SpeakerController::class, 'index']);
             Route::get('student', [StudentController::class, 'index']);
-            Route::get('activities/{programme}', [StudentActivitiesController::class, 'index']);
-            Route::get('transaction/{status}', [TransactionController::class, 'index']);
+            Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
+            Route::get('transaction/{status}/{recent?}', [TransactionController::class, 'index']);
+
+            Route::get('student/files', [MediaController::class, 'index']);
         });
 
         Route::prefix('select')->group(function() {

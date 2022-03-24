@@ -20,4 +20,11 @@ class MailLogController extends Controller
     {  
         return MailLog::create($log);
     }
+
+    public function record_error_message($email, $error_message)
+    {
+        $mailLog = MailLog::where('recipient', $email)->first();
+        $mailLog->error_message = $error_message;
+        return $mailLog->save();
+    }
 }

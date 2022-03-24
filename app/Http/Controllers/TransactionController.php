@@ -13,15 +13,28 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use PDF;
 
 class TransactionController extends Controller
 {
 
-    private $store_payment_media_path;
+    protected $store_payment_media_path;
+    protected $ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE;
 
     public function __construct()
     {
         $this->store_payment_media_path = RouteServiceProvider::USER_PUBLIC_ASSETS_PAYMENT_PROOF_PATH;
+        $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE;
+    }
+
+    public function invoice($trx_id, $type)
+    {
+        $transaction = Transaction::where('trx_id', $trx_id)->with('student_activities', function($query) {
+            $query->with(['students', 'programmes']);
+        })->first();
+
+        return view('invoice', ['data' => $transaction, 'type' => $type]);
+        // return response()->json(['success' => true, 'data' => $transaction]);
     }
 
     public function switch($status, Request $request)
@@ -62,21 +75,21 @@ class TransactionController extends Controller
         return response()->json(['success' => true, 'message' => 'The transaction has been confirmed', 'data' => $transaction]);
     }
 
-    public function index($status)
+    public function index($status, $recent = NULL)
     {
         switch (strtolower($status)) {
             case "pending":
-                $transaction = Transaction::where('status', 'pending')->where('payment_proof', NULL)->orderBy('created_at', 'desc')->get();
+                $transaction = Transaction::where('status', 'pending')->where('payment_proof', NULL)->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
 
             case "need-confirmation":
                 $transaction = Transaction::where('status', 'pending')->where(function($query) {
                     $query->where('payment_proof', '!=', NULL)->orWhere('payment_method', '!=', NULL)->orWhere('payment_date', '!=', NULL);
-                })->orderBy('created_at', 'desc')->get();
+                })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
             
             case "paid":
-                $transaction = Transaction::where('status', 'paid')->orderBy('created_at', 'desc')->get();
+                $transaction = Transaction::where('status', 'paid')->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
         }
         
@@ -108,7 +121,7 @@ class TransactionController extends Controller
                 $trx_id = $transaction->trx_id;
                 $med_file_name = $trx_id;
                 $med_file_format = $request->file('uploaded_file')->getClientOriginalExtension();
-                $med_file_path = $request->file('uploaded_file')->storeAs($this->store_payment_media_path, $med_file_name.'.'.$med_file_format);
+                $med_file_path = $request->file('uploaded_file')->storeAs($this->store_payment_media_path, $med_file_name.'.'.$med_file_format, ['disk' => 'system_files' ]);
 
                 $transaction->payment_proof = $med_file_path;
                 $transaction->payment_method = "transfer";
