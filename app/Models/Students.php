@@ -37,7 +37,9 @@ class Students extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'pivot'
     ];
+    
 
     /**
      * The attributes that should be cast.

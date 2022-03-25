@@ -72,6 +72,7 @@ class MediaController extends Controller
     {
         $rules = [
             'student_id' => 'required|exists:students,id',
+            'category' => 'required|exists:media_categories,id',
             'title' => 'required|string|max:255',
             'desc' => 'required',
             'uploaded_file' => 'required|file|max:3000',
@@ -94,6 +95,7 @@ class MediaController extends Controller
 
                 $media = new Medias;
                 $media->student_id = $request->student_id;
+                $media->med_cat_id = $request->category;
                 $media->med_title = $request->title;
                 $media->med_desc = $request->desc;
                 $media->med_file_path = public_path('media').'/'.$med_file_path;

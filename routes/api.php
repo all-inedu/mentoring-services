@@ -68,6 +68,7 @@ Route::prefix('v1')->group(function(){
         Route::get('media/list', [MediaController::class, 'index']);
         Route::post('upload/payment-proof', [TransactionController::class, 'upload_payment_proof']);
         Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
+        Route::get('mentor/list', [StudentMentorController::class, 'list']);
         
     });
 

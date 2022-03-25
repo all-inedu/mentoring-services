@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\Students;
 
 class StudentMentorController extends Controller
 {
@@ -25,6 +26,20 @@ class StudentMentorController extends Controller
         $this->assigned_role_name = 'mentor';
     }
 
+    public function list(Request $request)
+    {
+        $rules = [
+            'mail' => 'required|exists:students,email'
+        ];
+
+        $validator = Validator::make(['mail' => $request->get('mail')], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $student = Students::where('email', $request->get('mail'))->first();
+        return response()->json(['success' => true, 'data' => $student->users]);
+    }
 
     public function store(Request $request)
     {

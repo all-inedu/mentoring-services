@@ -78,6 +78,17 @@ class TransactionController extends Controller
 
     public function index($status, $recent = NULL, Request $request)
     {
+
+        $rules = [
+            'status' => 'required|in:pending,need-confirmation,paid',
+            'mail' => 'nullable|email'
+        ];
+
+        $validator = Validator::make($request->all() + ['status' => $status], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
         $student_email = $request->get('mail');
         $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
 
