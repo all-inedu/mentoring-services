@@ -114,6 +114,7 @@ Route::prefix('v1')->group(function(){
             Route::post('programme/{status}', [ProgrammeController::class, 'switch']);
             Route::post('promotion/{status}', [PromotionController::class, 'switch']);
             Route::post('transaction/{status}', [TransactionController::class, 'switch']);
+            Route::post('student/files/{file_id}', [MediaController::class, 'switch']);
         });
 
         Route::prefix('list')->group(function() {

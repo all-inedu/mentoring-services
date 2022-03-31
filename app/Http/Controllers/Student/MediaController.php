@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use App\Models\Students;
 
 class MediaController extends Controller
 {
@@ -23,6 +25,47 @@ class MediaController extends Controller
     {
         $this->STUDENT_STORE_MEDIA_PATH = RouteServiceProvider::STUDENT_STORE_MEDIA_PATH;
         $this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_LIST_MEDIA_VIEW_PER_PAGE;
+    }
+
+    public function switch ($file_id, Request $request)
+    {
+        $student_id = $request->student_id;
+        if (!Students::find($student_id)) {
+            return response()->json(['success' => false, 'error' => 'Student ID is not exist']);
+        }
+
+        $rules = [
+            'file_id' => [
+                'required', Rule::exists(Medias::class, 'id')->where(function ($query) use ($student_id) {
+                    $query->where('student_id', $student_id);
+                }),
+            ],
+            'status' => 'required|in:verified,not-verified'
+        ];
+
+        $custom_message = [
+            'status.in' => 'Status must be verified or not-verified'
+        ];
+
+        $validator = Validator::make($request->all() + ['file_id' => $file_id], $rules, $custom_message);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $media = Medias::find($file_id);
+            $media->status = $request->status;
+            $media->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Switch Status File Issue : ['.$file_id.', '.$request->status.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to switch status file. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'File has been changed to : '.$request->status]);
     }
 
     public function index(Request $request)

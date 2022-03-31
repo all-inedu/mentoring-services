@@ -44,7 +44,7 @@ class UserController extends Controller
 
         try {
             $users = User::where(function($query) use ($keyword) {
-                $query->where('first_name', 'like', '%'.$keyword.'%')->orWhere('last_name', 'like', '%'.$keyword.'%')->orWhere('email', 'like', '%'.$keyword.'%');
+                $query->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->orWhere('email', 'like', '%'.$keyword.'%');
             })->whereHas('roles', function($query) use ($role_name) {
                 $query->where('role_name', $role_name);
             })->paginate($this->ADMIN_LIST_USER_VIEW_PER_PAGE);
