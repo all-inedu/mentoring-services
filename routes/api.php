@@ -105,7 +105,8 @@ Route::prefix('v1')->group(function(){
             Route::get('programme/speaker/{sp_id}', [SpeakerController::class, 'find']);
             Route::get('programme/partner/{pt_id}', [PartnershipController::class, 'find']);
             Route::get('education/{edu_id}', [EducationController::class, 'find']);
-            Route::get('user/{role_name}', [UserController::class, 'find']);
+            Route::get('user/{role_name}', [UserController::class, 'find']); //find user by keyword
+            Route::get('student', [StudentController::class, 'find']);
         });
 
         Route::prefix('switch')->group(function() {
