@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CRM\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\Google\GoogleCalendarController;
@@ -94,6 +95,7 @@ Route::prefix('v1')->group(function(){
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
         Route::get('overview/total', [DashboardController::class, 'overview']);
         Route::get('transaction/{trx_id}/invoice', [TransactionController::class, 'invoice']);
+        Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
 
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
@@ -103,6 +105,7 @@ Route::prefix('v1')->group(function(){
             Route::get('programme/speaker/{sp_id}', [SpeakerController::class, 'find']);
             Route::get('programme/partner/{pt_id}', [PartnershipController::class, 'find']);
             Route::get('education/{edu_id}', [EducationController::class, 'find']);
+            Route::get('user/{role_name}', [UserController::class, 'find']);
         });
 
         Route::prefix('switch')->group(function() {

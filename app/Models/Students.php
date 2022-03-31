@@ -24,9 +24,18 @@ class Students extends Authenticatable
         'phone_number',
         'grade',
         'email',
+        'address',
+        'city',
+        'total_exp',
+        'image',
+        'provider',
+        'provider_id',
         'password',
+        'imported_from',
+        'imported_id',
+        'status',
         'is_verified',
-        'promo_id',
+        'school_name',
     ];
 
     /**

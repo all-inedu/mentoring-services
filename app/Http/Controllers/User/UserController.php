@@ -29,6 +29,32 @@ class UserController extends Controller
         $this->ADMIN_LIST_USER_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_USER_VIEW_PER_PAGE;
     }
 
+    public function find($role_name, Request $request)
+    {
+        $rules = [
+            'role_name' => 'required|in:admin,mentor,editor,alumni'
+        ];
+
+        $validator = Validator::make(['role_name' => $role_name], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $keyword = $request->get('keyword');
+
+        try {
+            $users = User::where(function($query) use ($keyword) {
+                $query->where('first_name', 'like', '%'.$keyword.'%')->orWhere('last_name', 'like', '%'.$keyword.'%')->orWhere('email', 'like', '%'.$keyword.'%');
+            })->whereHas('roles', function($query) use ($role_name) {
+                $query->where('role_name', $role_name);
+            })->paginate($this->ADMIN_LIST_USER_VIEW_PER_PAGE);
+        } catch (Exception $e) {
+            Log::error('Find User by Keyword Issue : ['.$keyword.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to find user by Keyword. Please try again.']);
+        }
+        return response()->json(['success' => true, 'data' => $users]);
+    }
+
     public function index($role_name = 'all')
     {   
         $role_name = strtolower($role_name);
