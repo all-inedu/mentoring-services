@@ -140,6 +140,7 @@ Route::prefix('v1')->group(function(){
             Route::get('speakers/use/programme-detail/{prog_dtl_id}', [SpeakerController::class, 'select']);
             Route::get('partners/use/programme-detail/{prog_dtl_id}', [PartnershipController::class, 'select']);
             Route::get('education/use/user/{user_id}', [EducationController::class, 'select']);
+            Route::get('students/use/user/{user_id}', [StudentController::class, 'select']);
         });
 
         Route::prefix('create')->group(function() {
