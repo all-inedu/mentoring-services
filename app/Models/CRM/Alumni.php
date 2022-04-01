@@ -23,4 +23,9 @@ class Alumni extends Model
         'st_id',
         'alu_graduatedate'
     ];
+
+    public function student()
+    {
+        return $this->belongsTo(Client::class, 'st_id', 'st_id');
+    }
 }

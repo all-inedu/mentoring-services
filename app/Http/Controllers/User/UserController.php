@@ -29,7 +29,7 @@ class UserController extends Controller
         $this->ADMIN_LIST_USER_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_USER_VIEW_PER_PAGE;
     }
 
-    public function find($role_name, $id = null, Request $request)
+    public function find($role_name, $id = null, $detail = null, Request $request)
     {
         $rules = [
             'role_name' => 'required|in:admin,mentor,editor,alumni'
@@ -44,6 +44,7 @@ class UserController extends Controller
         if ($id) { 
             $users = User::find($id);
             return response()->json(['success' => true, 'data' => $users]);
+
         }
 
         //find by keyword

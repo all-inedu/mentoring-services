@@ -2,6 +2,7 @@
 
 namespace App\Models\CRM;
 
+use App\Models\Students;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -60,5 +61,10 @@ class Client extends Model
     public function programs()
     {
         return $this->belongsToMany(Program::class, 'tbl_stprog', 'st_num', 'prog_id');
+    }
+
+    public function alumni()
+    {
+        return $this->hasMany(Students::class, 'st_id', 'st_id');
     }
 }

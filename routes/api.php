@@ -105,7 +105,7 @@ Route::prefix('v1')->group(function(){
             Route::get('programme/speaker/{sp_id}', [SpeakerController::class, 'find']);
             Route::get('programme/partner/{pt_id}', [PartnershipController::class, 'find']);
             Route::get('education/{edu_id}', [EducationController::class, 'find']);
-            Route::get('user/{role_name}/{id?}', [UserController::class, 'find']); //find user by keyword
+            Route::get('user/{role_name}/{id?}', [UserController::class, 'find']); //find user by id & keyword
             Route::get('student', [StudentController::class, 'find']);
         });
 

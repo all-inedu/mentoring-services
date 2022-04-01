@@ -47,15 +47,15 @@ class ClientController extends Controller
                     break;
                 
                 case "mentor":
-                    $data = $this->import_mentor();
+                    $data = $type == "sync" ? $this->recap_mentor(false) : $this->import_mentor();
                     break;
 
                 case "editor":
-                    $data = $this->import_editor();
+                    $data = $type == "sync" ? $this->recap_editor(false) : $this->import_editor();
                     break;
 
                 case "alumni":
-
+                    $data = $type == "sync" ? $this->recap_alumni(false) : $this->import_alumni();
                     break;
             }
         } catch (Exception $e) {
@@ -65,9 +65,36 @@ class ClientController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    public function import($type)
-    {
+    public function recap_alumni($isNull = true)
+    {  
+        $alumnis = array();
+        $alumni = Alumni::with('student.school')->get();
+        foreach ($alumni as $data) {
+            $alumnis[] = array(
+                'first_name' => $data->student->st_firstname,
+                'last_name' => $data->student->st_lastname,
+                'phone_number' => $data->student->st_phone,
+                'email' => $data->student->st_mail,
+                'email_verified_at' => $data->student->st_mail === '' ? null : Carbon::now(),
+                'password' => $data->student->st_password,
+                'status' => 1,
+                'is_verified' => $data->student->st_mail === '' ? 0 : 1,
+                'remember_token' => null,
+                'profile_picture' => null,
+                'imported_id' => $data->student->st_id,
+                'position' => null,
+                'imported_from' => 'u5794939_allin_bd'       
+            );
 
+            $educations[] = array(
+                'user_id' => '',
+                'graduated_from' => $data->student->school->sch_name,
+                'graduation_date' => $data->alugraduatedate
+            );
+        }
+
+        return $alumnis;
+        // return array_map($this->map, $alumnis);
     }
 
     public function import_alumni()
@@ -75,7 +102,7 @@ class ClientController extends Controller
         
     }
 
-    public function import_editor()
+    public function recap_editor()
     {
         $editors = array();
         $editor_crm = Editor::all();
@@ -91,7 +118,7 @@ class ClientController extends Controller
                     $role = new UserRoles;
                     $role->user_id = $find->id;
                     $role->role_id = 3;
-                    $role->save();
+                    // $role->save();
                 }
             } else if (!$find) {
                 $editor = new User;
@@ -107,12 +134,12 @@ class ClientController extends Controller
                 $editor->profile_picture = null;
                 $editor->imported_id = null;
                 $editor->position = $data->position;
-                $editor->save();
+                // $editor->save();
 
                 $role = new UserRoles;
                 $role->user_id = $editor->id;
                 $role->role_id = 3;
-                $role->save();
+                // $role->save();
 
                 $editors[] = $editor;
             }
@@ -122,7 +149,12 @@ class ClientController extends Controller
         return $editors;
     }
 
-    public function import_mentor()
+    public function import_editor()
+    {
+        
+    }
+
+    public function recap_mentor($isNull = true)
     {
         $mentors = array();
         $mentor_crm = Mentor::with('university')->get();
@@ -133,7 +165,7 @@ class ClientController extends Controller
                 if (!UserRoles::where('user_id', $find->id)->where('role_id', 2)->first()) { //check if email role tidak sama dengan editor
 
                     $find->imported_id = $data->mt_id;
-                    $find->save();
+                    // $find->save();
 
                     if ($data->univ_id != '') {
                         $education = new Education;
@@ -141,13 +173,13 @@ class ClientController extends Controller
                         $education->graduated_from = $data->university->univ_name;
                         $education->major = $data->mt_major;
                         $education->degree = null;
-                        $education->save();
+                        // $education->save();
                     }
 
                     $role = new UserRoles;
                     $role->user_id = $find->id;
                     $role->role_id = 2;
-                    $role->save();
+                    // $role->save();
                 }
             } else if ($find == 0) {
                 $mentor = new User;
@@ -162,7 +194,7 @@ class ClientController extends Controller
                 $mentor->remember_token = null;
                 $mentor->profile_picture = null;
                 $mentor->imported_id = $data->mt_id;
-                $mentor->save();
+                // $mentor->save();
 
                 if ($data->univ_id != '') {
                     $education = new Education;
@@ -170,19 +202,24 @@ class ClientController extends Controller
                     $education->graduated_from = $data->university->univ_name;
                     $education->major = $data->mt_major;
                     $education->degree = null;
-                    $education->save();
+                    // $education->save();
                 }
 
                 $role = new UserRoles;
                 $role->user_id = $mentor->id;
                 $role->role_id = 2;
-                $role->save();
+                // $role->save();
 
                 $mentors[] = $mentor;
             }
         }
 
         return $mentors;
+    }
+
+    public function import_mentor()
+    {
+        
     }
 
     public function recap_student($isNull = true)
@@ -241,6 +278,19 @@ class ClientController extends Controller
     }
 
     //** HELPER */
+
+    public function map($value)
+    {
+        if ($value === "")
+        {
+            return null;
+        }
+        return $value;
+        // if (is_array($value)) {
+        //     return array_map("map", $value);
+        // }
+        // return $value === "" ? null : $value;
+    }
 
     public function remove_invalid_date($data)
     {

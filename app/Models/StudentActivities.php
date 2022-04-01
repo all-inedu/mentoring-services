@@ -43,7 +43,12 @@ class StudentActivities extends Model
 
     public function users ()
     {
-        return $this->belongsTo(User::class, ['user_id', 'handled_by'], 'id');
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
+    public function handled_by ()
+    {
+        return $this->hasOne(User::class, 'id', 'handled_by');
     }
 
     public function transactions()

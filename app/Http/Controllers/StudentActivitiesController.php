@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\TransactionController;
 use App\Models\Students;
+use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,18 +27,23 @@ class StudentActivitiesController extends Controller
     
     public function index($programme, $recent = NULL, Request $request)
     {
-        // $student_email = Auth::user()->email;
+        
         $student_email = $request->get('mail') != NULL ? $request->get('mail') : null;
-
         $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
 
-        $activities = StudentActivities::
+        //
+        $user_id = $request->get('id') != NULL ? $request->get('id') : null;
+        $find_detail = User::where('id', $user_id)->count() > 0 ? true : false;
+
+        $activities = StudentActivities::with(['programmes', 'students'])->
             whereHas('programmes', function($query) use ($programme) {
                 $query->where('prog_name', $programme);
             })->when($is_student, function($query) use ($student_email) {
                 $query->whereHas('students', function ($q) use ($student_email) {
                     $q->where('email', $student_email);
                 });
+            })->when($find_detail, function($query) use ($user_id) {
+                $query->where('user_id', $user_id); 
             })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);
