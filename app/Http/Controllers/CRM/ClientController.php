@@ -190,7 +190,56 @@ class ClientController extends Controller
 
     public function import_editor()
     {
-        
+        $bulk_data = $this->recap_mentor(false);
+        DB::beginTransaction();
+        try {
+            foreach ($bulk_data as $editor_data) {
+                $editor = User::insertOrIgnore([
+                    'first_name' => $this->remove_blank($editor_data['first_name']),
+                    'last_name' => $this->remove_blank($editor_data['last_name']),
+                    'phone_number' => $this->remove_blank($editor_data['phone_number']),
+                    'email' => $this->remove_blank($editor_data['email']),
+                    'email_verified_at' => $editor_data['email'] === '' ? null : Carbon::now(),
+                    'password' => $this->remove_blank($editor_data['password']),
+                    'status' => $editor_data['status'],
+                    'is_verified' => $editor_data['email'] === '' ? 0 : 1,
+                    'remember_token' => null,
+                    'profile_picture' => null,
+                    'imported_id' => null,
+                    'position' => null,
+                    'imported_from' => 'u5794939_editing'
+                ]);
+                // $editor = new User;
+                // $editor->first_name = $editor_data['first_name'];
+                // $editor->last_name = $editor_data['last_name'];
+                // $editor->phone_number = $editor_data['phone_number'];
+                // $editor->email = $editor_data['email'];
+                // $editor->email_verified_at = $editor_data['email_verified_at'];
+                // $editor->password = $editor_data['password'];
+                // $editor->status = $editor_data['status'];
+                // $editor->is_verified = $editor_data['is_verified'];
+                // $editor->remember_token = $editor_data['remember_token'];
+                // $editor->profile_picture = $editor_data['profile_picture'];
+                // $editor->imported_id = $editor_data['imported_id'];
+                // $editor->position = $editor_data['position'];
+                // $editor->imported_from = $editor_data['imported_from'];
+                // $editor->save();
+
+                Education::insert(
+                    ['user_id' => $editor->id] + $editor_data['educations']
+                );
+
+                $editor->roles()->attach($editor->id, ['role_id' => 3, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Import Data Mentor Issue : '.$e->getMessage());
+            throw New Exception('Failed to import mentor data');
+        }
+
+        return $bulk_data;
     }
 
     public function recap_mentor($isNull = true, $paginate = "no")
