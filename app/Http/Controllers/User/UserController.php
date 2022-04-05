@@ -42,7 +42,7 @@ class UserController extends Controller
 
         //find by Id
         if ($id) { 
-            $users = User::with('educations', 'social_media')->find($id);
+            $users = User::with('education', 'social_media')->find($id);
             return response()->json(['success' => true, 'data' => $users]);
 
         }
