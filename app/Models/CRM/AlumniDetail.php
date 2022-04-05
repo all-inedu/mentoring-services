@@ -31,4 +31,9 @@ class AlumniDetail extends Model
     {
         return $this->belongsTo(University::class, 'univ_id', 'univ_id');
     }
+
+    public function alumni()
+    {
+        return $this->belongsTo(Alumni::class, 'alu_id', 'alu_id');
+    }
 }

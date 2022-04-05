@@ -28,4 +28,9 @@ class Alumni extends Model
     {
         return $this->belongsTo(Client::class, 'st_id', 'st_id');
     }
+
+    public function alumni_detail()
+    {
+        return $this->hasMany(AlumniDetail::class, 'alu_id', 'alu_id')->where('aludetail_status', 3);
+    }
 }

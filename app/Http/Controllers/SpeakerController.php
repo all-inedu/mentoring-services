@@ -111,6 +111,7 @@ class SpeakerController extends Controller
         }
 
         //insert to schedule table
+        DB::beginTransaction();
         try {
             $speaker->prog_dtl_id = $request->prog_dtl_id;
             $speaker->sp_name = $request->sp_name;
@@ -120,7 +121,7 @@ class SpeakerController extends Controller
             $speaker->save();
 
             $data['speaker'] = $speaker;
-
+            DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Update Speaker Issue : ['.$request->prog_dtl_id.', '.json_encode($speaker).'] '.$e->getMessage());

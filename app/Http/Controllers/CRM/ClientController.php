@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Faker\Generator as Faker;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ClientController extends Controller
 {
@@ -41,21 +44,21 @@ class ClientController extends Controller
         }
 
         try {
-            switch ($role) {
+            switch (strtolower($role)) {
                 case "student": 
-                    $data = $type == "sync" ? $this->recap_student(false) : $this->import_student();
+                    $data = $type == "sync" ? $this->recap_student(false, "yes") : $this->import_student();
                     break;
                 
                 case "mentor":
-                    $data = $type == "sync" ? $this->recap_mentor(false) : $this->import_mentor();
+                    $data = $type == "sync" ? $this->recap_mentor(false, "yes") : $this->import_mentor();
                     break;
 
                 case "editor":
-                    $data = $type == "sync" ? $this->recap_editor(false) : $this->import_editor();
+                    $data = $type == "sync" ? $this->recap_editor(false, "yes") : $this->import_editor();
                     break;
 
                 case "alumni":
-                    $data = $type == "sync" ? $this->recap_alumni(false) : $this->import_alumni();
+                    $data = $type == "sync" ? $this->recap_alumni(false, "yes") : $this->import_alumni();
                     break;
             }
         } catch (Exception $e) {
@@ -65,88 +68,124 @@ class ClientController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    public function recap_alumni($isNull = true)
+    public function recap_alumni($isNull = true, $paginate = "no")
     {  
-        $alumnis = array();
-        $alumni = Alumni::with('student.school')->get();
+        $alumnis = $educations = array();
+        $alumni = Alumni::with('student', 'student.school')->
+        when(!$isNull, function ($query) {
+                $query->whereHas('student', function($q1) {
+                    $q1->where('st_firstname', '!=', '')->where('st_lastname', '!=', '')->where('st_mail', '!=', '');
+                });
+            })->distinct()->get();
         foreach ($alumni as $data) {
-            $alumnis[] = array(
-                'first_name' => $data->student->st_firstname,
-                'last_name' => $data->student->st_lastname,
-                'phone_number' => $data->student->st_phone,
-                'email' => $data->student->st_mail,
-                'email_verified_at' => $data->student->st_mail === '' ? null : Carbon::now(),
-                'password' => $data->student->st_password,
-                'status' => 1,
-                'is_verified' => $data->student->st_mail === '' ? 0 : 1,
-                'remember_token' => null,
-                'profile_picture' => null,
-                'imported_id' => $data->student->st_id,
-                'position' => null,
-                'imported_from' => 'u5794939_allin_bd'       
-            );
+            $find = User::where('email', $data->st_mail)->count();
+            if ($find == 0) {
 
-            $educations[] = array(
-                'user_id' => '',
-                'graduated_from' => $data->student->school->sch_name,
-                'graduation_date' => $data->alugraduatedate
-            );
+                $alumnis[] = array(
+                    'first_name' => $this->remove_blank($data->student->st_firstname),
+                    'last_name' => $this->remove_blank($data->student->st_lastname),
+                    'phone_number' => $this->remove_blank($data->student->st_phone),
+                    'email' => $this->remove_blank($data->student->st_mail),
+                    'email_verified_at' => $data->student->st_mail === '' ? null : Carbon::now(),
+                    'password' => $this->remove_blank($data->student->st_password),
+                    'status' => 1,
+                    'is_verified' => $data->student->st_mail === '' ? 0 : 1,
+                    'remember_token' => null,
+                    'profile_picture' => null,
+                    'imported_id' => $this->remove_blank($data->student->st_id),
+                    'position' => null,
+                    'imported_from' => 'u5794939_allin_bd',
+                    'educations' => array(
+                        'graduated_from' => $data->student->school->sch_name,
+                        'major' => null,
+                        'degree' => null,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now(),
+                        'graduation_date' => $data->alu_graduatedate
+                    )
+                );
+            }
         }
 
-        return $alumnis;
-        // return array_map($this->map, $alumnis);
+        return $paginate == "yes" ? $this->paginate($alumnis) : $alumnis;
     }
 
     public function import_alumni()
     {
-        
+        $bulk_data = $this->recap_alumni(false);
+        DB::beginTransaction();
+        try {
+            foreach ($bulk_data as $alumni_data) {
+                $alumni = new User;
+                $alumni->first_name = $alumni_data['first_name'];
+                $alumni->last_name = $alumni_data['last_name'];
+                $alumni->phone_number = $alumni_data['phone_number'];
+                $alumni->email = $alumni_data['email'];
+                $alumni->email_verified_at = $alumni_data['email_verified_at'];
+                $alumni->password = $alumni_data['password'];
+                $alumni->status = $alumni_data['status'];
+                $alumni->is_verified = $alumni_data['is_verified'];
+                $alumni->remember_token = $alumni_data['remember_token'];
+                $alumni->profile_picture = $alumni_data['profile_picture'];
+                $alumni->imported_id = $alumni_data['imported_id'];
+                $alumni->position = $alumni_data['position'];
+                $alumni->imported_from = $alumni_data['imported_from'];
+                $alumni->save();
+
+                Education::insert(
+                    ['user_id' => $alumni->id] + $alumni_data['educations']
+                );
+
+                $alumni->roles()->attach($alumni->id, ['role_id' => 4, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Import Data Student Issue : '.$e->getMessage());
+            throw New Exception('Failed to import students data');
+        }
+
+        return $bulk_data;
     }
 
-    public function recap_editor()
+    public function recap_editor($isNull = true, $paginate = "no")
     {
         $editors = array();
-        $editor_crm = Editor::all();
+        $editor_crm = Editor::where('status', 1)->get();
         foreach ($editor_crm as $data) {
             $find = User::where('email', $data->email)->first();
 
             if ($find) { //if email sudah ada di database
-                if (!UserRoles::where('user_id', $find->id)->where('role_id', 3)->first()) { //check if email role tidak sama dengan editor
-
-                    $find->position = $data->position;
-                    $find->save();
-
-                    $role = new UserRoles;
-                    $role->user_id = $find->id;
-                    $role->role_id = 3;
-                    // $role->save();
-                }
-            } else if (!$find) {
-                $editor = new User;
-                $editor->first_name = $data->first_name;
-                $editor->last_name = $data->last_name == '' ? null : $data->last_name;
-                $editor->phone_number = $data->phone == '' ? null : $data->phone;
-                $editor->email = $data->email == '' ? null : $data->email;
-                $editor->email_verified_at = $data->email == '' ? null : Carbon::now();
-                $editor->password = $data->password == '' ? null : $data->password;
-                $editor->status = $data->status;
-                $editor->is_verified = $data->email == '' ? 0 : 1;
-                $editor->remember_token = null;
-                $editor->profile_picture = null;
-                $editor->imported_id = null;
-                $editor->position = $data->position;
-                // $editor->save();
-
-                $role = new UserRoles;
-                $role->user_id = $editor->id;
-                $role->role_id = 3;
-                // $role->save();
-
-                $editors[] = $editor;
+                
+                $editors[] = array(
+                    'first_name' => $this->remove_blank($data->first_name),
+                    'last_name' => $this->remove_blank($data->last_name),
+                    'phone_number' => $this->remove_blank($data->phone),
+                    'email' => $this->remove_blank($data->email),
+                    'email_verified_at' => $data->email === '' ? null : Carbon::now(),
+                    'password' => $this->remove_blank($data->password),
+                    'status' => $data->status,
+                    'is_verified' => $data->email === '' ? 0 : 1,
+                    'remember_token' => null,
+                    'profile_picture' => null,
+                    'imported_id' => null,
+                    'position' => null,
+                    'imported_from' => 'u5794939_editing',
+                    'educations' => array(
+                        'graduated_from' => $data->graduated_from,
+                        'major' => $data->major,
+                        'degree' => null,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now(),
+                        'graduation_date' => null
+                    )
+                );
             }
             
         }
 
-        return $editors;
+        return $paginate == "yes" ? $this->paginate($editors) : $editors;
     }
 
     public function import_editor()
@@ -154,75 +193,84 @@ class ClientController extends Controller
         
     }
 
-    public function recap_mentor($isNull = true)
+    public function recap_mentor($isNull = true, $paginate = "no")
     {
         $mentors = array();
         $mentor_crm = Mentor::with('university')->get();
+
         foreach ($mentor_crm as $data) {
-            $find = User::where('email', $data->email)->first();
+            $find = User::where('imported_id', $data->mt_id)->first();
+            if ($find) {
 
-            if ($find) { //if email sudah ada di database
-                if (!UserRoles::where('user_id', $find->id)->where('role_id', 2)->first()) { //check if email role tidak sama dengan editor
-
-                    $find->imported_id = $data->mt_id;
-                    // $find->save();
-
-                    if ($data->univ_id != '') {
-                        $education = new Education;
-                        $education->user_id = $find->id;
-                        $education->graduated_from = $data->university->univ_name;
-                        $education->major = $data->mt_major;
-                        $education->degree = null;
-                        // $education->save();
-                    }
-
-                    $role = new UserRoles;
-                    $role->user_id = $find->id;
-                    $role->role_id = 2;
-                    // $role->save();
-                }
-            } else if ($find == 0) {
-                $mentor = new User;
-                $mentor->first_name = $data->mt_firstn;
-                $mentor->last_name = $data->mt_lastn == '' ? null : $data->mt_lastn;
-                $mentor->phone_number = $data->mt_phone == '' ? null : $data->mt_phone;
-                $mentor->email = $data->mt_email == '' ? null : $data->mt_email;
-                $mentor->email_verified_at = $data->mt_email == '' ? null : Carbon::now();
-                $mentor->password = $data->mt_password == '' ? null : $data->mt_password;
-                $mentor->status = 1;
-                $mentor->is_verified = $data->mt_email == '' ? 0 : 1;
-                $mentor->remember_token = null;
-                $mentor->profile_picture = null;
-                $mentor->imported_id = $data->mt_id;
-                // $mentor->save();
-
-                if ($data->univ_id != '') {
-                    $education = new Education;
-                    $education->user_id = $mentor->id;
-                    $education->graduated_from = $data->university->univ_name;
-                    $education->major = $data->mt_major;
-                    $education->degree = null;
-                    // $education->save();
-                }
-
-                $role = new UserRoles;
-                $role->user_id = $mentor->id;
-                $role->role_id = 2;
-                // $role->save();
-
-                $mentors[] = $mentor;
+                $mentors[] = array(
+                    'first_name' => $this->remove_blank($data->mt_firstn),
+                    'last_name' => $this->remove_blank($data->mt_lastn),
+                    'phone_number' => $this->remove_blank($data->mt_phone),
+                    'email' => $this->remove_blank($data->mt_email),
+                    'email_verified_at' => $data->mt_mail === '' ? null : Carbon::now(),
+                    'password' => $this->remove_blank($data->mt_password),
+                    'status' => 1,
+                    'is_verified' => $data->mt_mail === '' ? 0 : 1,
+                    'remember_token' => null,
+                    'profile_picture' => null,
+                    'imported_id' => $this->remove_blank($data->mt_id),
+                    'position' => null,
+                    'imported_from' => 'u5794939_allin_bd',
+                    'educations' => array(
+                        'graduated_from' => $data->university->univ_name,
+                        'major' => $data->major,
+                        'degree' => null,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now(),
+                        'graduation_date' => null
+                    )
+                );
             }
         }
 
-        return $mentors;
+        return $paginate == "yes" ? $this->paginate($mentors) : $mentors;
     }
 
     public function import_mentor()
     {
-        
+        $bulk_data = $this->recap_mentor(false);
+        DB::beginTransaction();
+        try {
+            foreach ($bulk_data as $mentor_data) {
+                $mentor = new User;
+                $mentor->first_name = $mentor_data['first_name'];
+                $mentor->last_name = $mentor_data['last_name'];
+                $mentor->phone_number = $mentor_data['phone_number'];
+                $mentor->email = $mentor_data['email'];
+                $mentor->email_verified_at = $mentor_data['email_verified_at'];
+                $mentor->password = $mentor_data['password'];
+                $mentor->status = $mentor_data['status'];
+                $mentor->is_verified = $mentor_data['is_verified'];
+                $mentor->remember_token = $mentor_data['remember_token'];
+                $mentor->profile_picture = $mentor_data['profile_picture'];
+                $mentor->imported_id = $mentor_data['imported_id'];
+                $mentor->position = $mentor_data['position'];
+                $mentor->imported_from = $mentor_data['imported_from'];
+                $mentor->save();
+
+                Education::insert(
+                    ['user_id' => $mentor->id] + $mentor_data['educations']
+                );
+
+                $mentor->roles()->attach($mentor->id, ['role_id' => 2, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Import Data Mentor Issue : '.$e->getMessage());
+            throw New Exception('Failed to import mentor data');
+        }
+
+        return $bulk_data;
     }
 
-    public function recap_student($isNull = true)
+    public function recap_student($isNull = true, $paginate = "no")
     {
         $students = array();
         $alumni = Alumni::select('st_id')->get();
@@ -257,7 +305,7 @@ class ClientController extends Controller
             }
         }
 
-        return $students;
+        return $paginate == "yes" ? $this->paginate($students) : $students;
     }
 
     public function import_student()
@@ -279,17 +327,16 @@ class ClientController extends Controller
 
     //** HELPER */
 
-    public function map($value)
+    public function existing_check ($email, $role)
     {
-        if ($value === "")
-        {
-            return null;
-        }
-        return $value;
-        // if (is_array($value)) {
-        //     return array_map("map", $value);
-        // }
-        // return $value === "" ? null : $value;
+
+    }
+
+    public function paginate($items, $perPage = 10, $page = null, $options = [])
+    {
+        $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
+        $items = $items instanceof Collection ? $items : Collection::make($items);
+        return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
     }
 
     public function remove_invalid_date($data)
@@ -306,7 +353,7 @@ class ClientController extends Controller
 
     public function remove_blank($data)
     {
-        return empty($data) ? null : $data;
+        return (empty($data) || ($data == '-')) ? null : $data;
     }
 
     public function remove_string_grade($grade)

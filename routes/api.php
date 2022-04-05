@@ -15,6 +15,7 @@ use App\Http\Controllers\ProgrammeDetailController;
 use App\Http\Controllers\ProgrammeModuleController;
 use App\Http\Controllers\ProgrammeScheduleController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\SocialMediaController;
 use App\Http\Controllers\SpeakerController;
 use App\Http\Controllers\Student\AuthController as StudentAuthController;
 use App\Http\Controllers\Student\ForgotPasswordController as StudentForgotPasswordController;
@@ -128,6 +129,7 @@ Route::prefix('v1')->group(function(){
             Route::get('student', [StudentController::class, 'index']);
             Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
             Route::get('transaction/{status}/{recent?}', [TransactionController::class, 'index']);
+            Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
 
             Route::get('student/files', [MediaController::class, 'index']);
         });
@@ -156,6 +158,7 @@ Route::prefix('v1')->group(function(){
             Route::post('mentor/assignment', [StudentMentorController::class, 'store']);
             Route::post('education', [EducationController::class, 'store']);
             Route::post('student/activities', [StudentActivitiesController::class, 'store']);
+            Route::post('social-media', [SocialMediaController::class, 'store']);
         });
 
         Route::prefix('update')->group(function() {
@@ -167,6 +170,7 @@ Route::prefix('v1')->group(function(){
             Route::put('speaker/{sp_id}', [SpeakerController::class, 'update']);
             Route::put('partner/{pt_id}', [PartnershipController::class, 'update']);
             Route::put('education/{edu_id}', [EducationController::class, 'update']);
+            Route::put('social-media/{soc_med_id}', [SocialMediaController::class, 'update']);
         });
 
         Route::prefix('delete')->group(function() {
@@ -179,6 +183,7 @@ Route::prefix('v1')->group(function(){
             Route::delete('speaker/{sp_id}', [SpeakerController::class, 'delete']);
             Route::delete('partner/{pt_id}', [PartnershipController::class, 'delete']);
             Route::delete('education/{edu_id}', [EducationController::class, 'delete']);
+            Route::delete('social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);
         });
     });
 

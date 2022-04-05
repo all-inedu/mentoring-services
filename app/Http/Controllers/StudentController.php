@@ -25,7 +25,7 @@ class StudentController extends Controller
         try {
             $students = Students::whereHas('users', function($query) use ($user_id) {
                 $query->where('user_id', $user_id);
-            })->orderBy('created_at', 'desc')->get();
+            })->orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
         } catch (Exception $e) {
             Log::error('Select Student Use User Id  Issue : ['.$user_id.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to select student use User Id. Please try again.']);
