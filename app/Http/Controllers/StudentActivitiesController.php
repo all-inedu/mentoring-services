@@ -36,6 +36,9 @@ class StudentActivitiesController extends Controller
         $user_id = $request->get('id') != NULL ? $request->get('id') : null;
         $find_detail = User::where('id', $user_id)->count() > 0 ? true : false;
 
+        // $use_keyword = $request->get('keyword') != NULL ? 1 : 0;
+        // $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
+
         $activities = StudentActivities::with(['programmes', 'students', 'users'])->
             whereHas('programmes', function($query) use ($programme) {
                 $query->where('prog_name', $programme);

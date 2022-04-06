@@ -104,7 +104,10 @@ class ProgrammeController extends Controller
             case ("webinar" OR "event"):
                 $programme = ProgrammeDetails::whereHas('programmes', function($query) use ($type) {
                     $query->where('prog_name', $type);
-                })->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+                })->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE)->map(function ($dtl_category) {
+                    $dtl_category->dtl_category = ucwords(str_replace('-', ' ', $dtl_category->dtl_category));
+                    return $dtl_category;
+                });
                 break;
         }
 
