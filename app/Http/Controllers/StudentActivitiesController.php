@@ -44,7 +44,7 @@ class StudentActivitiesController extends Controller
                     $q->where('email', $student_email);
                 });
             })->when($find_detail, function($query) use ($user_id) {
-                $query->where('user_id', $user_id); 
+                $query->where('user_id', $user_id);
             })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);

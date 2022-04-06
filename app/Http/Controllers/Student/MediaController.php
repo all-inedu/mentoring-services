@@ -71,14 +71,20 @@ class MediaController extends Controller
     public function index(Request $request)
     {
         $use_keyword = !empty($request->get('keyword')) ? 1 : 0;
+        $keyword = !empty($request->get('keyword')) ? $request->get('keyword') : null;
 
         $student_email = $request->get('mail');
         if ($student_email) {
             $media = Medias::with('students', 'media_categories')->whereHas('students', function ($query) use ($student_email) {
                 $query->where('email', $student_email);
+            })->when($use_keyword, function($query) use ($keyword) {
+                $query->where('med_title', 'like', '%'.$keyword.'%');
             })->orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
         } else {
-            $media = Medias::with('students', 'media_categories')->orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
+            $media = Medias::with('students', 'media_categories')->
+                when($use_keyword, function($query) use ($keyword) {
+                    $query->where('med_title', 'like', '%'.$keyword.'%');
+                })->orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
         }
 
         return response()->json(['success' => true, 'data' => $media]);
