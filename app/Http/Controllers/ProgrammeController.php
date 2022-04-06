@@ -109,7 +109,7 @@ class ProgrammeController extends Controller
                 $programme = Programmes::orderBy('created_at', 'desc')->get($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
                 break;
             case ("webinar" OR "event"):
-                $programme = ProgrammeDetails::whereHas('programmes', function($query) use ($type) {
+                $programme = ProgrammeDetails::withCount('student_activities')->whereHas('programmes', function($query) use ($type) {
                     $query->where('prog_name', $type);
                 })->when($use_keyword, function($query) use ($keyword){
                     $query->where('dtl_name', 'like', '%'.$keyword.'%');

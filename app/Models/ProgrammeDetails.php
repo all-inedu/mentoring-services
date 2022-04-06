@@ -48,4 +48,9 @@ class ProgrammeDetails extends Model
     {
         return $this->hasMany(StudentActivities::class, 'prog_dtl_id', 'id');
     }
+
+    public function getTotalWatchAttribute()
+    {
+        return $this->hasMany(StudentActivities::class, 'prog_dtl_id', 'id')->count();
+    }
 }
