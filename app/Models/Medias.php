@@ -27,4 +27,9 @@ class Medias extends Model
     {
         return $this->belongsTo(Students::class, 'student_id', 'id');
     }
+
+    public function media_categories()
+    {
+        return $this->belongsTo(MediaCategory::class, 'med_cat_id', 'id');
+    }
 }

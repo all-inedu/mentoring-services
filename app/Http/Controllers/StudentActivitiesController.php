@@ -14,6 +14,7 @@ use App\Http\Controllers\TransactionController;
 use App\Models\Students;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use App\Rules\CheckAvailabilityUserSchedule;
 use Illuminate\Support\Facades\Auth;
 
 class StudentActivitiesController extends Controller
@@ -27,7 +28,7 @@ class StudentActivitiesController extends Controller
     
     public function index($programme, $recent = NULL, Request $request)
     {
-        
+
         $student_email = $request->get('mail') != NULL ? $request->get('mail') : null;
         $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
 
@@ -68,12 +69,17 @@ class StudentActivitiesController extends Controller
             'location_link' => 'nullable',
             'prog_dtl_id'=> 'nullable|exists:programme_details,id',
             'call_with' => 'required|in:mentor,alumni,editor',
-            'module' => 'required|in:life-skills,career-exploration,university-admission,life-university'
+            'module' => 'required|in:life skills,career exploration,university admission,life university',
+            'call_date' => ['required', new CheckAvailabilityUserSchedule($request->user_id)]
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        if (StudentActivities::where('student_id', $request->student_id)->where('call_date', $request->call_date)->first()) {
+            return response()->json(['success' => false, 'error' => 'You already make an appoinment at '.date('l, d M Y H:i', strtotime($request->call_date))]);
         }
 
         DB::beginTransaction();
@@ -96,6 +102,7 @@ class StudentActivitiesController extends Controller
             $activities->prog_dtl_id = $request->prog_dtl_id;
             $activities->call_with = $request->call_with;
             $activities->module = $request->module;
+            $activities->call_date = $request->call_date;
             $activities->save();
             $response['activities'] = $activities;
             $st_act_id = $activities->id;

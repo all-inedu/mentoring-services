@@ -70,13 +70,15 @@ class MediaController extends Controller
 
     public function index(Request $request)
     {
+        $use_keyword = !empty($request->get('keyword')) ? 1 : 0;
+
         $student_email = $request->get('mail');
         if ($student_email) {
-            $media = Medias::whereHas('students', function ($query) use ($student_email) {
+            $media = Medias::with('students', 'media_categories')->whereHas('students', function ($query) use ($student_email) {
                 $query->where('email', $student_email);
             })->orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
         } else {
-            $media = Medias::orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
+            $media = Medias::with('students', 'media_categories')->orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
         }
 
         return response()->json(['success' => true, 'data' => $media]);

@@ -194,36 +194,30 @@ class ClientController extends Controller
         DB::beginTransaction();
         try {
             foreach ($bulk_data as $editor_data) {
+
+                if ($user = User::where('email', $editor_data['email'])->first()) {
+                    $id = $user->id;
+                    if (!UserRoles::where('user_id', $id)->where('role_id', 3)) {
+                        $user->roles()->attach($id, ['role_id' => 3, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+                    }
+                    break;
+                }
+
                 $editor = User::insertOrIgnore([
-                    'first_name' => $this->remove_blank($editor_data['first_name']),
-                    'last_name' => $this->remove_blank($editor_data['last_name']),
-                    'phone_number' => $this->remove_blank($editor_data['phone_number']),
-                    'email' => $this->remove_blank($editor_data['email']),
-                    'email_verified_at' => $editor_data['email'] === '' ? null : Carbon::now(),
-                    'password' => $this->remove_blank($editor_data['password']),
+                    'first_name' => $editor_data['first_name'],
+                    'last_name' => $editor_data['last_name'],
+                    'phone_number' => $editor_data['phone_number'],
+                    'email' => $editor_data['email'],
+                    'email_verified_at' => $editor_data['email_verified_at'],
+                    'password' => $editor_data['password'],
                     'status' => $editor_data['status'],
-                    'is_verified' => $editor_data['email'] === '' ? 0 : 1,
-                    'remember_token' => null,
-                    'profile_picture' => null,
-                    'imported_id' => null,
-                    'position' => null,
-                    'imported_from' => 'u5794939_editing'
+                    'is_verified' => $editor_data['is_verified'],
+                    'remember_token' => $editor_data['remember_token'],
+                    'profile_picture' => $editor_data['profile_picture'],
+                    'imported_id' => $editor_data['imported_id'],
+                    'position' => $editor_data['position'],
+                    'imported_from' => $editor_data['imported_from']
                 ]);
-                // $editor = new User;
-                // $editor->first_name = $editor_data['first_name'];
-                // $editor->last_name = $editor_data['last_name'];
-                // $editor->phone_number = $editor_data['phone_number'];
-                // $editor->email = $editor_data['email'];
-                // $editor->email_verified_at = $editor_data['email_verified_at'];
-                // $editor->password = $editor_data['password'];
-                // $editor->status = $editor_data['status'];
-                // $editor->is_verified = $editor_data['is_verified'];
-                // $editor->remember_token = $editor_data['remember_token'];
-                // $editor->profile_picture = $editor_data['profile_picture'];
-                // $editor->imported_id = $editor_data['imported_id'];
-                // $editor->position = $editor_data['position'];
-                // $editor->imported_from = $editor_data['imported_from'];
-                // $editor->save();
 
                 Education::insert(
                     ['user_id' => $editor->id] + $editor_data['educations']
@@ -286,6 +280,15 @@ class ClientController extends Controller
         DB::beginTransaction();
         try {
             foreach ($bulk_data as $mentor_data) {
+
+                if ($user = User::where('email', $mentor_data['email'])->first()) {
+                    $id = $user->id;
+                    if (!UserRoles::where('user_id', $id)->where('role_id', 2)) {
+                        $user->roles()->attach($id, ['role_id' => 2, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
+                    }
+                    break;
+                }
+
                 $mentor = new User;
                 $mentor->first_name = $mentor_data['first_name'];
                 $mentor->last_name = $mentor_data['last_name'];
@@ -307,8 +310,8 @@ class ClientController extends Controller
                 );
 
                 $mentor->roles()->attach($mentor->id, ['role_id' => 2, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
-
             }
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();

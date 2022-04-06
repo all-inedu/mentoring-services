@@ -19,4 +19,9 @@ class MediaCategory extends Model
         'terms',
         'status'
     ];
+
+    public function medias()
+    {
+        return $this->hasMany(Medias::class, 'med_cat_id', 'id');
+    }
 }

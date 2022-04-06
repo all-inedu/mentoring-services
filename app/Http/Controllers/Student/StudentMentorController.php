@@ -26,6 +26,18 @@ class StudentMentorController extends Controller
         $this->assigned_role_name = 'mentor';
     }
 
+    public function find($mentor_id)
+    {
+        $mentor = User::whereHas('roles', function ($query) {
+            $query->where('role_name', '!=', 'admin');
+        })->where('id', $mentor_id)->first();
+        if (!$mentor) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find mentor']);
+        }
+        
+        return response()->json(['success' => true, 'data' => $mentor->user_schedules]);
+    }
+
     public function list(Request $request)
     {
         $rules = [

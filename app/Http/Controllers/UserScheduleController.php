@@ -60,13 +60,13 @@ class UserScheduleController extends Controller
                 $user_schedule->user_id = $request->user_id;
                 $user_schedule->us_days = $request->us_days;
                 $user_schedule->us_start_time = $request->us_start_time[$i];
-                $user_schedule->us_end_time = $request->us_end_time[$i];
+                $user_schedule->us_end_time = isset($request->us_end_time) ? $request->us_end_time[$i] : null;
                 $user_schedule->save();
             }
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Create Schedule Issue : ['.$request->user_id.', '.$request->us_days.', '.$request->us_start_time.', '.$request->us_end_time.'] '.$e->getMessage());
+            Log::error('Create Schedule Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to create schedule. Please try again.'], 400);
         }
         return response()->json(['success' => true, 'message' => 'You\'ve successfully created schedule.']);

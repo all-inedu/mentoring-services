@@ -71,6 +71,7 @@ Route::prefix('v1')->group(function(){
         Route::post('upload/payment-proof', [TransactionController::class, 'upload_payment_proof']);
         Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
         Route::get('mentor/list', [StudentMentorController::class, 'list']);
+        Route::get('appoinment/{mentor_id}', [StudentMentorController::class, 'find']);
         
     });
 
