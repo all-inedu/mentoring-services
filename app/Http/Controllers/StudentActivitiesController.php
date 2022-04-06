@@ -36,12 +36,23 @@ class StudentActivitiesController extends Controller
         $user_id = $request->get('id') != NULL ? $request->get('id') : null;
         $find_detail = User::where('id', $user_id)->count() > 0 ? true : false;
 
-        // $use_keyword = $request->get('keyword') != NULL ? 1 : 0;
-        // $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
+        $use_keyword = $request->get('keyword') != NULL ? 1 : 0;
+        $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
 
         $activities = StudentActivities::with(['programmes', 'students', 'users'])->
             whereHas('programmes', function($query) use ($programme) {
                 $query->where('prog_name', $programme);
+            })->when($use_keyword, function($query) use ($keyword, $programme) {
+                // $query->whereHas('users', function($q2) use ($keyword) {
+                //     $q2->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+                // })->orWhere(DB::raw("CONCAT(`module`, ' - ', `call_with`)"), 'like', '%'.$keyword.'%');
+                $query->when($programme == "1-on-1-call", function ($q1) use ($keyword) {
+                    $q1->where(function($q2) use ($keyword) {
+                        $q2->where(DB::raw("CONCAT(`module`, ' - ', `call_with`)"), 'like', '%'.$keyword.'%')->orWhereHas('users', function($q3) use ($keyword) {
+                            $q3->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+                        }); 
+                    });
+                });
             })->when($is_student, function($query) use ($student_email) {
                 $query->whereHas('students', function ($q) use ($student_email) {
                     $q->where('email', $student_email);
