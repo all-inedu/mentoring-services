@@ -149,7 +149,7 @@ class MediaController extends Controller
                 $media->med_cat_id = $request->category;
                 $media->med_title = $request->title;
                 $media->med_desc = $request->desc;
-                $media->med_file_path = public_path('media').'/'.$med_file_path;
+                $media->med_file_path = /*public_path('media').*/'public/media/'.$med_file_path;
                 $media->med_file_name = $med_file_name;
                 $media->med_file_format = $med_file_format;
                 $media->status = $request->status;
