@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProgrammeController extends Controller
 {
@@ -95,23 +98,36 @@ class ProgrammeController extends Controller
         return response()->json(['success' => true, 'data' => $programme]);
     }
 
-    public function index($type = null)
+    public function index($type = null, Request $request)
     {   
+
+        $use_keyword = $request->get('keyword') != NULL ? 1 : 0;
+        $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
+
         switch ($type) {
             case null:
-                $programme = Programmes::orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+                $programme = Programmes::orderBy('created_at', 'desc')->get($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
                 break;
             case ("webinar" OR "event"):
                 $programme = ProgrammeDetails::whereHas('programmes', function($query) use ($type) {
                     $query->where('prog_name', $type);
-                })->paginate($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE)->map(function ($dtl_category) {
+                })->when($use_keyword, function($query) use ($keyword){
+                    $query->where('dtl_name', 'like', '%'.$keyword.'%');
+                })->get()->map(function ($dtl_category) {
                     $dtl_category->dtl_category = ucwords(str_replace('-', ' ', $dtl_category->dtl_category));
                     return $dtl_category;
                 });
                 break;
         }
 
-        return response()->json(['succes' => true, 'data' => $programme]);        
+        return response()->json(['succes' => true, 'data' => $this->paginate($programme)]);        
+    }
+
+    public function paginate($items, $perPage = 10, $page = null, $options = [])
+    {
+        $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
+        $items = $items instanceof Collection ? $items : Collection::make($items);
+        return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
     }
 
     public function store(Request $request)
