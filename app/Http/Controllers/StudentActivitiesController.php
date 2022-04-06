@@ -43,14 +43,13 @@ class StudentActivitiesController extends Controller
             whereHas('programmes', function($query) use ($programme) {
                 $query->where('prog_name', $programme);
             })->when($use_keyword, function($query) use ($keyword, $programme) {
-                // $query->whereHas('users', function($q2) use ($keyword) {
-                //     $q2->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
-                // })->orWhere(DB::raw("CONCAT(`module`, ' - ', `call_with`)"), 'like', '%'.$keyword.'%');
                 $query->when($programme == "1-on-1-call", function ($q1) use ($keyword) {
                     $q1->where(function($q2) use ($keyword) {
                         $q2->where(DB::raw("CONCAT(`module`, ' - ', `call_with`)"), 'like', '%'.$keyword.'%')->orWhereHas('users', function($q3) use ($keyword) {
                             $q3->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
-                        }); 
+                        })->orWhereHas('students', function ($q) use ($keyword) {
+                            $q->where(DB::raw("CONCAT(`first_name`, ' - ', `last_name`)"), 'like', '%'.$keyword.'%');
+                        });
                     });
                 });
             })->when($is_student, function($query) use ($student_email) {
