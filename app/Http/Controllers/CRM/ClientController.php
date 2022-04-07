@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\CRM;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\HelperController;
 use App\Models\CRM\Alumni;
 use App\Models\CRM\Client;
 use App\Models\CRM\Editor;
@@ -25,6 +26,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ClientController extends Controller
 {
+    protected $helper;
+
+    public function __construct()
+    {
+        $this->helper = new HelperController;       
+    }
     
     public function synchronize($role, $type)
     {
@@ -107,7 +114,7 @@ class ClientController extends Controller
             }
         }
 
-        return $paginate == "yes" ? $this->paginate($alumnis) : $alumnis;
+        return $paginate == "yes" ? $this->helper->paginate($alumnis) : $alumnis;
     }
 
     public function import_alumni()
@@ -185,7 +192,7 @@ class ClientController extends Controller
             
         }
 
-        return $paginate == "yes" ? $this->paginate($editors) : $editors;
+        return $paginate == "yes" ? $this->helper->paginate($editors) : $editors;
     }
 
     public function import_editor()
@@ -271,7 +278,7 @@ class ClientController extends Controller
             }
         }
 
-        return $paginate == "yes" ? $this->paginate($mentors) : $mentors;
+        return $paginate == "yes" ? $this->helper->paginate($mentors) : $mentors;
     }
 
     public function import_mentor()
@@ -357,7 +364,7 @@ class ClientController extends Controller
             }
         }
 
-        return $paginate == "yes" ? $this->paginate($students) : $students;
+        return $paginate == "yes" ? $this->helper->paginate($students) : $students;
     }
 
     public function import_student()

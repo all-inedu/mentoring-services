@@ -120,7 +120,8 @@ class ProgrammeController extends Controller
                 break;
         }
 
-        return response()->json(['succes' => true, 'data' => $this->paginate($programme)]);        
+        $helper = new HelperController;
+        return response()->json(['succes' => true, 'data' => $helper->paginate($programme)]);
     }
 
     public function paginate($items, $perPage = 10, $page = null, $options = [])
