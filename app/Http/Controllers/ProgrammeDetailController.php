@@ -115,7 +115,7 @@ class ProgrammeDetailController extends Controller
 
         $rules = [
             'prog_id'        => 'required|exists:programmes,id',
-            'dtl_category'   => 'required|in:career-bootcamp,university-application-bootcamp,competition-program,all-in-program',
+            'dtl_category'   => 'required|in:career-bootcamp,university-application-bootcamp,competition-program,all-in-program,university-preparation-webinar,career-industry-webinar',
             'dtl_name'       => 'required|max:255',
             'dtl_desc'       => 'required',
             'dtl_price'      => 'required|integer|min:0',
