@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\MediaCategory;
 use App\Models\Medias;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use App\Models\Students;
+use App\Rules\MediaTermsChecker;
 
 class MediaController extends Controller
 {
@@ -127,13 +129,16 @@ class MediaController extends Controller
             'title' => 'required|string|max:255',
             'desc' => 'required',
             'uploaded_file' => 'required|file|max:3000',
-            'status' => 'required|in:not-verified,verified'
+            'status' => ['in:not-verified,verified', new MediaTermsChecker($request->category)]
         ];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
+
+        $med_cat = MediaCategory::where('id', $request->category)->first();
+        $med_cat_terms = $med_cat->terms;
 
         DB::beginTransaction();
         try {
