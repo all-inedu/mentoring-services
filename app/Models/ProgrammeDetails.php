@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class ProgrammeDetails extends Model
 {
@@ -49,8 +50,4 @@ class ProgrammeDetails extends Model
         return $this->hasMany(StudentActivities::class, 'prog_dtl_id', 'id');
     }
 
-    public function getTotalWatchAttribute()
-    {
-        return $this->hasMany(StudentActivities::class, 'prog_dtl_id', 'id')->count();
-    }
 }

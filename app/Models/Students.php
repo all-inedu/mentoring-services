@@ -78,4 +78,12 @@ class Students extends Authenticatable
     {
         return $this->hasMany(SocialMedia::class, 'student_id', 'id');
     }
+
+    public function scopePaginateChecker($query, $is_detail, $paginate)
+    {
+        if (!$is_detail)
+            return $query->paginate($paginate);
+        else
+            return $query->first();
+    }
 }

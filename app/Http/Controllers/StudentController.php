@@ -48,9 +48,14 @@ class StudentController extends Controller
         return response()->json(['success' => true, 'data' => $students]);
     }
     
-    public function index()
+    public function index(Request $request)
     {
-        $students = Students::orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
+        $is_detail = $request->get('mail') != NULL ? 1 : 0;
+        $email = $request->get('mail') != NULL ? $request->get('mail') : null;
+
+        $students = Students::orderBy('created_at', 'desc')->when($is_detail, function($query) use ($email) {
+            $query->where('email', $email);
+        })->paginateChecker($is_detail, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
         return response()->json(['success' => true, 'data' => $students]);
     }
 }

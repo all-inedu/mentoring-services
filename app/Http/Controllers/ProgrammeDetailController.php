@@ -28,6 +28,15 @@ class ProgrammeDetailController extends Controller
     {
         try {
             $prog_details = ProgrammeDetails::with('programme_schedules', 'speakers', 'partners')->findOrFail($prog_dtl_id);
+            $data = array(
+                'prog_id' => $prog_details->prog_id,
+                'dtl_category' => ucwords(str_replace('-', ' ', $prog_details->dtl_category)),
+                'dtl_name' => $prog_details->dtl_name,
+                'dtl_desc' => $prog_details->dtl_desc,
+                'dtl_price' => $prog_details->dtl_price,
+                'dtl_video_link' => $prog_details->dtl_video_link,
+                'status' => $prog_details->status
+            );
 
             $viewer = StudentActivities::where('prog_dtl_id', $prog_dtl_id)->count();
             $prog_details['viewer'] = $viewer;
@@ -35,7 +44,7 @@ class ProgrammeDetailController extends Controller
             Log::error('Find Programme Detail by Id Issue : ['.$prog_dtl_id.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to find programme detail by Id. Please try again.']);
         }
-        return response()->json(['success' => true, 'data' => $prog_details]);
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function store(Request $request)

@@ -23,7 +23,8 @@ class StudentActivities extends Model
         'location_link',
         'prog_dtl_id',
         'call_with',
-        'module'
+        'module',
+        'call_date'
     ];
 
     public function programmes ()
