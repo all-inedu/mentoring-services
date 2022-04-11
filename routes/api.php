@@ -50,6 +50,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix('v1')->group(function(){
+    
+    Route::get('test/email', [MailLogController::class, 'mail_to_tech']);
 
     //! Student Auth
     //* Authentication using Media Social
@@ -75,7 +77,12 @@ Route::prefix('v1')->group(function(){
         Route::get('mentor/list', [StudentMentorController::class, 'list']);
         Route::get('appoinment/{mentor_id}', [StudentMentorController::class, 'find']);
         
+        Route::post('add/social-media', [SocialMediaController::class, 'store']);
+        Route::put('update/social-media/{soc_med_id}', [SocialMediaController::class, 'update']);
+        Route::delete('delete/social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);        
     });
+
+    Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
 
     //! User Auth
     Route::prefix('auth/u')->group(function() {
@@ -102,6 +109,7 @@ Route::prefix('v1')->group(function(){
         Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
         Route::get('last/sync/{user_type}', [HelperController::class, 'last_sync']);
         Route::get('essay/{status}/{id}', [EssayController::class, 'count_essay']);
+
 
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);

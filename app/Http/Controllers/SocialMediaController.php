@@ -97,7 +97,7 @@ class SocialMediaController extends Controller
                 'required',
                 new PersonChecking($request->person)
             ],
-            'social_media_name' => 'required|unique:social_media,social_media_name|in:linkedin,facebook,instagram',
+            'social_media_name' => 'required|in:linkedin,facebook,instagram',
             'hyperlink' => 'required',
             'status' => 'nullable'
         ];

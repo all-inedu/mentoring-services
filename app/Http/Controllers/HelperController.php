@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class HelperController extends Controller
 {
-
+    //** function to save last synchronization */
     public function last_sync ($user_type)
     {
         $rules = [
@@ -26,7 +26,8 @@ class HelperController extends Controller
         $data = SynchronizeLogs::where('user_type', $user_type)->where('status', 'success')->orderBy('created_at', 'desc')->first();
         return response()->json(['success' => true, 'data' => date('F d, Y H:i:s', strtotime($data->created_at))]);
     }
-    
+
+    //** external paginate function */
     public function paginate($items, $perPage = 10, $page = null, $options = [])
     {
         $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);

@@ -160,8 +160,8 @@ class AuthController extends Controller
             'status'    => 'not delivered' /*Mail::failures() ? "delivered" : "not delivered"*/
         );
 
-        $save_log = new MailLogController;
-        $save_log->saveLogMail($log);
+        $mail_log = new MailLogController;
+        $mail_log->saveLogMail($log);
 
         try {
             Mail::send('templates.mail.verify', ['name' => $name, 'verification_code' => $verification_code],
@@ -176,9 +176,8 @@ class AuthController extends Controller
             $mail_log->save();
 
         } catch (Exception $e) {
-            
-            $error_log = new MailLogController;
-            $error_log->record_error_message($email, $e->getMessage());
+            $mail_log->record_error_message($email, $e->getMessage());
+            $mail_log->mail_to_tech($subject, $email, $e->getMessage());
         }
 
         if ($is_error === true) {
