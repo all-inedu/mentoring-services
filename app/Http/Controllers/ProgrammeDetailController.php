@@ -27,7 +27,7 @@ class ProgrammeDetailController extends Controller
     public function find($prog_dtl_id)
     {
         try {
-            $prog_details = ProgrammeDetails::with('programme_schedules', 'speakers', 'partners')->findOrFail($prog_dtl_id);
+            $prog_details = ProgrammeDetails::with('programme_schedules', 'speakers', 'partners', 'student_activities', 'student_activities.students')->withCount('student_activities')->findOrFail($prog_dtl_id);
             $data = array(
                 'prog_id' => $prog_details->prog_id,
                 'dtl_category' => ucwords(str_replace('-', ' ', $prog_details->dtl_category)),
@@ -35,8 +35,16 @@ class ProgrammeDetailController extends Controller
                 'dtl_desc' => $prog_details->dtl_desc,
                 'dtl_price' => $prog_details->dtl_price,
                 'dtl_video_link' => $prog_details->dtl_video_link,
-                'status' => $prog_details->status
+                'status' => $prog_details->status,
+                'viewers' => $prog_details->student_activities_count
             );
+
+            foreach ($prog_details->student_activities as $st_data) {
+                $data['student_list'][] = array(
+                    'full_name' => $st_data->students->first_name.' '.$st_data->students->last_name,
+                    'watch_at' => date('d F Y', strtotime($st_data->created_at))
+                );
+            }
 
             $viewer = StudentActivities::where('prog_dtl_id', $prog_dtl_id)->count();
             $prog_details['viewer'] = $viewer;
