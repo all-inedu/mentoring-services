@@ -191,8 +191,6 @@ Route::prefix('v1')->group(function(){
             Route::delete('education/{edu_id}', [EducationController::class, 'delete']);
             Route::delete('social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);
         });
-
-        Route::get('essay', [EssayController::class, 'count_essay']);
     });
 
     //! Mentor Scopes
@@ -209,7 +207,7 @@ Route::prefix('v1')->group(function(){
     //! Editor Scopes
     Route::middleware(['auth:api', 'scopes:editor'])->group(function() {
         Route::prefix('count')->group(function() {
-            Route::get('essay/{status}', [EssayController::class, 'count_essay']);
+            Route::get('essay', [EssayController::class, 'count_essay']);
         });
     });
 });
