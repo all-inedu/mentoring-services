@@ -23,9 +23,11 @@ class UserController extends Controller
 {
 
     private $ADMIN_LIST_USER_VIEW_PER_PAGE;
+    protected $USER_STORE_PROFILE_PATH;
 
     public function __construct()
     {
+        $this->USER_STORE_PROFILE_PATH = RouteServiceProvider::USER_STORE_PROFILE_PATH;
         $this->ADMIN_LIST_USER_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_USER_VIEW_PER_PAGE;
     }
 
@@ -61,6 +63,51 @@ class UserController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to find user by Keyword. Please try again.']);
         }
         return response()->json(['success' => true, 'data' => $users]);
+    }
+
+    public function update (Request $request)
+    {
+        $rules = [
+            'id'              => 'required|exists:users,id',
+            'user_type'       => 'required|in:student,user',
+            'first_name'      => 'required|string|max:255',
+            'last_name'       => 'required|string|max:255',
+            'phone_number'    => 'required|numeric',
+            'profile_picture' => 'nullable|max:3000',
+            'address'         => 'nullable'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        if ($request->hasFile('profile_picture')) {
+            $pp_name = date('Ymd_His').'_'.str_replace(' ', '-', $request->first_name.'-'.$request->last_name);
+            $pp_format = $request->file('profile_picture')->getClientOriginalExtension();
+            $pp_file_path = $request->file('profile_picture')->storeAs($this->USER_STORE_PROFILE_PATH.'/'.$request->id, $pp_name.'.'.$pp_format, ['disk' => 'student_files']);
+        }
+
+        DB::beginTransaction();
+        try {
+            if ($request->user_type == "user") {
+                $user = User::find($request->id);
+                $user->first_name = $request->first_name;
+                $user->last_name = $request->last_name;
+                $user->phone_number = $request->phone_number;
+                $user->profile_picture = $pp_file_path;
+                $user->address = $request->address;
+                $user->save();
+            }
+            DB::commit();
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Update User Data Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update user data. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Profile has been updated', 'data' => $user]);
     }
 
     public function index($role_name = 'all')

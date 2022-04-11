@@ -59,6 +59,15 @@ class Students extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public function getGradeAttribute($value)
+    {
+        $created_year = date('Y', strtotime($this->created_at));
+        $today_year = date('Y');
+        $diff = $today_year > $created_year ? $today_year - $created_year : $created_year - $today_year;
+        $grade = $value + $diff;
+        return $grade <= 12 ? $grade : 'Not High School';
+    }
+
     public function medias()
     {
         return $this->hasMany(Medias::class, 'student_id', 'id');

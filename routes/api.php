@@ -6,7 +6,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CRM\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
+use App\Http\Controllers\EssayController;
 use App\Http\Controllers\Google\GoogleCalendarController;
+use App\Http\Controllers\HelperController;
 use App\Http\Controllers\MailLogController;
 use App\Http\Controllers\PartnershipController;
 use App\Http\Controllers\PermissionController;
@@ -98,6 +100,8 @@ Route::prefix('v1')->group(function(){
         Route::get('overview/total', [DashboardController::class, 'overview']);
         Route::get('transaction/{trx_id}/invoice', [TransactionController::class, 'invoice']);
         Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
+        Route::get('last/sync/{user_type}', [HelperController::class, 'last_sync']);
+        Route::get('essay/{status}/{id}', [EssayController::class, 'count_essay']);
 
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
@@ -172,6 +176,7 @@ Route::prefix('v1')->group(function(){
             Route::put('partner/{pt_id}', [PartnershipController::class, 'update']);
             Route::put('education/{edu_id}', [EducationController::class, 'update']);
             Route::put('social-media/{soc_med_id}', [SocialMediaController::class, 'update']);
+            Route::post('user/profile', [UserController::class, 'update']);
         });
 
         Route::prefix('delete')->group(function() {
@@ -186,6 +191,8 @@ Route::prefix('v1')->group(function(){
             Route::delete('education/{edu_id}', [EducationController::class, 'delete']);
             Route::delete('social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);
         });
+
+        Route::get('essay', [EssayController::class, 'count_essay']);
     });
 
     //! Mentor Scopes
@@ -198,6 +205,13 @@ Route::prefix('v1')->group(function(){
             Route::delete('schedule/{schedule_id}', [UserScheduleController::class, 'delete']);
         });
     });    
+
+    //! Editor Scopes
+    Route::middleware(['auth:api', 'scopes:editor'])->group(function() {
+        Route::prefix('count')->group(function() {
+            Route::get('essay/{status}', [EssayController::class, 'count_essay']);
+        });
+    });
 });
 
 Route::prefix('v2')->group(function() {

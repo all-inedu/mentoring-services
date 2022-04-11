@@ -11,6 +11,7 @@ use App\Models\CRM\Mentor;
 use App\Models\Education;
 use App\Models\Roles;
 use App\Models\Students;
+use App\Models\SynchronizeLogs;
 use App\Models\User;
 use App\Models\UserRoles;
 use Illuminate\Http\Request;
@@ -50,6 +51,9 @@ class ClientController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        $sync_log = new SynchronizeLogs;
+        $sync_log->user_type = $role;
+
         try {
             switch (strtolower($role)) {
                 case "student": 
@@ -69,9 +73,15 @@ class ClientController extends Controller
                     break;
             }
         } catch (Exception $e) {
+            $sync_log->status = 'failed';
+            $sync_log->message = $e->getMessage();
             return response()->json(['success' => false, 'error' => $e->getMessage()]);
         }
 
+        $sync_log->status = 'success';
+        $sync_log->message = 'The data has been synced';
+        $sync_log->save();
+    
         return response()->json(['success' => true, 'data' => $data]);
     }
 
@@ -359,6 +369,8 @@ class ClientController extends Controller
                     'imported_id' => $this->remove_blank($client_data->st_id, 'text'),
                     'status' => 1,
                     'is_verified' => $client_data->st_mail == '' ? 0 : 1,
+                    'created_at' => $client_data->st_datecreate,
+                    'updated_at' => $client_data->st_datelastedit,
                     'school_name' => isset($client_data->school->sch_name) ? ($client_data->school->sch_name == '-' ? null : $client_data->school->sch_name) : null
                 );
             }
