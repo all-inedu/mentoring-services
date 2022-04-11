@@ -185,6 +185,7 @@ Route::prefix('v1')->group(function(){
             Route::put('education/{edu_id}', [EducationController::class, 'update']);
             Route::put('social-media/{soc_med_id}', [SocialMediaController::class, 'update']);
             Route::post('user/profile', [UserController::class, 'update']);
+            Route::put('mail/log/{mail_id}', [MailLogController::class, 'update']);
         });
 
         Route::prefix('delete')->group(function() {

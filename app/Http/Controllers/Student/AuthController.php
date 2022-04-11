@@ -177,7 +177,7 @@ class AuthController extends Controller
 
         } catch (Exception $e) {
             $mail_log->record_error_message($email, $e->getMessage());
-            $mail_log->mail_to_tech($subject, $email, $e->getMessage());
+            // $mail_log->mail_to_tech($subject, $email, $e->getMessage());
         }
 
         if ($is_error === true) {
