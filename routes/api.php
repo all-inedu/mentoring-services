@@ -101,7 +101,7 @@ Route::prefix('v1')->group(function(){
     });
 
     //! Admin Scopes
-    Route::middleware(['auth:api', 'scopes:admin'])->group(function() {
+    Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
         Route::get('overview/total', [DashboardController::class, 'overview']);
