@@ -28,7 +28,7 @@ class ProgrammeDetailController extends Controller
     {
         try {
             $prog_details = ProgrammeDetails::with('programme_schedules', 'speakers', 'partners', 'student_activities', 'student_activities.students')->withCount('student_activities')->findOrFail($prog_dtl_id);
-            // echo json_encode($prog_details);exit;
+            echo json_encode($prog_details);exit;
             $data = array(
                 'prog_id' => $prog_details->prog_id,
                 'dtl_category' => ucwords(str_replace('-', ' ', $prog_details->dtl_category)),
@@ -39,6 +39,17 @@ class ProgrammeDetailController extends Controller
                 'status' => $prog_details->status,
                 'viewers' => $prog_details->student_activities_count
             );
+
+            foreach ($prog_details->programme_schedules as $schedule) {
+                $data['schedules'][] = array(
+                    'id' => $schedule->id,
+                    'prog_dtl_id' => $schedule->prog_dtl_id,
+                    'start_date' => $schedule->prog_sch_start_date,
+                    'start_time' => $schedule->prog_sch_start_time,
+                    'end_date' => $schedule->prog_sch_end_date,
+                    'end_time' => $schedule->prog_sch_end_time
+                );
+            }
 
             foreach ($prog_details->student_activities as $st_data) {
                 $data['student_list'][] = array(
