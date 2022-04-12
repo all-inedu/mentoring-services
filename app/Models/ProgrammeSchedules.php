@@ -23,6 +23,16 @@ class ProgrammeSchedules extends Model
         'status'
     ];
 
+    public function getProgSchStartTimeAttribute($value)
+    {
+        return date('H:i', strtotime($value));
+    }
+
+    public function getProgSchEndTimeAttribute($value)
+    {
+        return date('H:i', strtotime($value));
+    }
+
     public function programme_details()
     {
         return $this->belongsTo(ProgrammeDetails::class, 'prog_dtl_id', 'id');

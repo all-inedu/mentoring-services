@@ -132,7 +132,7 @@
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
                             <p style="margin: 0;">Hi there!</p>
-                            <p>Below you'll find your dayly error report for {{ date('d M Y') }}</p>
+                            <p>Below you'll find your daily error report for {{ date('d M Y') }}</p>
                         </td>
                     </tr>
                     <tr>
