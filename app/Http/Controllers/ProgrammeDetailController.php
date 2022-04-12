@@ -28,7 +28,7 @@ class ProgrammeDetailController extends Controller
     {
         try {
             $prog_details = ProgrammeDetails::with('programme_schedules', 'speakers', 'partners', 'student_activities', 'student_activities.students')->withCount('student_activities')->findOrFail($prog_dtl_id);
-            echo json_encode($prog_details);exit;
+            $prog_details = ProgrammeDetails::find($prog_dtl_id);
             $data = array(
                 'prog_id' => $prog_details->prog_id,
                 'dtl_category' => ucwords(str_replace('-', ' ', $prog_details->dtl_category)),
