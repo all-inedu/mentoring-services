@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('automated:synchronize_mentor')->everyThirtyMinutes();
         $schedule->command('automated:synchronize_editor')->everyThirtyMinutes();
         $schedule->command('automated:synchronize_alumni')->everyThirtyMinutes();
+        $schedule->command('automated:send_error_report')->daily();
     }
 
     /**
