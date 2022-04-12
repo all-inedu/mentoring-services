@@ -51,7 +51,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function(){
     
-    Route::get('test/email', [MailLogController::class, 'mail_to_tech']);
+    // Route::get('daily/mail/error', [MailLogController::class, 'mail_to_tech']);
+    // Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
 
     //! Student Auth
     //* Authentication using Media Social
@@ -106,7 +107,6 @@ Route::prefix('v1')->group(function(){
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
         Route::get('overview/total', [DashboardController::class, 'overview']);
         Route::get('transaction/{trx_id}/invoice', [TransactionController::class, 'invoice']);
-        Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
         Route::get('last/sync/{user_type}', [HelperController::class, 'last_sync']);
         Route::get('essay/{status}/{id}', [EssayController::class, 'count_essay']);
 

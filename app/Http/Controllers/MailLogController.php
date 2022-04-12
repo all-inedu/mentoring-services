@@ -40,7 +40,7 @@ class MailLogController extends Controller
     }
 
     //** function to send email to IT email if there are errors when sending mail */
-    public function mail_to_tech(/*$subject, $email, $error*/)
+    public function mail_to_tech()
     {
 
         $mailLog = MailLog::where('error_status', NULL)->orderBy('date_sent', 'desc')->get();
