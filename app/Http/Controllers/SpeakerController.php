@@ -51,8 +51,8 @@ class SpeakerController extends Controller
                                 $query->where('dtl_category', '!=', NULL);
                             }),
                         ],
-            'sp_name'       => 'required|alpha|max:255',
-            'sp_title'      => 'required|alpha|max:255',
+            'sp_name'       => 'required|string|max:255',
+            'sp_title'      => 'required|string|max:255',
             'sp_short_desc' => 'required',
             'status'        => 'required|in:active,inactive'
         ];

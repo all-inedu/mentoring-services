@@ -16,6 +16,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->command('automated:synchronize_student')->everyThirtyMinutes();
+        $schedule->command('automated:synchronize_mentor')->everyThirtyMinutes();
+        $schedule->command('automated:synchronize_editor')->everyThirtyMinutes();
+        $schedule->command('automated:synchronize_alumni')->everyThirtyMinutes();
     }
 
     /**

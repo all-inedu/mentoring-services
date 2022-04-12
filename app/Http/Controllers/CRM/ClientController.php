@@ -34,7 +34,7 @@ class ClientController extends Controller
         $this->helper = new HelperController;       
     }
     
-    public function synchronize($role, $type)
+    public function synchronize($role, $type, $automated = false)
     {
         $request = [
             'role' => $role,
@@ -48,7 +48,7 @@ class ClientController extends Controller
 
         $validator = Validator::make($request, $rules);
         if ($validator->fails()) {
-            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+            return !$automated ? response()->json(['success' => false, 'error' => $validator->errors()], 400) : 0;
         }
 
         $sync_log = new SynchronizeLogs;
@@ -75,18 +75,18 @@ class ClientController extends Controller
         } catch (Exception $e) {
             $sync_log->status = 'failed';
             $sync_log->message = $e->getMessage();
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            return !$automated ? response()->json(['success' => false, 'error' => $e->getMessage()]) : 0;
         }
 
         $sync_log->status = 'success';
         $sync_log->message = 'The data has been synced';
         $sync_log->save();
     
-        return response()->json(['success' => true, 'data' => $data]);
+        return !$automated ? response()->json(['success' => true, 'data' => $data]) : 1;
     }
 
     public function recap_alumni($isNull = true, $paginate = "no")
-    {  
+    {
         $alumnis = $educations = array();
         $alumni = Alumni::with('student', 'student.school')->
         when(!$isNull, function ($query) {
@@ -169,11 +169,13 @@ class ClientController extends Controller
     public function recap_editor($isNull = true, $paginate = "no")
     {
         $editors = array();
-        $editor_crm = Editor::where('status', 1)->get();
+        $editor_crm = Editor::where('status', 1)->where(function($query) {
+            $query->whereNotNull('email')->orWhere('email', '!=', '');
+        })->get();
         foreach ($editor_crm as $data) {
-            $find = User::where('email', $data->email)->first();
+            // $find = User::where('email', $data->email)->first();
 
-            if ($find) { //if email sudah ada di database
+            // if (!$find) { //if email sudah ada di database
                 
                 $editors[] = array(
                     'first_name' => $this->remove_blank($data->first_name),
@@ -198,7 +200,7 @@ class ClientController extends Controller
                         'graduation_date' => null
                     )
                 );
-            }
+            // }
             
         }
 
@@ -207,34 +209,40 @@ class ClientController extends Controller
 
     public function import_editor()
     {
-        $bulk_data = $this->recap_mentor(false);
+        $new_roles = $editors = array();
+        $bulk_data = $this->recap_editor(false);
         DB::beginTransaction();
         try {
             foreach ($bulk_data as $editor_data) {
 
                 if ($user = User::where('email', $editor_data['email'])->first()) {
                     $id = $user->id;
-                    if (!UserRoles::where('user_id', $id)->where('role_id', 3)) {
+                    if (UserRoles::where('user_id', $id)->where('role_id', 3)->count() == 0) {
+                        $new_roles[] = array(
+                            'email' => $user->email
+                        );
                         $user->roles()->attach($id, ['role_id' => 3, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
                     }
                     break;
                 }
 
-                $editor = User::insertOrIgnore([
-                    'first_name' => $editor_data['first_name'],
-                    'last_name' => $editor_data['last_name'],
-                    'phone_number' => $editor_data['phone_number'],
-                    'email' => $editor_data['email'],
-                    'email_verified_at' => $editor_data['email_verified_at'],
-                    'password' => $editor_data['password'],
-                    'status' => $editor_data['status'],
-                    'is_verified' => $editor_data['is_verified'],
-                    'remember_token' => $editor_data['remember_token'],
-                    'profile_picture' => $editor_data['profile_picture'],
-                    'imported_id' => $editor_data['imported_id'],
-                    'position' => $editor_data['position'],
-                    'imported_from' => $editor_data['imported_from']
-                ]);
+                $editor = new User;
+                $editor->first_name = $editor_data['first_name'];
+                $editor->last_name = $editor_data['last_name'];
+                $editor->phone_number = $editor_data['phone_number'];
+                $editor->email = $editor_data['email'];
+                $editor->email_verified_at = $editor_data['email_verified_at'];
+                $editor->password = $editor_data['password'];
+                $editor->status = $editor_data['status'];
+                $editor->is_verified = $editor_data['is_verified'];
+                $editor->remember_token = $editor_data['remember_token'];
+                $editor->profile_picture = $editor_data['profile_picture'];
+                $editor->imported_id = $editor_data['imported_id'];
+                $editor->position = $editor_data['position'];
+                $editor->imported_from = $editor_data['imported_from'];
+                $editor->save();
+
+                $editors = $editor;
 
                 Education::insert(
                     ['user_id' => $editor->id] + $editor_data['educations']
@@ -246,22 +254,31 @@ class ClientController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Import Data Mentor Issue : '.$e->getMessage());
-            throw New Exception('Failed to import mentor data');
+            Log::error('Import Data Editor Issue : '.$e->getMessage());
+            throw New Exception('Failed to import editor data');
         }
 
-        return $bulk_data;
+        return array(
+            'new_roles' => $new_roles,
+            'editors' => $editors
+        );
     }
 
     public function recap_mentor($isNull = true, $paginate = "no")
     {
         $mentors = array();
-        $mentor_crm = Mentor::with('university')->get();
+
+        $email_empty = Mentor::where(function($query) {
+            $query->where('mt_email', '=', '')->orWhere('mt_email', '=', '-');
+        })->where('mt_status', 1)->select('mt_email')->get();
+
+        $mentor_crm = Mentor::with('university')->where(function($query) use ($email_empty) {
+            $query->whereNotNull('mt_email')->whereNotIn('mt_email', $email_empty);
+        })->where('mt_status', 1)->get();
 
         foreach ($mentor_crm as $data) {
             $find = User::where('imported_id', $data->mt_id)->first();
-            if ($find) {
-
+            if (!$find) {
                 $mentors[] = array(
                     'first_name' => $this->remove_blank($data->mt_firstn),
                     'last_name' => $this->remove_blank($data->mt_lastn),
@@ -293,6 +310,7 @@ class ClientController extends Controller
 
     public function import_mentor()
     {
+        $new_roles = $editors = array();
         $bulk_data = $this->recap_mentor(false);
         DB::beginTransaction();
         try {
@@ -300,7 +318,10 @@ class ClientController extends Controller
 
                 if ($user = User::where('email', $mentor_data['email'])->first()) {
                     $id = $user->id;
-                    if (!UserRoles::where('user_id', $id)->where('role_id', 2)) {
+                    if (UserRoles::where('user_id', $id)->where('role_id', 2)->count() == 0) {
+                        $new_roles[] = array(
+                            'email' => $user->email
+                        );
                         $user->roles()->attach($id, ['role_id' => 2, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
                     }
                     break;
@@ -349,6 +370,8 @@ class ClientController extends Controller
                 $query->where(function($q1) {
                     $q1->where('st_firstname', '!=', '')->where('st_lastname', '!=', '')->where('st_mail', '!=', '');
                 });
+        })->where(function($query) {
+            $query->whereNotNull('st_mail')->orWhere('st_mail', '!=', '');
         })->distinct()->get();
 
         foreach ($client->unique('st_mail') as $client_data) {
@@ -397,18 +420,6 @@ class ClientController extends Controller
     }
 
     //** HELPER */
-
-    public function existing_check ($email, $role)
-    {
-
-    }
-
-    public function paginate($items, $perPage = 10, $page = null, $options = [])
-    {
-        $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
-        $items = $items instanceof Collection ? $items : Collection::make($items);
-        return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
-    }
 
     public function remove_invalid_date($data)
     {
