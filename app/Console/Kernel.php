@@ -2,6 +2,11 @@
 
 namespace App\Console;
 
+use App\Console\Commands\SendErrorReport;
+use App\Console\Commands\SynchronizeAlumniFromBigData;
+use App\Console\Commands\SynchronizeEditorFromBigData;
+use App\Console\Commands\SynchronizeMentorFromBigData;
+use App\Console\Commands\SynchronizeStudentFromBigData;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -14,9 +19,13 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        SendErrorReport::class,
+        SynchronizeAlumniFromBigData::class,
+        SynchronizeEditorFromBigData::class,
+        SynchronizeMentorFromBigData::class,
+        SynchronizeStudentFromBigData::class
     ];
-    
+
     /**
      * Define the application's command schedule.
      *
@@ -26,11 +35,11 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->command('automated:synchronize_student')->everyThirtyMinutes();
-        $schedule->command('automated:synchronize_mentor')->everyThirtyMinutes();
-        $schedule->command('automated:synchronize_editor')->everyThirtyMinutes();
-        $schedule->command('automated:synchronize_alumni')->everyThirtyMinutes();
-        $schedule->command('automated:send_error_report')->daily();
+        $schedule->command('automated:synchronize_student')->everyThirtyMinutes()->timezone('Asia/Jakarta');
+        $schedule->command('automated:synchronize_mentor')->everyThirtyMinutes()->timezone('Asia/Jakarta');
+        $schedule->command('automated:synchronize_editor')->everyThirtyMinutes()->timezone('Asia/Jakarta');
+        $schedule->command('automated:synchronize_alumni')->everyThirtyMinutes()->timezone('Asia/Jakarta');
+        $schedule->command('automated:send_error_report')->daily()->timezone('Asia/Jakarta');
     }
 
     /**
