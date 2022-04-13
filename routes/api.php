@@ -132,7 +132,7 @@ Route::prefix('v1')->group(function(){
         });
 
         Route::prefix('list')->group(function() {
-            Route::get('mail/log', [MailLogController::class, 'index']);
+            Route::get('mail/log/{param}', [MailLogController::class, 'index']);
             Route::get('programme/module', [ProgrammeModuleController::class, 'index']);
             Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
             Route::get('role', [PermissionController::class, 'index']);

@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class MailLogController extends Controller
 {
@@ -21,10 +22,22 @@ class MailLogController extends Controller
         $this->tech_mail = RouteServiceProvider::TECH_MAIL_1;
     }
 
-    public function index()
+    public function index($param) //error & success
     {
-        $mailLog['error_data'] = MailLog::whereNull('error_status')->orderBy('date_sent', 'desc')->paginate(10);
-        $mailLog['success_data'] = MailLog::whereNotNull('error_status')->orderBy('date_sent', 'desc')->paginate(10);
+        $rules = [
+            'param' => 'in:success,error'
+        ];
+
+        $validator = Validator::make(['param' => $param], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $mailLog = MailLog::when($param == 'success', function($query){
+            $query->where('status', 'delivered');
+        }, function($query) {
+            $query->where('status', 'not delivered');
+        })->orderBy('date_sent', 'desc')->paginate(10);
         return response()->json(['succes' => true, 'data' => $mailLog]);
     }
 

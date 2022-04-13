@@ -53,4 +53,12 @@ class Programmes extends Model
     {
         return $this->hasMany(StudentActivities::class, 'prog_id', 'id');
     }
+
+    public function scopeRecent($query, $recent, $paginate)
+    {
+        if ($recent)
+            return $query->limit(3)->get();
+        else 
+            return $query->paginate($paginate);
+    }
 }
