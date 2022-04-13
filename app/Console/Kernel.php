@@ -35,11 +35,11 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->command('automated:synchronize_student')->everyThirtyMinutes()->timezone('Asia/Jakarta');
-        $schedule->command('automated:synchronize_mentor')->everyThirtyMinutes()->timezone('Asia/Jakarta');
-        $schedule->command('automated:synchronize_editor')->everyThirtyMinutes()->timezone('Asia/Jakarta');
-        $schedule->command('automated:synchronize_alumni')->everyThirtyMinutes()->timezone('Asia/Jakarta');
-        $schedule->command('automated:send_error_report')->daily()->timezone('Asia/Jakarta');
+        $schedule->command('automated:synchronize_student')->everyThirtyMinutes()->timezone('Asia/Jakarta')->appendOutputTo(storage_path('logs/sync_student.log'));
+        $schedule->command('automated:synchronize_mentor')->everyThirtyMinutes()->timezone('Asia/Jakarta')->appendOutputTo(storage_path('logs/sync_mentor.log'));;
+        $schedule->command('automated:synchronize_editor')->everyThirtyMinutes()->timezone('Asia/Jakarta')->appendOutputTo(storage_path('logs/sync_editor.log'));;
+        $schedule->command('automated:synchronize_alumni')->everyThirtyMinutes()->timezone('Asia/Jakarta')->appendOutputTo(storage_path('logs/sync_alumni.log'));;
+        $schedule->command('automated:send_error_report')->daily()->timezone('Asia/Jakarta')->appendOutputTo(storage_path('logs/error_report.log'));;
     }
 
     /**
