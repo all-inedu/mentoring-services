@@ -26,9 +26,36 @@ class StudentActivitiesController extends Controller
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
 
-    public function set_call(Request $request)
+    public function set_meeting(Request $request)
     {
-        $rules = ['id' => 'required'];
+        $rules = [
+            'id' => 'required|exists:student_activities,id',
+            'link' => 'required|url'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $activities = StudentActivities::find($request->id);
+        if ($activities->std_act_status == "waiting") {
+            return response()->json(['success' => false, 'error' => 'The student has not confirmed the payment or please contact administrator for further information']);
+        }
+
+        DB::beginTransaction();
+        try {
+            
+            $activities->location_link = $request->link;
+            $activities->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to set location link : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update error status. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Meeting location has been successfully arranged']);
     }
     
     public function index($programme, $recent = NULL, Request $request)

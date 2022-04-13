@@ -204,7 +204,7 @@ Route::prefix('v1')->group(function(){
 
     //! Mentor Scopes
     Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
-        Route::post('set/call', [StudentActivitiesController::class, 'set_call']);
+        Route::post('set/meeting', [StudentActivitiesController::class, 'set_meeting']);
 
         Route::prefix('create')->group(function() {
             Route::post('schedule', [UserScheduleController::class, 'store']);
