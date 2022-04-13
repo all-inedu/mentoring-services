@@ -364,14 +364,16 @@ class ClientController extends Controller
     {
         $students = array();
         $alumni = Alumni::select('st_id')->get();
+        $client_empty_mail = Client::where('st_mail', '=', '')->orWhere('st_mail', '=', '-')->orWhereNull('st_mail')->get();
+
         $client = Client::whereHas('programs', function($query) {
             $query->where('prog_main', 'Admissions Mentoring')->where('stprog_status', 1);
         })->whereNotIn('st_id', $alumni)->when(!$isNull, function ($query) {
                 $query->where(function($q1) {
                     $q1->where('st_firstname', '!=', '')->where('st_lastname', '!=', '')->where('st_mail', '!=', '');
                 });
-        })->where(function($query) {
-            $query->whereNotNull('st_mail')->orWhere('st_mail', '!=', '');
+        })->where(function($query) use ($client_empty_mail) {
+            $query->whereNotNull('st_mail')->orWhere('st_mail', '!=', '')->whereNotIn('st_mail', $client_empty_mail);
         })->distinct()->get();
 
         foreach ($client->unique('st_mail') as $client_data) {
@@ -382,7 +384,8 @@ class ClientController extends Controller
                     'last_name' => $client_data->st_lastname,
                     'birthday' => $this->remove_invalid_date($client_data->st_dob),
                     'phone_number' => $client_data->st_phone,
-                    'grade' => isset($client_data->school->sch_level) ? $this->remove_string_grade($client_data->school->sch_level) : null,
+                    // 'grade' => isset($client_data->school->sch_level) ? $this->remove_string_grade($client_data->school->sch_level) : null,
+                    'grade' => $client_data->st_grade,
                     'email' => $this->remove_blank($client_data->st_mail),
                     'email_verified_at' => $client_data->st_mail != null ? Carbon::now() : null,
                     'address' => $this->remove_blank($client_data->st_address, 'text'),
