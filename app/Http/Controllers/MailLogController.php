@@ -23,7 +23,8 @@ class MailLogController extends Controller
 
     public function index()
     {
-        $mailLog = MailLog::orderBy('date_sent', 'desc')->get();
+        $mailLog['error_data'] = MailLog::whereNull('error_status')->orderBy('date_sent', 'desc')->paginate(10);
+        $mailLog['success_data'] = MailLog::whereNotNull('error_status')->orderBy('date_sent', 'desc')->paginate(10);
         return response()->json(['succes' => true, 'data' => $mailLog]);
     }
 
