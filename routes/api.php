@@ -52,7 +52,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('v1')->group(function(){
     
     // Route::get('daily/mail/error', [MailLogController::class, 'mail_to_tech']);
-    // Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
+    Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
 
     //! Student Auth
     //* Authentication using Media Social
@@ -204,6 +204,8 @@ Route::prefix('v1')->group(function(){
 
     //! Mentor Scopes
     Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
+        Route::post('set/call', [StudentActivitiesController::class, 'set_call']);
+
         Route::prefix('create')->group(function() {
             Route::post('schedule', [UserScheduleController::class, 'store']);
         });

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddThumbnailToProgrammeDetailsTable extends Migration
+class SetPromoIdNullableFromTransactionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddThumbnailToProgrammeDetailsTable extends Migration
      */
     public function up()
     {
-        Schema::table('programme_details', function (Blueprint $table) {
-            $table->text('thumbnail')->nullable();
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->unsignedBigInteger('promo_id')->nullable()->change();
         });
     }
 
@@ -25,8 +25,8 @@ class AddThumbnailToProgrammeDetailsTable extends Migration
      */
     public function down()
     {
-        Schema::table('programme_details', function (Blueprint $table) {
-            $table->dropColumn('thumbnail');
+        Schema::table('transactions', function (Blueprint $table) {
+            //
         });
     }
 }

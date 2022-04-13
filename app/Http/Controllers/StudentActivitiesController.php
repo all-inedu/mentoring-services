@@ -25,6 +25,11 @@ class StudentActivitiesController extends Controller
     {
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
+
+    public function set_call(Request $request)
+    {
+        $rules = ['id' => 'required'];
+    }
     
     public function index($programme, $recent = NULL, Request $request)
     {
