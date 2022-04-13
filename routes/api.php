@@ -178,7 +178,8 @@ Route::prefix('v1')->group(function(){
             Route::put('permission/{per_id}', [PermissionController::class, 'update']);
             Route::put('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'update']);
             Route::put('programme/{prog_id}', [ProgrammeController::class, 'update']);
-            Route::put('programme/schedule/{prog_sch_id}', [ProgrammeScheduleController::class, 'update']);
+            // Route::put('programme/schedule/{prog_sch_id}', [ProgrammeScheduleController::class, 'update']);
+            Route::put('programme/schedule/{prog_sch_id}', 'ProgrammeScheduleController@update');
             Route::put('programme/detail/{prog_dtl_id}', [ProgrammeDetailController::class, 'update']);
             // Route::put('speaker/{sp_id}', [SpeakerController::class, 'update']);
             Route::put('speaker/{sp_id}', 'SpeakerController@update');
