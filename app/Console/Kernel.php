@@ -40,6 +40,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('automated:synchronize_editor')->everyThirtyMinutes()->timezone('Asia/Jakarta')->appendOutputTo(storage_path('logs/sync_editor.log'));;
         $schedule->command('automated:synchronize_alumni')->everyThirtyMinutes()->timezone('Asia/Jakarta')->appendOutputTo(storage_path('logs/sync_alumni.log'));;
         $schedule->command('automated:send_error_report')->daily()->timezone('Asia/Jakarta')->appendOutputTo(storage_path('logs/error_report.log'));;
+        $schedule->command('automated:payment_checker')->cron('* * * * *');
     }
 
     /**

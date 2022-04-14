@@ -30,7 +30,11 @@ class TransactionController extends Controller
 
     public function payment_checker()
     {
-        // $pending_transaction = Transaction::
+        $pending_transaction = Transaction::where('status', 'pending')->where(function($query) {
+            $query->whereNull('payment_proof')->whereNull('payment_method')->whereNull('payment_date');
+        })->whereRaw('created_at < DATE_SUB(NOW(), INTERVAL 1 DAY)')->update(['status' => 'expired']);
+
+        return $pending_transaction ? 1 : 0;
     }
 
     public function invoice($trx_id, $type)
@@ -93,7 +97,7 @@ class TransactionController extends Controller
     {
 
         $rules = [
-            'status' => 'required|in:pending,need-confirmation,paid,all',
+            'status' => 'required|in:pending,need-confirmation,paid,expired,all',
             'mail' => 'nullable|email'
         ];
 
@@ -143,6 +147,16 @@ class TransactionController extends Controller
                         });
                     })->
                     where('status', 'paid')->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
+                break;
+
+            case "expired":
+                $transaction = Transaction::with('student_activities', 'student_activities.students', 'student_activities.programme_details')->
+                    when($is_student, function($q) use ($student_email) {
+                        $q->whereHas('student_activities.students', function ($query) use ($student_email) {
+                            $query->where('email', $student_email);
+                        });
+                    })->
+                    where('status', 'expired')->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
         }
         

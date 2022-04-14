@@ -53,6 +53,7 @@ Route::prefix('v1')->group(function(){
     
     // Route::get('daily/mail/error', [MailLogController::class, 'mail_to_tech']);
     Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
+    Route::get('payment-checker', [TransactionController::class, 'payment_checker']);
 
     //! Student Auth
     //* Authentication using Media Social
