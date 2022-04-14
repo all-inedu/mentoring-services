@@ -102,11 +102,15 @@ Route::prefix('v1')->group(function(){
         Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
     });
 
+    Route::middleware(['auth:api', 'scopes:admin,mentor', 'cors'])->group(function() {
+        
+        Route::get('overview/{role}/total', [DashboardController::class, 'overview']);
+    });
+
     //! Admin Scopes
     Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         
         Route::get('promotion/validate/{promo_code}', [PromotionController::class, 'check_validation']);
-        Route::get('overview/{role}/total', [DashboardController::class, 'overview']);
         Route::get('transaction/{trx_id}/{type}', [TransactionController::class, 'invoice']);
         Route::get('last/sync/{user_type}', [HelperController::class, 'last_sync']);
         Route::get('essay/{status}/{id}', [EssayController::class, 'count_essay']);
