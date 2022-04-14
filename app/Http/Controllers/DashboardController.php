@@ -29,8 +29,8 @@ class DashboardController extends Controller
                 break;
 
             case "mentor":
-                $data['student'] = count(Auth::user()->students);
-                $data['activities'] = count(Auth::user()->student_activities);
+                $data['student'] = count(auth()->guard('api')->user()->students);
+                $data['activities'] = count(auth()->guard('api')->user()->student_activities);
                 break;
         }
         
