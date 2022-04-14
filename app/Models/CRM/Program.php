@@ -35,4 +35,9 @@ class Program extends Model
         return $this->belongsToMany(Client::class, 'tbl_stprog', 'prog_id', 'st_num');
     }
 
+    public function student_mentors()
+    {
+        return $this->hasManyThrough(StudentMentor::class, StudentProgram::class, 'st_num', 'stmentor_id');
+    }
+
 }

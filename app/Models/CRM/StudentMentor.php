@@ -20,13 +20,14 @@ class StudentMentor extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'prog_id',
-        'prog_main',
-        'main_number',
-        'prog_sub',
-        'prog_program',
-        'prog_type',
-        'prog_mentor',
-        'prog_payment'
+        'stmentor_id',
+        'stprog_id',
+        'mt_id1',
+        'mt_id2'
     ];
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class, 'stprog_id', 'stprog_id');
+    }
 }
