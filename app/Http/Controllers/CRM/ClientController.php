@@ -366,7 +366,7 @@ class ClientController extends Controller
         $alumni = Alumni::select('st_id')->get();
         $client_empty_mail = Client::select('st_mail')->where('st_mail', '=', '')->orWhere('st_mail', '=', '-')->orWhereNull('st_mail')->get();
 
-        $client = Client::whereHas('programs', function($query) {
+        $client = Client::with('programs')->whereHas('programs', function($query) {
             $query->where('prog_main', 'Admissions Mentoring')->where('stprog_status', 1);
         })->whereNotIn('st_id', $alumni)->when(!$isNull, function ($query) {
                 $query->where(function($q1) {
@@ -375,6 +375,8 @@ class ClientController extends Controller
         })->where(function($query) use ($client_empty_mail) {
             $query->whereNotNull('st_mail')->orWhere('st_mail', '!=', '')->whereNotIn('st_mail', $client_empty_mail);
         })->distinct()->get();
+
+        echo json_encode($client);exit;
 
         foreach ($client->unique('st_mail') as $client_data) {
             $find = Students::where('email', $client_data->st_mail)->count();

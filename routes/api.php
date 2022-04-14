@@ -105,6 +105,10 @@ Route::prefix('v1')->group(function(){
     Route::middleware(['auth:api', 'scope:admin,mentor', 'cors'])->group(function() {
         
         Route::get('overview/{role}/total', [DashboardController::class, 'overview']);
+
+        Route::prefix('list')->group(function() {
+            Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
+        });
     });
 
     Route::get('transaction/{trx_id}/{type}', [TransactionController::class, 'invoice']);
