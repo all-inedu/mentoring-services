@@ -37,8 +37,10 @@ class MailLogController extends Controller
         }
 
         $mailLog = MailLog::when($param == 'success', function($query) use ($use_keyword, $keyword){
-            $query->where('status', 'delivered')->orWhere(function($query1) {
-                $query1->where('status', 'not delivered')->where('error_status', 'solved');
+            $query->where(function($query1) {
+                $query1->where('status', 'delivered')->orWhere(function($query2) {
+                    $query2->where('status', 'not delivered')->where('error_status', 'solved');
+                });
             })->when($use_keyword, function($query1) use ($keyword) {
                 $query1->where(function ($query2) use ($keyword) {
                     $query2->where('recipient', 'like', '%'.$keyword.'%')->
@@ -49,7 +51,9 @@ class MailLogController extends Controller
                 });
             });
         }, function($query) use ($use_keyword, $keyword) {
-            $query->where('status', 'not delivered')->whereNull('error_status')->when($use_keyword, function($query1) use ($keyword) {
+            $query->where(function($query1) {
+                $query1->where('status', 'not delivered')->whereNull('error_status');
+            })->when($use_keyword, function($query1) use ($keyword) {
                 $query1->where(function ($query2) use ($keyword) {
                     $query2->where('recipient', 'like', '%'.$keyword.'%')->
                             orWhere('sender', 'like', '%'.$keyword.'%')->

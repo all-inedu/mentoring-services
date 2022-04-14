@@ -28,6 +28,11 @@ class TransactionController extends Controller
         $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE;
     }
 
+    public function payment_checker()
+    {
+        // $pending_transaction = Transaction::
+    }
+
     public function invoice($trx_id, $type)
     {
 
