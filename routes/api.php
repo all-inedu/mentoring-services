@@ -110,7 +110,6 @@ Route::prefix('v1')->group(function(){
         Route::get('last/sync/{user_type}', [HelperController::class, 'last_sync']);
         Route::get('essay/{status}/{id}', [EssayController::class, 'count_essay']);
 
-
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
             Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
@@ -220,6 +219,11 @@ Route::prefix('v1')->group(function(){
         Route::prefix('count')->group(function() {
             Route::get('essay', [EssayController::class, 'count_essay']);
         });
+    });
+
+    //! Alumni Scopes
+    Route::middleware(['auth:api', 'scopes:alumni'])->group(function() {
+        
     });
 });
 
