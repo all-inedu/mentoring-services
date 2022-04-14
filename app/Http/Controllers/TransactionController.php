@@ -94,7 +94,7 @@ class TransactionController extends Controller
 
         switch (strtolower($status)) {
             case "pending":
-                $transaction = Transaction::with('student_activities', 'student_activities.students')->when($is_student, function($q) use ($student_email) {
+                $transaction = Transaction::with('student_activities', 'student_activities.students', 'student_activities.programme_details')->when($is_student, function($q) use ($student_email) {
                     $q->whereHas('student_activities.students', function ($query) use ($student_email) {
                         $query->where('email', $student_email);
                     });
@@ -102,7 +102,7 @@ class TransactionController extends Controller
                 break;
 
             case "need-confirmation":
-                $transaction = Transaction::with('student_activities', 'student_activities.students')->
+                $transaction = Transaction::with('student_activities', 'student_activities.students', 'student_activities.programme_details')->
                     when($is_student, function($q) use ($student_email) {
                         $q->whereHas('student_activities.students', function ($query) use ($student_email) {
                             $query->where('email', $student_email);
@@ -114,7 +114,7 @@ class TransactionController extends Controller
                 break;
             
             case "paid":
-                $transaction = Transaction::with('student_activities', 'student_activities.students')->
+                $transaction = Transaction::with('student_activities', 'student_activities.students', 'student_activities.programme_details')->
                     when($is_student, function($q) use ($student_email) {
                         $q->whereHas('student_activities.students', function ($query) use ($student_email) {
                             $query->where('email', $student_email);

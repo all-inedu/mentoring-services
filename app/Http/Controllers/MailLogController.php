@@ -22,8 +22,11 @@ class MailLogController extends Controller
         $this->tech_mail = RouteServiceProvider::TECH_MAIL_1;
     }
 
-    public function index($param) //error & success
+    public function index($param, Request $request) //error & success
     {
+        $use_keyword = $request->get('keyword') != null ? 1 : 0;
+        $keyword = $request->get('keyword') != null ? $request->get('keyword') : null;
+
         $rules = [
             'param' => 'in:success,error'
         ];
@@ -33,10 +36,26 @@ class MailLogController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $mailLog = MailLog::when($param == 'success', function($query){
-            $query->where('status', 'delivered');
-        }, function($query) {
-            $query->where('status', 'not delivered');
+        $mailLog = MailLog::when($param == 'success', function($query) use ($use_keyword, $keyword){
+            $query->where('status', 'delivered')->when($use_keyword, function($query1) use ($keyword) {
+                $query1->where(function ($query2) use ($keyword) {
+                    $query2->where('recipient', 'like', '%'.$keyword.'%')->
+                            orWhere('sender', 'like', '%'.$keyword.'%')->
+                            orWhere('subject', 'like', '%'.$keyword.'%')->
+                            orWhere('message', 'like', '%'.$keyword.'%')->
+                            orWhere('date_sent', 'like', '%'.$keyword.'%');
+                });
+            });
+        }, function($query) use ($use_keyword, $keyword) {
+            $query->where('status', 'not delivered')->when($use_keyword, function($query1) use ($keyword) {
+                $query1->where(function ($query2) use ($keyword) {
+                    $query2->where('recipient', 'like', '%'.$keyword.'%')->
+                            orWhere('sender', 'like', '%'.$keyword.'%')->
+                            orWhere('subject', 'like', '%'.$keyword.'%')->
+                            orWhere('message', 'like', '%'.$keyword.'%')->
+                            orWhere('date_sent', 'like', '%'.$keyword.'%');
+                });
+            });
         })->orderBy('date_sent', 'desc')->paginate(10);
         return response()->json(['succes' => true, 'data' => $mailLog]);
     }
