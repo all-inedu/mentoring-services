@@ -150,7 +150,7 @@ Route::prefix('v1')->group(function(){
             Route::get('promotion', [PromotionController::class, 'index']);
             Route::get('speaker', [SpeakerController::class, 'index']);
             Route::get('student', [StudentController::class, 'index']);
-            Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
+            // Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
             Route::get('transaction/{status}/{recent?}', [TransactionController::class, 'index']);
             Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
 
