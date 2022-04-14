@@ -107,6 +107,8 @@ Route::prefix('v1')->group(function(){
         Route::get('overview/{role}/total', [DashboardController::class, 'overview']);
     });
 
+    Route::get('transaction/{trx_id}/{type}', [TransactionController::class, 'invoice']);
+
     //! Admin Scopes
     Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         
