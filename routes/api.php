@@ -102,7 +102,7 @@ Route::prefix('v1')->group(function(){
         Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
     });
 
-    Route::middleware(['auth:api', 'scopes:admin', 'scopes:mentor', 'cors'])->group(function() {
+    Route::middleware(['auth:api', 'scope:admin,mentor', 'cors'])->group(function() {
         
         Route::get('overview/{role}/total', [DashboardController::class, 'overview']);
     });
