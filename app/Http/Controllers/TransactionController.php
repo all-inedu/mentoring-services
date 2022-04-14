@@ -30,6 +30,14 @@ class TransactionController extends Controller
 
     public function invoice($trx_id, $type)
     {
+
+        $rules = ['type' => 'required|in:invoice,receipt'];
+
+        $validator = Validator::make(['type' => $type], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
         $transaction = Transaction::where('trx_id', $trx_id)->with('student_activities', function($query) {
             $query->with(['students', 'programmes']);
         })->first();
@@ -80,7 +88,7 @@ class TransactionController extends Controller
     {
 
         $rules = [
-            'status' => 'required|in:pending,need-confirmation,paid',
+            'status' => 'required|in:pending,need-confirmation,paid,all',
             'mail' => 'nullable|email'
         ];
 
@@ -93,6 +101,15 @@ class TransactionController extends Controller
         $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
 
         switch (strtolower($status)) {
+            case "all":
+                $transaction = Transaction::with('student_activities', 'student_activities.students', 'student_activities.programme_details')->when($is_student, function($q) use ($student_email) {
+                    $q->whereHas('student_activities.students', function ($query) use ($student_email) {
+                        $query->where('email', $student_email);
+                    });
+                })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
+                break;
+                break;
+
             case "pending":
                 $transaction = Transaction::with('student_activities', 'student_activities.students', 'student_activities.programme_details')->when($is_student, function($q) use ($student_email) {
                     $q->whereHas('student_activities.students', function ($query) use ($student_email) {
