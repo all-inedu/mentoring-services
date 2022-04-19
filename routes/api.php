@@ -22,7 +22,7 @@ use App\Http\Controllers\SpeakerController;
 use App\Http\Controllers\Student\AuthController as StudentAuthController;
 use App\Http\Controllers\Student\ForgotPasswordController as StudentForgotPasswordController;
 use App\Http\Controllers\Student\MediaController;
-use App\Http\Controllers\CRM\StudentMentorController;
+use App\Http\Controllers\Student\StudentMentorController;
 use App\Http\Controllers\Student\VerificationController as StudentVerificationController;
 use App\Http\Controllers\StudentActivitiesController;
 use App\Http\Controllers\StudentController;

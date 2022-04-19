@@ -72,7 +72,7 @@ class MediaController extends Controller
 
     public function index(Request $request)
     {
-        $use_keyword = !empty($request->get('keyword')) ? 1 : 0;
+        $use_keyword = $request->get('keyword') ? true : false;
         $keyword = !empty($request->get('keyword')) ? $request->get('keyword') : null;
 
         $student_email = $request->get('mail');
