@@ -62,7 +62,7 @@ class StudentActivitiesController extends Controller
     {
 
         $student_email = $request->get('mail') != NULL ? $request->get('mail') : null;
-        $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
+        $is_student = $request->get('mail') ? true : false;
 
         //
         $user_id = $request->get('id') != NULL ? $request->get('id') : null;
