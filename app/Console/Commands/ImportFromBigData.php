@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Http\Controllers\CRM\ClientController;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class ImportFromBigData extends Command
 {
@@ -57,9 +58,10 @@ class ImportFromBigData extends Command
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            return $e->getMessage();
+            Log::channel('scheduler')->error($e->getMessage());
         }
-        
+
+        Log::channel('scheduler')->info('Data has been synced');
         return 1;
         
     }
