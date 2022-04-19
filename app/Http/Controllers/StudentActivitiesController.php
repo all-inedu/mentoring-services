@@ -52,7 +52,7 @@ class StudentActivitiesController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Failed to set location link : '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to update error status. Please try again.']);
+            return response()->json(['success' => false, 'error' => 'Failed to set location link. Please try again.']);
         }
 
         return response()->json(['success' => true, 'message' => 'Meeting location has been successfully arranged']);

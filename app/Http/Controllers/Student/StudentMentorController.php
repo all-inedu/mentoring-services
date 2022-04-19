@@ -40,16 +40,19 @@ class StudentMentorController extends Controller
 
     public function list(Request $request)
     {
+
+        $mail = auth()->guard('student-api')->user()->email;
+
         $rules = [
             'mail' => 'required|exists:students,email'
         ];
 
-        $validator = Validator::make(['mail' => $request->get('mail')], $rules);
+        $validator = Validator::make(['mail' => $mail], $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $student = Students::where('email', $request->get('mail'))->first();
+        $student = Students::where('email', $mail)->first();
         return response()->json(['success' => true, 'data' => $student->users]);
     }
 
