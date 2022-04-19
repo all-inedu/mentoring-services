@@ -96,6 +96,9 @@ class TransactionController extends Controller
     public function index($status, $recent = NULL, Request $request)
     {
 
+        $is_searching = $request->get('keyword') != NULL ? 1 : 0;
+        $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
+
         $rules = [
             'status' => 'required|in:pending,need-confirmation,paid,expired,all',
             'mail' => 'nullable|email'
@@ -115,8 +118,19 @@ class TransactionController extends Controller
                     $q->whereHas('student_activities.students', function ($query) use ($student_email) {
                         $query->where('email', $student_email);
                     });
+                })->when($is_searching, function($query) use ($keyword){
+                    //* find by student full name
+                    $query->whereHas('student_activities.students', function($q1) use ($keyword) { 
+                        $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+                    
+                    //* find  by programme name nya = event / webinar
+                    })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
+                        $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                    //* find by student activities status = waiting / confirmed
+                    })->orWhereHas('student_activities', function ($q1) use ($keyword) {
+                        $q1->where('std_act_status', 'like', '%'.$keyword.'%');
+                    }); 
                 })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
-                break;
                 break;
 
             case "pending":
@@ -124,7 +138,20 @@ class TransactionController extends Controller
                     $q->whereHas('student_activities.students', function ($query) use ($student_email) {
                         $query->where('email', $student_email);
                     });
-                })->where('status', 'pending')->where('payment_proof', NULL)->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
+                })->where('status', 'pending')->where('payment_proof', NULL)
+                ->when($is_searching, function($query) use ($keyword){
+                    //* find by student full name
+                    $query->whereHas('student_activities.students', function($q1) use ($keyword) { 
+                        $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+                    
+                    //* find  by programme name nya = event / webinar
+                    })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
+                        $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                    //* find by student activities status = waiting / confirmed
+                    })->orWhereHas('student_activities', function ($q1) use ($keyword) {
+                        $q1->where('std_act_status', 'like', '%'.$keyword.'%');
+                    }); 
+                })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
 
             case "need-confirmation":
@@ -136,6 +163,18 @@ class TransactionController extends Controller
                     })->
                     where('status', 'pending')->where(function($query) {
                         $query->where('payment_proof', '!=', NULL)->orWhere('payment_method', '!=', NULL)->orWhere('payment_date', '!=', NULL);
+                    })->when($is_searching, function($query) use ($keyword){
+                        //* find by student full name
+                        $query->whereHas('student_activities.students', function($q1) use ($keyword) { 
+                            $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+                        
+                        //* find  by programme name nya = event / webinar
+                        })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
+                            $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                        //* find by student activities status = waiting / confirmed
+                        })->orWhereHas('student_activities', function ($q1) use ($keyword) {
+                            $q1->where('std_act_status', 'like', '%'.$keyword.'%');
+                        }); 
                     })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
             
@@ -145,8 +184,20 @@ class TransactionController extends Controller
                         $q->whereHas('student_activities.students', function ($query) use ($student_email) {
                             $query->where('email', $student_email);
                         });
-                    })->
-                    where('status', 'paid')->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
+                    })->where('status', 'paid')->
+                    when($is_searching, function($query) use ($keyword){
+                        //* find by student full name
+                        $query->whereHas('student_activities.students', function($q1) use ($keyword) { 
+                            $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+                        
+                        //* find  by programme name nya = event / webinar
+                        })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
+                            $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                        //* find by student activities status = waiting / confirmed
+                        })->orWhereHas('student_activities', function ($q1) use ($keyword) {
+                            $q1->where('std_act_status', 'like', '%'.$keyword.'%');
+                        }); 
+                    })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
 
             case "expired":
@@ -155,8 +206,20 @@ class TransactionController extends Controller
                         $q->whereHas('student_activities.students', function ($query) use ($student_email) {
                             $query->where('email', $student_email);
                         });
-                    })->
-                    where('status', 'expired')->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
+                    })->where('status', 'expired')->
+                    when($is_searching, function($query) use ($keyword){
+                        //* find by student full name
+                        $query->whereHas('student_activities.students', function($q1) use ($keyword) { 
+                            $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+                        
+                        //* find  by programme name nya = event / webinar
+                        })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
+                            $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                        //* find by student activities status = waiting / confirmed
+                        })->orWhereHas('student_activities', function ($q1) use ($keyword) {
+                            $q1->where('std_act_status', 'like', '%'.$keyword.'%');
+                        }); 
+                    })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE);
                 break;
         }
         
