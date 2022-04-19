@@ -28,6 +28,27 @@ class TransactionController extends Controller
         $this->ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE;
     }
 
+    public function count_transaction()
+    {
+        try {
+
+            $data = array(
+                'pending' => Transaction::where('status', 'pending')->count(),
+                'need-confirmation' => Transaction::where('status', 'pending')->where(function($query) {
+                                            $query->where('payment_proof', '!=', NULL)->orWhere('payment_method', '!=', NULL)->orWhere('payment_date', '!=', NULL);
+                                        })->count(),
+                'paid' => Transaction::where('status', 'paid')->count(),
+                'expired' => Transaction::where('status', 'expired')->count()
+            );
+        } catch (Exception $e) {
+
+            Log::error('Get Transaction Overview Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to get transaction overview. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'data' => $data]);
+    }
+
     public function payment_checker()
     {
         $pending_transaction = Transaction::where('status', 'pending')->where(function($query) {

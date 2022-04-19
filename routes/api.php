@@ -122,6 +122,7 @@ Route::prefix('v1')->group(function(){
         Route::get('transaction/{trx_id}/{type}', [TransactionController::class, 'invoice']);
         Route::get('last/sync/{user_type}', [HelperController::class, 'last_sync']);
         Route::get('essay/{status}/{id}', [EssayController::class, 'count_essay']);
+        Route::get('overview/transaction', [TransactionController::class, 'count_transaction']);
 
         Route::prefix('find')->group(function() {
             Route::get('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'find']);
