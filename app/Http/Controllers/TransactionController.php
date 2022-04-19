@@ -34,7 +34,7 @@ class TransactionController extends Controller
 
             $data = array(
                 'pending' => Transaction::where('status', 'pending')->count(),
-                'need-confirmation' => Transaction::where('status', 'pending')->where(function($query) {
+                'need_confirmation' => Transaction::where('status', 'pending')->where(function($query) {
                                             $query->where('payment_proof', '!=', NULL)->orWhere('payment_method', '!=', NULL)->orWhere('payment_date', '!=', NULL);
                                         })->count(),
                 'paid' => Transaction::where('status', 'paid')->count(),
