@@ -97,28 +97,27 @@ class StudentActivitiesController extends Controller
 
     public function index_by_auth($programme, $recent = NULL, Request $request)
     {
-        $rules = ['status' => 'nullable|in:waiting,confirmed'];
+        $rules = [
+            'programme' => 'required|in:1-on-1-call,webinar,event',
+            'status' => 'nullable|in:waiting,confirmed'
+        ];
 
-        $validator = Validator::make(['status' => $request->get('status')], $rules);
+        $validator = Validator::make([
+            'programme' => $programme,
+            'status' => $request->get('status')
+        ], $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $using_status = $request->get('status') != NULL ? 1 : 0;
+        $using_status = $request->get('status') ? 1 : 0;
         $status = $request->get('status') != NULL ? $request->get('status') : false;
         
-        $is_mentor = false;
-        $role = auth()->guard('api')->user()->roles;
-        foreach ($role as $data) {
-            if ($data->role_name == "mentor") {
-                $is_mentor = true;
-            }
-        }
         $id = auth()->guard('api')->user()->id;
         $student_email = $request->get('mail') != NULL ? $request->get('mail') : null;
-        $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
+        $is_student = $request->get('mail') ? true : false;
 
-        $use_keyword = $request->get('keyword') != NULL ? 1 : 0;
+        $use_keyword = $request->get('keyword') ? 1 : 0;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
 
         $activities = StudentActivities::with(['programmes', 'students', 'users', 'programme_details'])->
@@ -138,9 +137,9 @@ class StudentActivitiesController extends Controller
             $query->whereHas('students', function ($q) use ($student_email) {
                 $q->where('email', $student_email);
             });
-        })->when($is_mentor, function($query) use ($id, $status){
-            $query->where('user_id', $id)->where('std_act_status', $status);
-        })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+        })->when($using_status, function($query) use ($id, $status){
+            $query->where('std_act_status', $status);
+        })->where('user_id', $id)->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);
     }

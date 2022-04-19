@@ -220,6 +220,7 @@ Route::prefix('v1')->group(function(){
         Route::post('set/meeting', [StudentActivitiesController::class, 'set_meeting']);
         Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_auth']);
         Route::get('student/list', [StudentController::class, 'select_by_auth']);
+        Route::get('student/files', [MediaController::class, 'index']);
 
         Route::prefix('create')->group(function() {
             Route::post('schedule', [UserScheduleController::class, 'store']);
