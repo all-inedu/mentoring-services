@@ -145,8 +145,8 @@ class TransactionController extends Controller
                         $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
                     
                     //* find  by programme name nya = event / webinar
-                    })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
-                        $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                    })->orWhereHas('student_activities.programme_details', function ($q1) use ($keyword) { 
+                        $q1->where('dtl_name', 'like', '%'.$keyword.'%');
                     //* find by student activities status = waiting / confirmed
                     })->orWhereHas('student_activities', function ($q1) use ($keyword) {
                         $q1->where('std_act_status', 'like', '%'.$keyword.'%');
@@ -166,8 +166,8 @@ class TransactionController extends Controller
                         $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
                     
                     //* find  by programme name nya = event / webinar
-                    })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
-                        $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                    })->orWhereHas('student_activities.programme_details', function ($q1) use ($keyword) { 
+                        $q1->where('dtl_name', 'like', '%'.$keyword.'%');
                     //* find by student activities status = waiting / confirmed
                     })->orWhereHas('student_activities', function ($q1) use ($keyword) {
                         $q1->where('std_act_status', 'like', '%'.$keyword.'%');
@@ -190,8 +190,8 @@ class TransactionController extends Controller
                             $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
                         
                         //* find  by programme name nya = event / webinar
-                        })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
-                            $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                        })->orWhereHas('student_activities.programme_details', function ($q1) use ($keyword) { 
+                            $q1->where('dtl_name', 'like', '%'.$keyword.'%');
                         //* find by student activities status = waiting / confirmed
                         })->orWhereHas('student_activities', function ($q1) use ($keyword) {
                             $q1->where('std_act_status', 'like', '%'.$keyword.'%');
@@ -212,8 +212,8 @@ class TransactionController extends Controller
                             $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
                         
                         //* find  by programme name nya = event / webinar
-                        })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
-                            $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                        })->orWhereHas('student_activities.programme_details', function ($q1) use ($keyword) { 
+                            $q1->where('dtl_name', 'like', '%'.$keyword.'%');
                         //* find by student activities status = waiting / confirmed
                         })->orWhereHas('student_activities', function ($q1) use ($keyword) {
                             $q1->where('std_act_status', 'like', '%'.$keyword.'%');
@@ -234,8 +234,8 @@ class TransactionController extends Controller
                             $q1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
                         
                         //* find  by programme name nya = event / webinar
-                        })->orWhereHas('student_activities.programme_details.programmes', function ($q1) use ($keyword) { 
-                            $q1->where('prog_name', 'like', '%'.$keyword.'%');
+                        })->orWhereHas('student_activities.programme_details', function ($q1) use ($keyword) { 
+                            $q1->where('dtl_name', 'like', '%'.$keyword.'%');
                         //* find by student activities status = waiting / confirmed
                         })->orWhereHas('student_activities', function ($q1) use ($keyword) {
                             $q1->where('std_act_status', 'like', '%'.$keyword.'%');
