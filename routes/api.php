@@ -22,7 +22,7 @@ use App\Http\Controllers\SpeakerController;
 use App\Http\Controllers\Student\AuthController as StudentAuthController;
 use App\Http\Controllers\Student\ForgotPasswordController as StudentForgotPasswordController;
 use App\Http\Controllers\Student\MediaController;
-use App\Http\Controllers\Student\StudentMentorController;
+use App\Http\Controllers\CRM\StudentMentorController;
 use App\Http\Controllers\Student\VerificationController as StudentVerificationController;
 use App\Http\Controllers\StudentActivitiesController;
 use App\Http\Controllers\StudentController;
@@ -53,6 +53,7 @@ Route::prefix('v1')->group(function(){
     
     // Route::get('daily/mail/error', [MailLogController::class, 'mail_to_tech']);
     Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
+    Route::get('test/sync', [ClientController::class, 'import_student']);
     Route::get('payment-checker', [TransactionController::class, 'payment_checker']);
 
     //! Student Auth
@@ -102,12 +103,13 @@ Route::prefix('v1')->group(function(){
         Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
     });
 
+    //! Admin & Mentor Scopes
     Route::middleware(['auth:api', 'scope:admin,mentor', 'cors'])->group(function() {
         
         Route::get('overview/{role}/total', [DashboardController::class, 'overview']);
 
         Route::prefix('list')->group(function() {
-            Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
+            
         });
     });
 
@@ -150,7 +152,7 @@ Route::prefix('v1')->group(function(){
             Route::get('promotion', [PromotionController::class, 'index']);
             Route::get('speaker', [SpeakerController::class, 'index']);
             Route::get('student', [StudentController::class, 'index']);
-            // Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
+            Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
             Route::get('transaction/{status}/{recent?}', [TransactionController::class, 'index']);
             Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
 
@@ -215,6 +217,7 @@ Route::prefix('v1')->group(function(){
     //! Mentor Scopes
     Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
         Route::post('set/meeting', [StudentActivitiesController::class, 'set_meeting']);
+        Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_auth']);
 
         Route::prefix('create')->group(function() {
             Route::post('schedule', [UserScheduleController::class, 'store']);

@@ -63,8 +63,18 @@ class Client extends Model
         return $this->belongsToMany(Program::class, 'tbl_stprog', 'st_num', 'prog_id');
     }
 
+    public function student_programs()
+    {
+        return $this->hasMany(StudentProgram::class, 'st_num', 'st_num');
+    }
+
     public function alumni()
     {
         return $this->hasMany(Students::class, 'st_id', 'st_id');
+    }
+
+    public function scopeWithAndWhereHas($query, $relation, $constraint){
+        return $query->whereHas($relation, $constraint)
+                     ->with([$relation => $constraint]);
     }
 }

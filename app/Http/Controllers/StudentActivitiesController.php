@@ -61,24 +61,6 @@ class StudentActivitiesController extends Controller
     public function index($programme, $recent = NULL, Request $request)
     {
 
-        $rules = ['status' => 'required|in:waiting,confirmed'];
-
-        $validator = Validator::make(['status' => $request->get('status')], $rules);
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
-        }
-
-        $is_mentor = false;
-        $role = auth()->guard('api')->user()->roles;
-        foreach ($role as $data) {
-            if ($data->role_name == "mentor") {
-                $is_mentor = true;
-            }
-        }
-        $id = auth()->guard('api')->user()->id;
-        $using_status = $request->get('status') != NULL ? 1 : 0;
-        $status = $request->get('status') != NULL ? $request->get('status') : false;
-
         $student_email = $request->get('mail') != NULL ? $request->get('mail') : null;
         $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
 
@@ -108,9 +90,57 @@ class StudentActivitiesController extends Controller
                 });
             })->when($find_detail, function($query) use ($user_id) {
                 $query->where('user_id', $user_id);
-            })->when($is_mentor, function($query) use ($id, $status){
-                $query->where('user_id', $id)->where('std_act_status', $status);
             })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+
+        return response()->json(['success' => true, 'data' => $activities]);
+    }
+
+    public function index_by_auth($programme, $recent = NULL, Request $request)
+    {
+        $rules = ['status' => 'nullable|in:waiting,confirmed'];
+
+        $validator = Validator::make(['status' => $request->get('status')], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $using_status = $request->get('status') != NULL ? 1 : 0;
+        $status = $request->get('status') != NULL ? $request->get('status') : false;
+        
+        $is_mentor = false;
+        $role = auth()->guard('api')->user()->roles;
+        foreach ($role as $data) {
+            if ($data->role_name == "mentor") {
+                $is_mentor = true;
+            }
+        }
+        $id = auth()->guard('api')->user()->id;
+        $student_email = $request->get('mail') != NULL ? $request->get('mail') : null;
+        $is_student = Students::where('email', $student_email)->count() > 0 ? true : false;
+
+        $use_keyword = $request->get('keyword') != NULL ? 1 : 0;
+        $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
+
+        $activities = StudentActivities::with(['programmes', 'students', 'users', 'programme_details'])->
+            whereHas('programmes', function($query) use ($programme) {
+                $query->where('prog_name', $programme);
+        })->when($use_keyword, function($query) use ($keyword, $programme) {
+            $query->when($programme == "1-on-1-call", function ($q1) use ($keyword) {
+                $q1->where(function($q2) use ($keyword) {
+                    $q2->where(DB::raw("CONCAT(`module`, ' - ', `call_with`)"), 'like', '%'.$keyword.'%')->orWhereHas('users', function($q3) use ($keyword) {
+                        $q3->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+                    })->orWhereHas('students', function ($q) use ($keyword) {
+                        $q->where(DB::raw("CONCAT(`first_name`, ' - ', `last_name`)"), 'like', '%'.$keyword.'%');
+                    });
+                });
+            });
+        })->when($is_student, function($query) use ($student_email) {
+            $query->whereHas('students', function ($q) use ($student_email) {
+                $q->where('email', $student_email);
+            });
+        })->when($is_mentor, function($query) use ($id, $status){
+            $query->where('user_id', $id)->where('std_act_status', $status);
+        })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);
     }

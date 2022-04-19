@@ -13,6 +13,8 @@ class Program extends Model
     protected $table = 'tbl_prog';
 
     protected $primaryKey = 'prog_id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.
@@ -20,7 +22,6 @@ class Program extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'prog_id',
         'prog_main',
         'main_number',
         'prog_sub',
@@ -35,9 +36,8 @@ class Program extends Model
         return $this->belongsToMany(Client::class, 'tbl_stprog', 'prog_id', 'st_num');
     }
 
-    public function student_mentors()
+    public function student_program()
     {
-        return $this->hasManyThrough(StudentMentor::class, StudentProgram::class, 'st_num', 'stmentor_id');
+        return $this->hasMany(StudentProgram::class, 'prog_id', 'prog_id');
     }
-
 }

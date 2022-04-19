@@ -2,15 +2,17 @@
 
 namespace App\Models\CRM;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class StudentMentor extends Model
 {
     use HasFactory;
 
     protected $connection = 'mysql_crm';
-    protected $table = 'tbl_stprog';
+    protected $table = 'tbl_stmentor';
 
     protected $primaryKey = 'stmentor_id';
 
@@ -26,8 +28,10 @@ class StudentMentor extends Model
         'mt_id2'
     ];
 
-    public function program()
+    public function student_programs()
     {
-        return $this->belongsTo(Program::class, 'stprog_id', 'stprog_id');
+        return $this->belongsTo(StudentProgram::class, 'stprog_id', 'stprog_id');
     }
+
+
 }
