@@ -92,6 +92,21 @@ class MediaController extends Controller
         return response()->json(['success' => true, 'data' => $media]);
     }
 
+    public function index_by_student(Request $request)
+    {
+        $use_keyword = $request->get('keyword') ? true : false;
+        $keyword = !empty($request->get('keyword')) ? $request->get('keyword') : null;
+
+        $student_id = auth()->guard('student-api')->user()->id;
+        $media = Medias::with('media_categories')->whereHas('students', function ($query) use ($student_id) {
+            $query->where('id', $student_id);
+        })->when($use_keyword, function($query) use ($keyword) {
+            $query->where('med_title', 'like', '%'.$keyword.'%');
+        })->orderBy('created_at', 'desc')->paginate($this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE);
+
+        return response()->json(['success' => true, 'data' => $media]);
+    }
+
     public function delete($media_id)
     {
         $media = Medias::findOrFail($media_id);

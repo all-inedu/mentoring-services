@@ -15,6 +15,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Students;
+use App\Models\UserSchedule;
 
 class StudentMentorController extends Controller
 {
@@ -31,11 +32,27 @@ class StudentMentorController extends Controller
         $mentor = User::whereHas('roles', function ($query) {
             $query->where('role_name', '!=', 'admin');
         })->where('id', $mentor_id)->first();
+
         if (!$mentor) {
             return response()->json(['success' => false, 'error' => 'Couldn\'t find mentor']);
         }
-        
-        return response()->json(['success' => true, 'data' => $mentor->user_schedules]);
+
+        $response = array();
+
+        foreach ($mentor->user_schedules as $data) {
+            // echo array_search($data->us_days, $response);
+            echo 'a';
+            if (!array_search($data->us_days, $response)) {
+                echo 'b';
+                $response[] = array(
+                    'day' => $data->us_days,
+                    'time' => UserSchedule::where('user_id', $data->user_id)->where('us_days', $data->us_days)->
+                                    select('us_start_time as start_time', 'us_end_time as end_time')->get()
+                );
+            } 
+        }
+        exit;
+        return response()->json(['success' => true, 'data' => $response]);
     }
 
     public function list(Request $request)

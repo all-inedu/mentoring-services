@@ -74,15 +74,17 @@ Route::prefix('v1')->group(function(){
          
         Route::post('media/add', [MediaController::class, 'store']);
         Route::delete('media/delete/{media_id}', [MediaController::class, 'delete']);
-        Route::get('media/list', [MediaController::class, 'index']);
+        Route::get('media/list', [MediaController::class, 'index_by_student']);
         Route::post('upload/payment-proof', [TransactionController::class, 'upload_payment_proof']);
-        Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
+        Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_student']);
         Route::get('mentor/list', [StudentMentorController::class, 'list']);
         Route::get('appoinment/{mentor_id}', [StudentMentorController::class, 'find']);
         
         Route::post('add/social-media', [SocialMediaController::class, 'store']);
         Route::put('update/social-media/{soc_med_id}', [SocialMediaController::class, 'update']);
-        Route::delete('delete/social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);        
+        Route::delete('delete/social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);     
+        
+        Route::post('make/{activities}', [StudentActivitiesController::class, 'store_by_student']);
     });
 
     Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
@@ -183,7 +185,7 @@ Route::prefix('v1')->group(function(){
             Route::post('promotion', [PromotionController::class, 'store']);
             Route::post('mentor/assignment', [StudentMentorController::class, 'store']);
             Route::post('education', [EducationController::class, 'store']);
-            Route::post('student/activities', [StudentActivitiesController::class, 'store']);
+            // Route::post('student/activities', [StudentActivitiesController::class, 'store']);
             Route::post('social-media', [SocialMediaController::class, 'store']);
         });
 
@@ -220,6 +222,7 @@ Route::prefix('v1')->group(function(){
         Route::post('set/meeting', [StudentActivitiesController::class, 'set_meeting']);
         Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_auth']);
         Route::get('student/list', [StudentController::class, 'select_by_auth']);
+        Route::get('student/detail', [StudentController::class, 'index']);
         Route::get('student/files', [MediaController::class, 'index']);
 
         Route::prefix('create')->group(function() {
