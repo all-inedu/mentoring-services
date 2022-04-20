@@ -38,20 +38,34 @@ class StudentMentorController extends Controller
         }
 
         $response = array();
-
+        // $index = 0;
         foreach ($mentor->user_schedules as $data) {
-            // echo array_search($data->us_days, $response);
-            echo 'a';
-            if (!array_search($data->us_days, $response)) {
-                echo 'b';
-                $response[] = array(
-                    'day' => $data->us_days,
-                    'time' => UserSchedule::where('user_id', $data->user_id)->where('us_days', $data->us_days)->
-                                    select('us_start_time as start_time', 'us_end_time as end_time')->get()
-                );
-            } 
+            if (strtotime($data->us_start_time) < strtotime('12:00:00')) {
+                $period = 'morning';
+            } else if (strtotime($data->us_start_time) < strtotime('18:00:00')) {
+                $period = 'afternoon';
+            } else {
+                $period = 'evening';
+            }
+
+            $response[$data->us_days][$period][] = array(
+                'start_time' => $data->us_start_time,
+                'end_time' => $data->us_end_time
+            );
+
+            // $response[$index]['day'] = $data->us_days;
+
+            // $found = array_search($data->us_days, array_column($response, 'day'));
+            // if ($found !== NULL) {
+
+            //     $response[$found]['schedule'][] = array(
+            //         'start_time' => $data->us_start_time,
+            //         'end_time' => $data->us_end_time
+            //     );
+            // }
+            // $index++;
         }
-        exit;
+        
         return response()->json(['success' => true, 'data' => $response]);
     }
 
