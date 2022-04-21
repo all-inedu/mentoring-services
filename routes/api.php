@@ -105,16 +105,6 @@ Route::prefix('v1')->group(function(){
         Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
     });
 
-    //! Admin & Mentor Scopes
-    Route::middleware(['auth:api', 'scope:admin,mentor', 'cors'])->group(function() {
-        
-        Route::get('overview/{role}/total', [DashboardController::class, 'overview']);
-
-        Route::prefix('list')->group(function() {
-            
-        });
-    });
-
     Route::get('transaction/{trx_id}/{type}', [TransactionController::class, 'invoice']);
 
     //! Admin Scopes
@@ -219,19 +209,9 @@ Route::prefix('v1')->group(function(){
 
     //! Mentor Scopes
     Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
-        Route::post('set/meeting', [StudentActivitiesController::class, 'set_meeting']);
-        Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_auth']);
         Route::get('student/list', [StudentController::class, 'select_by_auth']);
         Route::get('student/detail', [StudentController::class, 'index']);
         Route::get('student/files', [MediaController::class, 'index']);
-
-        Route::prefix('create')->group(function() {
-            Route::post('schedule', [UserScheduleController::class, 'store']);
-        });
-
-        Route::prefix('delete')->group(function() {
-            Route::delete('schedule/{schedule_id}', [UserScheduleController::class, 'delete']);
-        });
     });    
 
     //! Editor Scopes
@@ -244,6 +224,21 @@ Route::prefix('v1')->group(function(){
     //! Alumni Scopes
     Route::middleware(['auth:api', 'scopes:alumni'])->group(function() {
         
+    });
+
+    //! Admin, Mentor, & Editor Scopes
+    Route::middleware(['auth:api', 'scope:admin,mentor,editor', 'cors'])->group(function() {
+        Route::get('overview/{role}/total', [DashboardController::class, 'overview']);
+        Route::post('set/meeting', [StudentActivitiesController::class, 'set_meeting']);
+        Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_auth']);
+
+        Route::prefix('create')->group(function() {
+            Route::post('schedule', [UserScheduleController::class, 'store']);
+        });
+
+        Route::prefix('delete')->group(function() {
+            Route::delete('schedule/{schedule_id}', [UserScheduleController::class, 'delete']);
+        });
     });
 });
 
