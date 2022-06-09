@@ -36,6 +36,9 @@ class Students extends Authenticatable
         'status',
         'is_verified',
         'school_name',
+        'tag',
+        'competitiveness_level',
+        'personal_brand_dev_progress'
     ];
 
     /**
@@ -68,6 +71,11 @@ class Students extends Authenticatable
         return $grade <= 12 ? $grade : 'Not High School';
     }
 
+    public function getAddressAttribute($value)
+    {
+        return strip_tags($value);
+    }
+
     public function medias()
     {
         return $this->hasMany(Medias::class, 'student_id', 'id');
@@ -88,11 +96,46 @@ class Students extends Authenticatable
         return $this->hasMany(SocialMedia::class, 'student_id', 'id');
     }
 
+    public function interests()
+    {
+        return $this->hasMany(Interests::class, 'student_id', 'id');
+    }
+
+    public function competitions()
+    {
+        return $this->hasMany(Competitions::class, 'student_id', 'id');
+    }
+ 
+    public function academic_records()
+    {
+        return $this->hasMany(AcademicRecords::class, 'student_id', 'id');
+    }
+
+    public function uni_shortlisted()
+    {
+        return $this->hasMany(UniShortlisted::class, 'student_id', 'id');
+    }
+
+    public function group_project()
+    {
+        return $this->hasMany(GroupProject::class, 'student_id', 'id');
+    }
+
+    public function group_project_participant()
+    {
+        return $this->belongsToMany(GroupProject::class, 'participants', 'student_id', 'group_id');
+    }
+
     public function scopePaginateChecker($query, $is_detail, $paginate)
     {
         if (!$is_detail)
             return $query->paginate($paginate);
         else
             return $query->first();
+    }
+
+    public function attendances()
+    {
+        return $this->belongsToMany(GroupMeeting::class, 'student_attendances', 'student_id', 'group_meet_id');
     }
 }

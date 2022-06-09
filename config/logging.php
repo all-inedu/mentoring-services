@@ -118,6 +118,26 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/synchronization.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+        ],
+
+        //* invitation group project logging */
+        'groupinvitationlog' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/group_invitation.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
+
+        //* detail of invitation group project */
+        'groupinvitationlog_detail' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/group_invitation_detail.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
+        //* reminder group meeting logging
+        'group_meeting_reminder_log' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/group_meeting_reminder.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
         ]
     ],
 

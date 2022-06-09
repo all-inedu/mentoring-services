@@ -81,4 +81,29 @@ class User extends Authenticatable
     {
         return $this->hasMany(SocialMedia::class, 'user_id', 'id');
     }
+
+    public function uni_shortlisted()
+    {
+        return $this->hasMany(UniShortlisted::class, 'user_id', 'id');
+    }
+
+    public function group_project()
+    {
+        return $this->hasMany(GroupProject::class, 'user_id', 'id');
+    }
+
+    public function initial_consult()
+    {
+        return $this->hasMany(InitialConsult::class, 'user_id', 'id');
+    }
+
+    public function group_mentor()
+    {
+        return $this->belongsToMany(GroupProject::class, 'group_mentors', 'user_id', 'group_id');
+    }
+
+    public function attendances()
+    {
+        return $this->belongsToMany(GroupMeeting::class, 'user_attendances', 'user_id', 'group_meet_id');
+    }
 }

@@ -18,7 +18,15 @@ class StudentMentors extends Model
         'student_id',
         'user_id',
         'user_id',
+        'start_mentoring',
+        'end_mentoring',
+        'status',
         'created_at',
         'updated_at'
     ];
+
+    public function plan_to_do_list()
+    {
+        return $this->hasMany(PlanToDoList::class, 'student_mentors_id', 'id');
+    }
 }

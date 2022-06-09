@@ -22,7 +22,7 @@ class ImportFromBigData extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Synchronize alumni, editor, mentor, student';
 
     /**
      * Create a new command instance.

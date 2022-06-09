@@ -19,10 +19,16 @@ use App\Http\Controllers\ProgrammeScheduleController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\SocialMediaController;
 use App\Http\Controllers\SpeakerController;
+use App\Http\Controllers\Student\AcademicController;
 use App\Http\Controllers\Student\AuthController as StudentAuthController;
+use App\Http\Controllers\Student\CompetitionController;
 use App\Http\Controllers\Student\ForgotPasswordController as StudentForgotPasswordController;
+use App\Http\Controllers\Student\GroupController;
+use App\Http\Controllers\Student\InterestController;
 use App\Http\Controllers\Student\MediaController;
+use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\Student\StudentMentorController;
+use App\Http\Controllers\Student\UniversityController;
 use App\Http\Controllers\Student\VerificationController as StudentVerificationController;
 use App\Http\Controllers\StudentActivitiesController;
 use App\Http\Controllers\StudentController;
@@ -33,6 +39,7 @@ use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
 use App\Http\Controllers\VerificationController;
 use App\Models\StudentActivities;
+use Illuminate\Support\Facades\Crypt;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +54,24 @@ use App\Models\StudentActivities;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::get('a', function() {
+    $data = array(
+        'name' => 'eric',
+        'group_info' => (object) array(
+            'project_name' => 'project AB'
+        ),
+        'meeting_detail' => (object) array(
+            'meeting_subject' => 'subject AB',
+            'meeting_date' => '2022-06-09 12:00:00',
+            'meeting_link' => 'https://zoom.us/123',
+            'token' => Crypt::encrypt(array(
+                'nama' => 'eric'
+            ))
+        )
+    );
+    return view('templates/mail/cancel-group-meeting-announcement', $data);
 });
 
 Route::prefix('v1')->group(function(){
@@ -79,12 +104,53 @@ Route::prefix('v1')->group(function(){
         Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_student']);
         Route::get('mentor/list', [StudentMentorController::class, 'list']);
         Route::get('appoinment/{mentor_id}', [StudentMentorController::class, 'find']);
-        
         Route::post('add/social-media', [SocialMediaController::class, 'store']);
         Route::put('update/social-media/{soc_med_id}', [SocialMediaController::class, 'update']);
         Route::delete('delete/social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);     
-        
         Route::post('make/{activities}', [StudentActivitiesController::class, 'store_by_student']);
+
+        //** New */
+        Route::get('interest', [InterestController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
+        Route::post('interest', [InterestController::class, 'store']);
+        Route::put('interest/{interest_id}', [InterestController::class, 'update']);
+        Route::delete('interest/{interest_id}', [InterestController::class, 'delete']);
+
+        //* New */
+        Route::get('competition', [CompetitionController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
+        Route::post('competition', [CompetitionController::class, 'store']);
+        Route::put('competition/{comp_id}', [CompetitionController::class, 'update']);
+        Route::delete('competition/{comp_id}', [CompetitionController::class, 'delete']);
+
+        //* New */
+        Route::get('academic', [AcademicController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
+        Route::post('academic', [AcademicController::class, 'store']);
+        Route::put('academic/{aca_id}', [AcademicController::class, 'update']);
+        Route::delete('academic/{aca_id}', [AcademicController::class, 'delete']);
+
+        //* New */
+        Route::put('profile', [ProfileController::class, 'update']);
+        Route::put('change/password', [ProfileController::class, 'change_password']);
+
+        //* New */
+        Route::get('group/project/{status}', [GroupController::class, 'index']);
+        Route::get('group/project/detail/{group_id}', [GroupController::class, 'find']);
+        Route::post('group/project', [GroupController::class, 'store']);
+        Route::put('group/project/{group_id}', [GroupController::class, 'update']);
+        
+        Route::post('group/project/participant', [GroupController::class, 'add_participant']);
+        Route::put('group/project/participant/{group_id}/{student_id}', [GroupController::class, 'update_participant_role_contribution']);
+        Route::delete('group/project/participant/{group_id}/{student_id}', [GroupController::class, 'remove_participant']);
+        Route::post('group/project/confirmation', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
+
+        Route::post('group/project/meeting', [GroupController::class, 'create_meeting']);
+        Route::get('group/project/meeting/{encrypted_data}', [GroupController::class, 'attended'])->name('attend');
+        Route::put('group/project/meeting/{meeting_id}', [GroupController::class, 'cancel_meeting']);
+
+        //* New */
+        Route::get('university/shortlisted/{status}', [UniversityController::class, 'index']);
+
+        //* New */
+        Route::post('academic/requirement', [UniversityController::class, 'store_requirement']);
     });
 
     Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);

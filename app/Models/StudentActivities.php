@@ -57,6 +57,11 @@ class StudentActivities extends Model
         return $this->hasOne(Transaction::class, 'st_act_id', 'id');
     }
 
+    public function meeting_minutes()
+    {
+        return $this->hasMany(MeetingMinutes::class, 'st_act_id', 'id');
+    }
+
     public function scopeRecent($query, $recent, $paginate)
     {
         if (!$recent)

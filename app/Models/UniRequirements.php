@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Medias extends Model
+class UniRequirements extends Model
 {
     use HasFactory;
 
@@ -14,18 +14,19 @@ class Medias extends Model
      *
      * @var array<int, string>
      */
+
     protected $fillable = [
-        'student_id',
-        'med_title',
-        'med_desc',
-        'med_file_name',
-        'med_file_format',
+        'description',
+        'toefl_score',
+        'ielts_score',
+        'essay_title',
+        'publication_links',
         'status'
     ];
 
-    public function students()
+    public function uni_shortlisted()
     {
-        return $this->belongsTo(Students::class, 'student_id', 'id');
+         return $this->belongsTo(UniShortlisted::class, 'uni_id', 'id');
     }
 
     public function media_categories()
@@ -33,8 +34,8 @@ class Medias extends Model
         return $this->belongsTo(MediaCategory::class, 'med_cat_id', 'id');
     }
 
-    public function uni_requirement()
+    public function media()
     {
-        return $this->belongsToMany(UniRequirements::class, 'uni_requirement_media', 'med_id', 'uni_req_id');
+        return $this->belongsToMany(Medias::class, 'uni_requirement_media', 'uni_req_id', 'med_id');
     }
 }

@@ -26,7 +26,11 @@ class DatabaseSeeder extends Seeder
             V2ProgrammeDetailSeeder::class,
             UserRoleSeeder::class,
             StudentSeeder::class,
-            StudentActivitiesSeeder::class
+            StudentActivitiesSeeder::class,
+
+            //* New 
+            UniShortlistedSeeder::class,
+            ApSubjectSeeder::class,
         ]);
     }
 }

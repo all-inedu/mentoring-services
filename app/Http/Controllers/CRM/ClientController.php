@@ -115,14 +115,14 @@ class ClientController extends Controller
                     'imported_id' => $this->remove_blank($data->student->st_id),
                     'position' => null,
                     'imported_from' => 'u5794939_allin_bd',
-                    'educations' => array(
+                    'educations' => !empty($data->student->school->sch_name) ? array(
                         'graduated_from' => $data->student->school->sch_name,
                         'major' => null,
                         'degree' => null,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                         'graduation_date' => $data->alu_graduatedate
-                    )
+                    ) : null
                 );
             }
         }
@@ -152,9 +152,12 @@ class ClientController extends Controller
                 $alumni->imported_from = $alumni_data['imported_from'];
                 $alumni->save();
 
-                Education::insert(
-                    ['user_id' => $alumni->id] + $alumni_data['educations']
-                );
+                if ($alumni_data['educations'] != null) {
+                    Education::insert(
+                        ['user_id' => $alumni->id] + $alumni_data['educations']
+                    );
+                }
+
 
                 $alumni->roles()->attach($alumni->id, ['role_id' => 4, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
 
@@ -194,14 +197,14 @@ class ClientController extends Controller
                     'imported_id' => null,
                     'position' => null,
                     'imported_from' => 'u5794939_editing',
-                    'educations' => array(
+                    'educations' => !empty($data->graduated_from) ? array(
                         'graduated_from' => $data->graduated_from,
                         'major' => $data->major,
                         'degree' => null,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                         'graduation_date' => null
-                    )
+                    ) : null
                 );
             // }
             
@@ -247,9 +250,11 @@ class ClientController extends Controller
 
                 $editors = $editor;
 
-                Education::insert(
-                    ['user_id' => $editor->id] + $editor_data['educations']
-                );
+                if ($editor_data['educations'] != null) {
+                    Education::insert(
+                        ['user_id' => $editor->id] + $editor_data['educations']
+                    );
+                }
 
                 $editor->roles()->attach($editor->id, ['role_id' => 3, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
 
@@ -296,14 +301,14 @@ class ClientController extends Controller
                     'imported_id' => $this->remove_blank($data->mt_id),
                     'position' => null,
                     'imported_from' => 'u5794939_allin_bd',
-                    'educations' => array(
+                    'educations' => !empty($data->university->univ_name) ? array(
                         'graduated_from' => $data->university->univ_name,
                         'major' => $data->major,
                         'degree' => null,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                         'graduation_date' => null
-                    )
+                    ) : null
                 );
             }
         }
@@ -345,9 +350,11 @@ class ClientController extends Controller
                 $mentor->imported_from = $mentor_data['imported_from'];
                 $mentor->save();
 
-                Education::insert(
-                    ['user_id' => $mentor->id] + $mentor_data['educations']
-                );
+                if ($mentor_data['educations'] != null) {
+                    Education::insert(
+                        ['user_id' => $mentor->id] + $mentor_data['educations']
+                    );
+                }
 
                 $mentor->roles()->attach($mentor->id, ['role_id' => 2, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
             }
