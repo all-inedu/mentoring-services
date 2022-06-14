@@ -13,16 +13,11 @@ use Illuminate\Support\Facades\Validator;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class SocialMediaController extends Controller
 {
-
-    protected $student_id;
-
-    public function __construct()
-    {
-        $this->student_id = auth()->guard('student-api')->user()->id;
-    }
 
     public function index ($person, $id)
     {
@@ -53,85 +48,31 @@ class SocialMediaController extends Controller
 
         return response()->json(['success' => true, 'data' => $data]);
     }
-
-    public function update(Request $request) 
-    {
-
-        $rules = [
-            'person' => 'required|in:user,student',
-            'id' => [
-                'required',
-                new PersonChecking($request->person)
-            ],
-            // 'instance_id' => 'sometimes|required|exists:social_media,id',
-            'instance_id.*' => 'required|exists:social_media,id',
-            // 'instance' => 'sometimes|required|in:linkedin,facebook,instagram',
-            'instance.*' => 'required|in:linkedin,facebook,instagram',
-            // 'hyperlink' => 'sometimes|required|url',
-            'hyperlink.*' => 'required|url',
-            // 'status' => 'nullable',
-            'status.*' => 'nullable'
-        ];
-
-        $validator = Validator::make($request->all() + array('id' => $this->student_id), $rules);
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
-        }
-
-        //insert to schedule table
-        try {
-            if ($request->person == "user") {
-                $user = User::find($request->id);
-            } else if ($request->person == "student") {
-                $user = Students::find($request->id);
-            }
-            
-            for ($i = 0; $i < count($request->instance) ; $i++) {
-                // save requested data into variable request_data
-                // $request_data[$i] = array(
-                //     'social_media_name' => $request->instance[$i],
-                //     'hyperlink' => $request->hyperlink[$i],
-                //     'status' => isset($request->status[$i]) ? $request->status[$i] : 1,
-                //     'created_at' => Carbon::now(),
-                //     'updated_at' => Carbon::now()
-                // );
-
-                $user->social_media()->where('id', $request->instance_id[$i])->update(array(
-                    'social_media_name' => $request->instance[$i],
-                    'hyperlink' => $request->hyperlink[$i],
-                    'status' => isset($request->status[$i]) ? $request->status[$i] : 1,
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now()
-                ));
-            }
-            
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Update Social Media Issue : ['.json_encode($user->social_media).'] '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to update social media. Please try again.']);
-        }
-
-        return response()->json(['success' => true, 'message' => 'Social media has been updated', 'data' => $user->social_media]);
-    }
     
     public function store(Request $request)
-    {
+    {   
+        $id = $request->person == "student" ? Auth::guard('student-api')->user()->id : Auth::guard('api')->user()->id;
+
         $rules = [
             'person' => 'required|in:user,student',
             'id' => [
                 'required',
                 new PersonChecking($request->person)
             ],
-            'instance' => 'required|in:linkedin,facebook,instagram',
-            'instance.*' => 'required|in:linkedin,facebook,instagram',
-            'hyperlink' => 'required|url',
-            'hyperlink.*' => 'required|url',
-            'status' => 'nullable',
-            'status.*' => 'nullable'
+            'data.*.instance' => ['required', 'in:linkedin,facebook,instagram', 
+                        // Rule::unique('social_media', 'social_media_name')->where(function ($query) use ($request, $id) {
+                        //     return $query->when($request->person == "student", function($query1) use ($id) {
+                        //         return $query1->where('student_id', $id);
+                        //     }, function ($query2) use ($id) {
+                        //         return $query2->where('user_id', $id);
+                        //     });
+                        // })
+                    ],
+            'data.*.hyperlink' => 'required|url',
+            'data.*.status' => 'nullable'
         ];
 
-        $validator = Validator::make($request->all() + array($this->student_id), $rules);
+        $validator = Validator::make($request->all() + array('id' => $id), $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 401);
         }
@@ -140,23 +81,37 @@ class SocialMediaController extends Controller
         try {
 
             if ($request->person == "user") {
-                $user = User::find($request->id);
+                $user = User::find($id);
             } else if ($request->person == "student") {
-                $user = Students::find($request->id);
+                $user = Students::find($id);
             }
 
-            for ($i = 0; $i < count($request->instance) ; $i++) {
+            for ($i = 0; $i < count($request->data) ; $i++) {
+
+                if ($result = $user->social_media()->where('social_media_name', 'like', '%'.$request->data[$i]['instance'].'%')->first()) {
+                    
+                    $user->social_media()->where('id', $result->id)->update(array(
+                        'social_media_name' => $request->data[$i]['instance'],
+                        'hyperlink' => $request->data[$i]['hyperlink'],
+                        'status' => isset($request->data[$i]['status']) ? $request->data[$i]['status'] : 1,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ));
+                    continue;
+                }
+
                 // save requested data into variable request_data
                 $request_data[$i] = array(
-                    'social_media_name' => $request->instance[$i],
-                    'hyperlink' => $request->hyperlink[$i],
-                    'status' => isset($request->status[$i]) ? $request->status[$i] : 1,
+                    'social_media_name' => $request->data[$i]['instance'],
+                    'hyperlink' => $request->data[$i]['hyperlink'],
+                    'status' => isset($request->data[$i]['status']) ? $request->data[$i]['status'] : 1,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now()
                 );
             }
 
-            $user->social_media()->createMany($request_data);
+            if (!empty($request_data))
+                $user->social_media()->createMany($request_data);
 
             DB::commit();
         } catch (Exception $e) {
@@ -165,7 +120,7 @@ class SocialMediaController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to add social media to '.$request->person.'. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Social media has been added to '.$request->person, 'data' => $user->social_media]);
+        return response()->json(['success' => true, 'message' => 'Social media has submitted to '.$request->person, 'data' => $user->social_media]);
     }
 
     public function delete ($soc_med_id)
