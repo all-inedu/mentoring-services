@@ -20,6 +20,11 @@ class SocialMedia extends Model
         'status'
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
     public function students()
     {
         return $this->belongsTo(Students::class, 'student_id', 'id');
