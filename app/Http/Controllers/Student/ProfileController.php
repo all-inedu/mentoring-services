@@ -59,9 +59,10 @@ class ProfileController extends Controller
         $rules = [
             'first_name'   => 'required|string|max:255',
             'last_name'    => 'required|string|max:255',
-            'birthday'     => 'required|date',
+            'birthday'     => 'nullable|date',
             'phone_number' => 'required|string',
-            'grade'        => 'nullable|integer|min:7'
+            'grade'        => 'nullable|integer|min:7',
+            'address'      => 'required'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -76,6 +77,7 @@ class ProfileController extends Controller
             $user->last_name = $request->last_name;
             $user->birthday = $request->birthday;
             $user->phone_number = $request->phone_number;
+            $user->address = $request->address;
             $user->grade = $request->grade;
             $user->save();
 
