@@ -59,7 +59,7 @@ class SocialMediaController extends Controller
                 'required',
                 new PersonChecking($request->person)
             ],
-            'data.*.instance' => ['required', 'in:linkedin,facebook,instagram', 
+            'data.*.instance' => ['nullable', 'in:linkedin,facebook,instagram', 
                         // Rule::unique('social_media', 'social_media_name')->where(function ($query) use ($request, $id) {
                         //     return $query->when($request->person == "student", function($query1) use ($id) {
                         //         return $query1->where('student_id', $id);
@@ -68,7 +68,7 @@ class SocialMediaController extends Controller
                         //     });
                         // })
                     ],
-            'data.*.hyperlink' => 'required|url',
+            'data.*.hyperlink' => 'nullable|url',
             'data.*.status' => 'nullable'
         ];
 
