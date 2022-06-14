@@ -36,4 +36,9 @@ class UniShortlisted extends Model
     {
         return $this->hasMany(UniRequirements::class, 'uni_id', 'id');
     }
+
+    public function medias()
+    {
+        return $this->belongsToMany(Medias::class, 'uni_requirement_media', 'uni_shortlisted_id', 'med_id');
+    }
 }

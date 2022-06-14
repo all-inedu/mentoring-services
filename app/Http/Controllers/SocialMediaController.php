@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\SocialMedia;
+use App\Models\Students;
+use App\Models\User;
 use App\Rules\PersonChecking;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -43,14 +46,8 @@ class SocialMediaController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    public function update($soc_med_id, Request $request) {
-
-        try {
-            $social_media = SocialMedia::findOrFail($soc_med_id);
-        } catch (Exception $e) {
-            Log::error('Find Social Media by Id Issue : ['.$soc_med_id.'] '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to find social media by Id. Please try again.']);
-        }
+    public function update(Request $request) 
+    {
 
         $rules = [
             'person' => 'required|in:user,student',
@@ -58,9 +55,14 @@ class SocialMediaController extends Controller
                 'required',
                 new PersonChecking($request->person)
             ],
-            'social_media_name' => 'required|unique:social_media,social_media_name,'.$soc_med_id.'|in:linkedin,facebook,instagram',
-            'hyperlink' => 'required',
-            'status' => 'nullable'
+            // 'instance_id' => 'sometimes|required|exists:social_media,id',
+            'instance_id.*' => 'required|exists:social_media,id',
+            // 'instance' => 'sometimes|required|in:linkedin,facebook,instagram',
+            'instance.*' => 'required|in:linkedin,facebook,instagram',
+            // 'hyperlink' => 'sometimes|required|url',
+            'hyperlink.*' => 'required|url',
+            // 'status' => 'nullable',
+            'status.*' => 'nullable'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -71,22 +73,38 @@ class SocialMediaController extends Controller
         //insert to schedule table
         try {
             if ($request->person == "user") {
-                $social_media->user_id = $request->id;
+                $user = User::find($request->id);
             } else if ($request->person == "student") {
-                $social_media->student_id = $request->id;
+                $user = Students::find($request->id);
             }
-            $social_media->social_media_name = $request->social_media_name;
-            $social_media->hyperlink = $request->hyperlink;
-            $social_media->status = isset($request->status) ? $request->status : 1;
-            $social_media->save();
+            
+            for ($i = 0; $i < count($request->instance) ; $i++) {
+                // save requested data into variable request_data
+                // $request_data[$i] = array(
+                //     'social_media_name' => $request->instance[$i],
+                //     'hyperlink' => $request->hyperlink[$i],
+                //     'status' => isset($request->status[$i]) ? $request->status[$i] : 1,
+                //     'created_at' => Carbon::now(),
+                //     'updated_at' => Carbon::now()
+                // );
 
+                $user->social_media()->where('id', $request->instance_id[$i])->update(array(
+                    'social_media_name' => $request->instance[$i],
+                    'hyperlink' => $request->hyperlink[$i],
+                    'status' => isset($request->status[$i]) ? $request->status[$i] : 1,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ));
+            }
+            
+            DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Update Social Media Issue : ['.json_encode($social_media).'] '.$e->getMessage());
+            Log::error('Update Social Media Issue : ['.json_encode($user->social_media).'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to update social media. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Social media has been updated', 'data' => $social_media]);
+        return response()->json(['success' => true, 'message' => 'Social media has been updated', 'data' => $user->social_media]);
     }
     
     public function store(Request $request)
@@ -97,9 +115,12 @@ class SocialMediaController extends Controller
                 'required',
                 new PersonChecking($request->person)
             ],
-            'social_media_name' => 'required|in:linkedin,facebook,instagram',
-            'hyperlink' => 'required',
-            'status' => 'nullable'
+            'instance' => 'required|in:linkedin,facebook,instagram',
+            'instance.*' => 'required|in:linkedin,facebook,instagram',
+            'hyperlink' => 'required|url',
+            'hyperlink.*' => 'required|url',
+            'status' => 'nullable',
+            'status.*' => 'nullable'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -109,16 +130,26 @@ class SocialMediaController extends Controller
 
         DB::beginTransaction();
         try {
-            $social_media = new SocialMedia;
+
             if ($request->person == "user") {
-                $social_media->user_id = $request->id;
+                $user = User::find($request->id);
             } else if ($request->person == "student") {
-                $social_media->student_id = $request->id;
+                $user = Students::find($request->id);
             }
-            $social_media->social_media_name = $request->social_media_name;
-            $social_media->hyperlink = $request->hyperlink;
-            $social_media->status = isset($request->status) ? $request->status : 1;
-            $social_media->save();
+
+            for ($i = 0; $i < count($request->instance) ; $i++) {
+                // save requested data into variable request_data
+                $request_data[$i] = array(
+                    'social_media_name' => $request->instance[$i],
+                    'hyperlink' => $request->hyperlink[$i],
+                    'status' => isset($request->status[$i]) ? $request->status[$i] : 1,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                );
+            }
+
+            $user->social_media()->createMany($request_data);
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -126,7 +157,7 @@ class SocialMediaController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to add social media to '.$request->person.'. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Social media has been added to '.$request->person, 'data' => $social_media]);
+        return response()->json(['success' => true, 'message' => 'Social media has been added to '.$request->person, 'data' => $user->social_media]);
     }
 
     public function delete ($soc_med_id)

@@ -105,7 +105,7 @@ Route::prefix('v1')->group(function(){
         Route::get('mentor/list', [StudentMentorController::class, 'list']);
         Route::get('appoinment/{mentor_id}', [StudentMentorController::class, 'find']);
         Route::post('add/social-media', [SocialMediaController::class, 'store']);
-        Route::put('update/social-media/{soc_med_id}', [SocialMediaController::class, 'update']);
+        Route::post('update/social-media', [SocialMediaController::class, 'update']);
         Route::delete('delete/social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);     
         Route::post('make/{activities}', [StudentActivitiesController::class, 'store_by_student']);
 
@@ -150,7 +150,8 @@ Route::prefix('v1')->group(function(){
         Route::get('university/shortlisted/{status}', [UniversityController::class, 'index']);
 
         //* New */
-        Route::post('academic/requirement', [UniversityController::class, 'store_requirement']);
+        Route::post('academic/requirement', [UniversityController::class, 'store_academic_requirement']);
+        Route::post('document/requirement', [UniversityController::class, 'store_document_requirement']);
     });
 
     Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);

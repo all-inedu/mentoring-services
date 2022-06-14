@@ -8,6 +8,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class HelperController extends Controller
 {
@@ -33,5 +34,12 @@ class HelperController extends Controller
         $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
         $items = $items instanceof Collection ? $items : Collection::make($items);
         return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, ['path' => LengthAwarePaginator::resolveCurrentPath()]);
+    }
+
+    //* remove underscore
+    public function perfect_sentence($sentence)
+    {
+        $raw = str_replace('_', ' ', $sentence);
+        return ucwords($raw);
     }
 }

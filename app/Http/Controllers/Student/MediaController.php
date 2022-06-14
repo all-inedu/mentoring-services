@@ -138,22 +138,29 @@ class MediaController extends Controller
     
     public function store(Request $request)
     {
+        //* validate category
+        if (!$med_cat = MediaCategory::find($request->category)) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find category. Please try another or try again']);
+        }
+
         $rules = [
             'student_id' => 'required|exists:students,id',
-            'category' => 'required|exists:media_categories,id',
             'title' => 'required|string|max:255',
             'desc' => 'required',
-            'uploaded_file' => 'required|file|max:3000',
+            'uploaded_file' => ['required','file','max:3000'],
             'status' => ['in:not-verified,verified', new MediaTermsChecker($request->category)]
         ];
+
+        // $med_cat = MediaCategory::where('id', $request->category)->first();
+        // $med_cat_terms = $med_cat->terms == 'required' ? 'required' : 'nullable';
+        // $med_cat_type = $med_cat->type == 'file' ? 'file' : 'string';
+
+        // $rules['uploaded_file'] = [$med_cat_terms, $med_cat_type, 'max:3000'];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
-
-        $med_cat = MediaCategory::where('id', $request->category)->first();
-        $med_cat_terms = $med_cat->terms;
 
         DB::beginTransaction();
         try {

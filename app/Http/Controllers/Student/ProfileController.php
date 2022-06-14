@@ -61,7 +61,7 @@ class ProfileController extends Controller
             'last_name'    => 'required|string|max:255',
             'birthday'     => 'required|date',
             'phone_number' => 'required|string',
-            'grade'        => 'required|integer|min:7'
+            'grade'        => 'nullable|integer|min:7'
         ];
 
         $validator = Validator::make($request->all(), $rules);

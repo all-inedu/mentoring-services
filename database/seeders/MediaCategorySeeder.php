@@ -16,15 +16,29 @@ class MediaCategorySeeder extends Seeder
     {
         $data = array(
             array(
-                'name' => 'Media Category 1',
-                'terms' => 'Terms example 1',
-                'status' => 1
+                'name' => 'Essay',
+                'terms' => 'required',
+                'type' => 'file',
+                'status' => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ),
             array(
-                'name' => 'Media Category 2',
-                'terms' => 'Terms example 2',
-                'status' => 1
-            )
+                'name' => 'Letter of Recommendation',
+                'terms' => 'required',
+                'type' => 'file',
+                'status' => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ),
+            array(
+                'name' => 'Transcript',
+                'terms' => 'required',
+                'type' => 'file',
+                'status' => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ),
         );
 
         DB::table('media_categories')->insert($data);
