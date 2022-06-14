@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SocialMedia;
 use App\Models\Students;
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
 use App\Rules\PersonChecking;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -15,6 +16,13 @@ use Illuminate\Support\Facades\Log;
 
 class SocialMediaController extends Controller
 {
+
+    protected $student_id;
+
+    public function __construct()
+    {
+        $this->student_id = auth()->guard('student-api')->user()->id;
+    }
 
     public function index ($person, $id)
     {
@@ -65,7 +73,7 @@ class SocialMediaController extends Controller
             'status.*' => 'nullable'
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all() + array('id' => $this->student_id), $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
@@ -123,7 +131,7 @@ class SocialMediaController extends Controller
             'status.*' => 'nullable'
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all() + array($this->student_id), $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 401);
         }
