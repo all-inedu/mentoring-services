@@ -45,8 +45,7 @@ class UniversityController extends Controller
                                     $query->where('status', 2);
                                 })->when($status == 'rejected', function($query) {
                                     $query->where('status', 3);
-                                })->orderBy('uni_name', 'asc')->orderBy('uni_major', 'asc')->
-                                paginate($this->STUDENT_UNIVERSITY_SHORTLISTED_VIEW_PER_PAGE);
+                                })->orderBy('uni_name', 'asc')->orderBy('uni_major', 'asc')->get();
 
         return response()->json(['success' => true, 'data' => $uni_shortlisted]);
     }
