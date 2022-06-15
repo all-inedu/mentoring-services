@@ -204,7 +204,7 @@ class GroupController extends Controller
     {
         $rules = [
             'group_id' => 'required|exists:group_projects,id',
-            'participant.*' => ['required', new CheckExistingEmailAddress]
+            'participant.*' => ['required'/*, new CheckExistingEmailAddress*/]
         ];
 
         $validator = Validator::make($request->all(), $rules);

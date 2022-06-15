@@ -16,17 +16,77 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use App\Models\Students;
 use App\Rules\MediaTermsChecker;
+use App\Models\UniShortlisted;
+use App\Rules\MediaPairChecker;
+use Carbon\Carbon;
 
 class MediaController extends Controller
 {
 
+    protected $student_id;
     protected $STUDENT_STORE_MEDIA_PATH;
     protected $STUDENT_LIST_MEDIA_VIEW_PER_PAGE;
 
     public function __construct()
     {
+        $this->student_id = Auth::guard('student-api')->user()->id;
         $this->STUDENT_STORE_MEDIA_PATH = RouteServiceProvider::STUDENT_STORE_MEDIA_PATH;
         $this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_LIST_MEDIA_VIEW_PER_PAGE;
+    }
+
+    public function split ()
+    {
+
+    }
+    
+    public function pair (Request $request)
+    {   
+        $university = UniShortlisted::where('imported_id', $request->uni_id)->where('student_id', $this->student_id)->first();
+        $rules = [
+            'general' => 'required|in:true,false',
+            'student_id' => 'required|exists:students,id',
+            'media_id' => ['required', new MediaPairChecker($this->student_id, $university->id, $university->uni_name)],
+            'uni_id' => ['nullable', Rule::exists(UniShortlisted::class, 'imported_id')->where(function ($query) {
+                $query->where('student_id', $this->student_id);
+            })],
+        ];
+
+        $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            // general means file tidak mengikat ke uni manapun.
+            // general = true adalah file hanya ada di medias
+            // general = false adalah file akan di  pair ke suatu uni
+            switch ($request->general) {
+                case true:
+
+                    break;
+
+                case false:
+                    $university->medias()->attach($request->media_id, [
+                                    'created_at' => Carbon::now(),
+                                    'updated_at' => Carbon::now(),
+                                ]);
+                    break;
+            }
+
+            
+            
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Pair Media File Issue : ['.json_encode($request->all() + array('student_id' => $this->student_id )).'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to pair media file. Please try again.']);
+        }
+
+        $media = Medias::find($request->media_id);
+        $media_category_name = $media->media_categories->name;
+
+        return response()->json(['success' => true, 'message' => 'The '.$media_category_name.' of yours has successfully submitted to '.$university->uni_name]);
     }
 
     public function switch ($file_id, Request $request)
