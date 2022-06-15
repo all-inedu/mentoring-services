@@ -43,9 +43,9 @@ class MediaController extends Controller
     {   
         $university = UniShortlisted::where('imported_id', $request->uni_id)->where('student_id', $this->student_id)->first();
         $rules = [
-            'general' => 'required|in:true,false',
+            'general' => 'required|boolean',
             'student_id' => 'required|exists:students,id',
-            'media_id' => ['required', new MediaPairChecker($this->student_id, $university->id, $university->uni_name)],
+            'media_id' => ['required', new MediaPairChecker($request->general, $this->student_id, $university->id, $university->uni_name)],
             'uni_id' => ['nullable', Rule::exists(UniShortlisted::class, 'imported_id')->where(function ($query) {
                 $query->where('student_id', $this->student_id);
             })],
@@ -63,7 +63,7 @@ class MediaController extends Controller
             // general = false adalah file akan di  pair ke suatu uni
             switch ($request->general) {
                 case true:
-
+                    $university->medias()->detach($request->media_id);
                     break;
 
                 case false:
@@ -86,7 +86,11 @@ class MediaController extends Controller
         $media = Medias::find($request->media_id);
         $media_category_name = $media->media_categories->name;
 
-        return response()->json(['success' => true, 'message' => 'The '.$media_category_name.' of yours has successfully submitted to '.$university->uni_name]);
+        return response()->json([
+            'success' => true, 
+            'message' => $request->general == false ? 
+                'The '.$media_category_name.' of yours has successfully submitted to '.$university->uni_name
+                : 'The submitted '.$media_category_name.' has successfully canceled from '.$university->uni_name]);
     }
 
     public function switch ($file_id, Request $request)

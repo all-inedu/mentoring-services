@@ -11,13 +11,15 @@ class MediaPairChecker implements Rule
     protected $university_id;
     protected $university_name;
     private $custom_message;
+    private $general;
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public function __construct($student_id, $university_id, $university_name)
+    public function __construct($general, $student_id, $university_id, $university_name)
     {
+        $this->general = $general;
         $this->student_id = $student_id;
         $this->university_id = $university_id;
         $this->university_name = $university_name;
@@ -37,10 +39,23 @@ class MediaPairChecker implements Rule
             return false;
         }
 
-        if ($media->uni_shortlisted()->where('uni_shortlisted_id', $this->university_id)->first()) {
-            $this->custom_message = 'The file has already been submitted to '. $this->university_name;
-            return false;
+        switch ($this->general) {
+            case true:
+                if (!$media->uni_shortlisted()->where('uni_shortlisted_id', $this->university_id)->first()) {
+                    $this->custom_message = 'The file has not submitted to '. $this->university_name;
+                    return false;
+                }
+                break;
+
+            case false:
+                if ($media->uni_shortlisted()->where('uni_shortlisted_id', $this->university_id)->first()) {
+                    $this->custom_message = 'The file has already been submitted to '. $this->university_name;
+                    return false;
+                }
+                break;
         }
+
+        
 
         return true;
 
