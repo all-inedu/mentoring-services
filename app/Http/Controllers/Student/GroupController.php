@@ -131,6 +131,13 @@ class GroupController extends Controller
             }
             
             $group_projects->assigned_mentor()->attach($data);
+            $group_projects->group_participant()->attach($this->student_id, [
+                'status' => 1,
+                'mail_sent_status' => 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ]);
+
             DB::commit();
 
         } catch (Exception $e) {
@@ -239,10 +246,21 @@ class GroupController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Add Participant Group Project Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => array(
-                'exists' => "We couldn't find the following email : " . $error_exists,
-                'joined' => "These students [" . $error_joined . "] has already joined the group"
-            )]);
+            return response()->json(['success' => false, 'error' => "Something went wrong. Please try again or contact our administrator"]);
+        }
+
+        // create variable response that hold various message of error
+        if ($error_exists != '') {
+            $response['error']['exists'] = "We couldn't find the following email : ". $error_exists;
+        }
+
+        if ($error_joined != '') {
+            $response['error']['joined'] = "These students [" . $error_joined . "] has already joined the group";
+        }
+
+        // when error exist return error
+        if (!empty($response['error'])) {
+            return response()->json(['success' => false, 'error' => $response['error']]);
         }
 
         return response()->json([
