@@ -143,7 +143,7 @@ Route::prefix('v1')->group(function(){
         Route::put('group/project/{group_id}', [GroupController::class, 'update']);
         
         Route::post('group/project/participant', [GroupController::class, 'add_participant']);
-        Route::put('group/project/participant/{group_id}/{student_id}', [GroupController::class, 'update_participant_role_contribution']);
+        Route::put('group/project/participant/{group_id}', [GroupController::class, 'update_participant_role_contribution']);
         Route::delete('group/project/participant/{group_id}/{student_id}', [GroupController::class, 'remove_participant']);
         Route::post('group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
 
