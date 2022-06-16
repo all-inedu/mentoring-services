@@ -107,8 +107,12 @@ Route::prefix('v1')->group(function(){
         Route::get('appoinment/{mentor_id}', [StudentMentorController::class, 'find']);
         Route::post('add/social-media', [SocialMediaController::class, 'store']);
         Route::post('update/social-media', [SocialMediaController::class, 'update']);
-        Route::delete('delete/social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);     
+        Route::delete('delete/social-media/{soc_med_id}', [SocialMediaController::class, 'delete']);   
+        
+        
         Route::post('make/{activities}', [StudentActivitiesController::class, 'store_by_student']);
+        //** New */
+        Route::post('confirmation/activities', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
 
         //** New */
         Route::get('interest', [InterestController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
@@ -154,6 +158,8 @@ Route::prefix('v1')->group(function(){
         Route::post('academic/requirement', [UniversityController::class, 'store_academic_requirement']);
         Route::post('document/requirement', [UniversityController::class, 'store_document_requirement']);
         Route::post('media/pair', [MediaController::class, 'pair']);
+
+        
     });
 
     Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index'])->middleware('auth:student-api,api');

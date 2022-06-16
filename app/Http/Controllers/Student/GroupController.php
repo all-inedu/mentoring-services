@@ -366,7 +366,7 @@ class GroupController extends Controller
         return response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
     }
 
-    public function update_participant_role_contribution ($group_id, $student_id, Request $request)
+    public function update_participant_role_contribution ($group_id, Request $request)
     {
         $rules = [
             'role' => 'required|max:255|regex:/^[A-Za-z]+$/',
@@ -380,7 +380,8 @@ class GroupController extends Controller
 
         DB::beginTransaction();
         try {
-            $participant = Participant::where('group_id', $group_id)->where('student_id', $student_id)->first();
+            
+            $participant = Participant::where('group_id', $group_id)->where('student_id', $this->student_id)->first();
             $participant->contribution_role = $request->role;
             $participant->contribution_description = $request->description;
             $participant->save();
@@ -388,7 +389,7 @@ class GroupController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Update role and contribution Issue : [ Group Id : '.$group_id.', Student Id : '.$student_id.'] '.$e->getMessage());
+            Log::error('Update role and contribution Issue : [ Group Id : '.$group_id.', Student Id : '.$this->student_id.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to update role and contribution. Please try again.']);
         }
 
