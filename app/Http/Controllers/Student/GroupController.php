@@ -337,21 +337,29 @@ class GroupController extends Controller
     
             $invitee_id = $request->key;
         }
+
+        // get group detail
+        $group = GroupProject::whereHas('group_participant', function ($query) use ($invitee_id) {
+            $query->where('participants.id', $invitee_id);
+        })->first();
+
         switch ($request->input('action')) {
             case 'accept':
+                $message = "You've accept to join project : ".$group->project_name;
                 $participant = Participant::find($invitee_id);
                 $participant->status = 1;
                 $participant->save();
                 break;
             
             case 'decline':
+                $message = "You've decline to join project : ".$group->project_name;
                 $participant = Participant::find($invitee_id);
                 $participant->status = 2;
                 $participant->save();
                 break;
         }
 
-        return response()->json(['success' => true, 'data' => $participant]);
+        return response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
     }
 
     public function update_participant_role_contribution ($group_id, $student_id, Request $request)
