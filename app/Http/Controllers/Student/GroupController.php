@@ -371,8 +371,8 @@ class GroupController extends Controller
     public function update_participant_role_contribution ($group_id, Request $request)
     {
         $rules = [
-            'role' => 'required|max:255|regex:/^[A-Za-z]+$/',
-            'description' => 'required|string|regex:/^[A-Za-z0-9., ]+$/'
+            'role' => 'required|max:255',
+            'description' => 'required|string'
         ];
 
         $validator = Validator::make($request->all(), $rules);
