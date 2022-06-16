@@ -408,6 +408,7 @@ class GroupController extends Controller
 
     public function create_meeting (Request $request)
     {
+        
         $rules = [
             'group_id' => 'required|exists:group_projects,id',
             'meeting_date' => ['required', 'date_format:Y-m-d H:i', Rule::unique('group_meetings')->where(function ($query) use ($request) {
