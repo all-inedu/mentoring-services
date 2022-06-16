@@ -311,7 +311,7 @@ class GroupController extends Controller
         if ($status != NULL) {
             // when confirmation from dashboard
             $rules = [
-                'group_id' => 'required|exists:groups,id',
+                'group_id' => 'required|exists:group_projects,id',
                 'student_id' => 'required|exists:students,id',
                 'action' => 'required|in:accept,decline'
             ];
