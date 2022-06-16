@@ -289,7 +289,7 @@ class StudentActivitiesController extends Controller
             'prog_dtl_id'=> 'nullable|exists:programme_details,id',
             'call_with' => 'required|in:mentor,alumni,editor',
             'module' => 'required|in:life skills,career exploration,university admission,life university',
-            'call_date' => ['required', new CheckAvailabilityUserSchedule($request->user_id)]
+            'call_date' => ['required'/*, new CheckAvailabilityUserSchedule($request->user_id)*/]
         ];
 
         $validator = Validator::make($request->all() + ['activities' => $activities], $rules);

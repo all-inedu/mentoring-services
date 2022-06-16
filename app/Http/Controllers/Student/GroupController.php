@@ -158,7 +158,7 @@ class GroupController extends Controller
             'project_desc'    => 'required',
             'progress_status' => 'nullable|in:on track,behind,ahead',
             'status'          => 'required|in:in progress,completed',
-            'owner_type'      => 'required|in:student,mentor'
+            'owner_type'      => 'nullable|in:student,mentor'
         ];
 
         $input = $request->all() + array('group_id' => $group_id);
@@ -182,8 +182,12 @@ class GroupController extends Controller
             $group_project->project_name = $request->project_name;
             $group_project->project_type = $request->project_type;
             $group_project->project_desc = $request->project_desc;
-            $group_project->status = $request->status;
-            $group_project->owner_type = $request->owner_type;
+            if ($request->status != NULL) {
+                $group_project->status = $request->status;
+            }
+            if ($request->owner_type != NULL) {
+                $group_project->owner_type = $request->owner_type;
+            }
             $group_project->save();
 
             DB::commit();
