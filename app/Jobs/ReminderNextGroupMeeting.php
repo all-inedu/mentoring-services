@@ -132,6 +132,9 @@ class ReminderNextGroupMeeting implements ShouldQueue
                     Log::channel('group_meeting_reminder_log')->error('Update Student Attendances Mail Sent Issue : [ Attend_id '.$v->pivot->id.' ] '.$e->getMessage());
                 }
             }
+
+            $meeting_detail->mail_sent = 1;
+            $meeting_detail->save();
         }
     }
 }
