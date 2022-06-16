@@ -59,12 +59,13 @@ class ReminderNextGroupMeeting implements ShouldQueue
                     'group_meet_id' => $meeting_detail->id,
                 );
                 
-                $meeting_detail['token'] = Crypt::encrypt($encrypted_data);
+                $arr_meeting_detail = $meeting_detail;
+                $arr_meeting_detail['token'] = Crypt::encrypt($encrypted_data);
                 $email = $v->email;
                 $name = $v->first_name.' '.$v->last_name;
                 $subject = "You've a new group meeting";
 
-                Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'group_info' => $group_info, 'meeting_detail' => $meeting_detail],
+                Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'group_info' => $group_info, 'meeting_detail' => $arr_meeting_detail],
                     function($mail) use ($email, $name, $subject) {
                         $mail->from(getenv('FROM_EMAIL_ADDRESS'), "no-reply@all-inedu.com");
                         $mail->to($email, $name);
@@ -100,12 +101,14 @@ class ReminderNextGroupMeeting implements ShouldQueue
                     'group_meet_id' => $meeting_detail->id,
                 );
 
-                $meeting_detail['token'] = Crypt::encrypt($encrypted_data);
+                $arr_meeting_detail = $meeting_detail;
+                $arr_meeting_detail['token'] = Crypt::encrypt($encrypted_data);
+
                 $email = $v->email;
                 $name = $v->first_name.' '.$v->last_name;
                 $subject = "Your student set a new group meeting";
 
-                Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'group_info' => $group_info, 'meeting_detail' => $meeting_detail],
+                Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'group_info' => $group_info, 'meeting_detail' => $arr_meeting_detail],
                     function($mail) use ($email, $name, $subject) {
                         $mail->from(getenv('FROM_EMAIL_ADDRESS'), "no-reply@all-inedu.com");
                         $mail->to($email, $name);
