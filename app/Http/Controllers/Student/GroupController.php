@@ -83,7 +83,7 @@ class GroupController extends Controller
         return response()->json(['success' => true, 'data' => array(
             'group_info' => $group->makeHidden(['students', 'group_participant', 'group_meeting']),
             'student_info' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.student_id', $this->student_id)->first(),
-            'group_member' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.status', '!=', 2)->orderBy('participants.created_at', 'asc')->get(),
+            'group_member' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'participants.status', 'contribution_role', 'contribution_description')->where('participants.status', '!=', 2)->orderBy('participants.created_at', 'asc')->get(),
             'group_meeting' => $group->group_meeting()->orderBy('group_meetings.created_at', 'desc')->get()->makeHidden(['student_attendances', 'user_attendances'])
         )]);
     }
@@ -393,7 +393,12 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to update role and contribution. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Your profile in the group project has been updated']);
+        $student = Students::select('id', 'first_name', 'last_name')->where('id', $this->student_id)->first();
+
+        return response()->json(['success' => true, 'message' => 'Your profile in the group project has been updated', 'data' => array(
+            'student_info' => $student,
+            'participant' => $participant
+        )]);
     }
     //* participant function end
 
