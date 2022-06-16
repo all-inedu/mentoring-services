@@ -203,7 +203,7 @@ class StudentActivitiesController extends Controller
             'prog_id' => 'required|exists:programmes,id',  
             'student_id' => 'required|exists:students,id',
             'user_id' => ['nullable', new RolesChecking($request->call_with)],
-            'std_act_status' => 'required|in:waiting,confirmed',
+            // 'std_act_status' => 'required|in:waiting,confirmed',
             'handled_by' => ['required', new RolesChecking('admin')],
             'location_link' => 'nullable',
             'prog_dtl_id'=> 'nullable|exists:programme_details,id',
@@ -217,7 +217,7 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        if (StudentActivities::where('student_id', $request->student_id)->where('call_date', $request->call_date)->first()) {
+        if (StudentActivities::where('student_id', $request->student_id)->where('call_date', $request->call_date)->where('call_status', 'in progress')->first()) {
             return response()->json(['success' => false, 'error' => 'You already make an appoinment at '.date('l, d M Y H:i', strtotime($request->call_date))]);
         }
 
@@ -235,7 +235,8 @@ class StudentActivitiesController extends Controller
             $activities->prog_id = $request->prog_id;
             $activities->student_id = $request->student_id;
             $activities->user_id = $request->user_id;
-            $activities->std_act_status = $request->std_act_status;
+            $activities->std_act_status = 'confirmed';
+            $activities->mt_confirm_status = 'waiting';
             $activities->handled_by = $request->handled_by;
             $activities->location_link = $request->location_link;
             $activities->prog_dtl_id = $request->prog_dtl_id;
@@ -282,7 +283,7 @@ class StudentActivitiesController extends Controller
             'prog_id' => 'required|exists:programmes,id',  
             'student_id' => 'required|exists:students,id',
             'user_id' => ['nullable', new RolesChecking($request->call_with)],
-            'std_act_status' => 'required|in:waiting,confirmed',
+            // 'std_act_status' => 'required|in:waiting,confirmed',
             'handled_by' => ['nullable', new RolesChecking('admin')],
             'location_link' => 'required|url',
             'location_pw' => 'required',
@@ -315,13 +316,15 @@ class StudentActivitiesController extends Controller
             $activities->prog_id = $request->prog_id;
             $activities->student_id = $request->student_id;
             $activities->user_id = $request->user_id;
-            $activities->std_act_status = $request->std_act_status;
+            $activities->std_act_status = 'confirmed';
+            $activities->mt_confirm_status = 'waiting';
             $activities->handled_by = $request->handled_by;
             $activities->location_link = $request->location_link;
             $activities->prog_dtl_id = $request->prog_dtl_id;
             $activities->call_with = $request->call_with;
             $activities->module = $request->module;
             $activities->call_date = $request->call_date;
+            $activities->call_status = "waiting";
             $activities->save();
             $response['activities'] = $activities;
             $st_act_id = $activities->id;
@@ -331,7 +334,7 @@ class StudentActivitiesController extends Controller
                 'st_act_id'   => $st_act_id,
                 'amount'       => $prog_price,
                 'total_amount' => $total_amount,
-                'status'       => 'pending'
+                'status'       => 'paid' //! sementara langsung paid, ke depannya akan diubah dari pending dlu
             ];
 
             $transaction = new TransactionController;
@@ -345,5 +348,10 @@ class StudentActivitiesController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Activities has been created', 'data' => $response]);
+    }
+
+    public function confirmation_personal_meeting (Request $request)
+    {
+        
     }
 }

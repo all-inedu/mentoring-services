@@ -82,7 +82,7 @@ class GroupController extends Controller
 
         return response()->json(['success' => true, 'data' => array(
             'group_info' => $group->makeHidden(['students', 'group_participant', 'group_meeting']),
-            'student_info' => Students::find($this->student_id),
+            'student_info' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.student_id', $this->student_id)->first(),
             'group_member' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.status', '!=', 2)->orderBy('participants.created_at', 'asc')->get(),
             'group_meeting' => $group->group_meeting()->orderBy('group_meetings.created_at', 'desc')->get()->makeHidden(['student_attendances', 'user_attendances'])
         )]);
@@ -182,10 +182,10 @@ class GroupController extends Controller
             $group_project->project_name = $request->project_name;
             $group_project->project_type = $request->project_type;
             $group_project->project_desc = $request->project_desc;
-            if ($request->status != NULL) {
+            if ($request->status != NULL) { //! will be deleted soon
                 $group_project->status = $request->status;
             }
-            if ($request->owner_type != NULL) {
+            if ($request->owner_type != NULL) { //! will be deleted soon
                 $group_project->owner_type = $request->owner_type;
             }
             $group_project->save();
