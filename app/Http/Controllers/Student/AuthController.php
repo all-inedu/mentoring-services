@@ -27,6 +27,23 @@ class AuthController extends Controller
         $this->system_name = RouteServiceProvider::SYSTEM_NAME;
     }
 
+    public function logout (Request $request)
+    {
+        $validator = Validator::make($request->all(), ['token' => 'required']);
+        if ($validator->fails()) {
+
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+        
+        try {
+            $request->user()->token()->revoke();
+            return response()->json(['success' => true, 'message'=> "You have successfully logged out."]);
+        } catch (Exception $e) {
+            // something went wrong whilst attempting to encode the token
+            return response()->json(['success' => false, 'error' => 'Failed to logout, please try again.'], 500);
+        }
+    }
+
     public function authenticate(Request $request)
     {
         $credentials = $request->only('email', 'password');

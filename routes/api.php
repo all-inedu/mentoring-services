@@ -97,6 +97,7 @@ Route::prefix('v1')->group(function(){
 
     Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scopes:student'] ], function(){
          
+        Route::post('logout', [StudentAuthController::class, 'logout']);
         Route::post('media/add', [MediaController::class, 'store']);
         Route::delete('media/delete/{media_id}', [MediaController::class, 'delete']);
         Route::get('media/list', [MediaController::class, 'index_by_student']);
@@ -140,7 +141,7 @@ Route::prefix('v1')->group(function(){
         Route::post('group/project/participant', [GroupController::class, 'add_participant']);
         Route::put('group/project/participant/{group_id}/{student_id}', [GroupController::class, 'update_participant_role_contribution']);
         Route::delete('group/project/participant/{group_id}/{student_id}', [GroupController::class, 'remove_participant']);
-        Route::post('group/project/confirmation', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
+        Route::post('group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
 
         Route::post('group/project/meeting', [GroupController::class, 'create_meeting']);
         Route::get('group/project/meeting/{encrypted_data}', [GroupController::class, 'attended'])->name('attend');
@@ -155,7 +156,7 @@ Route::prefix('v1')->group(function(){
         Route::post('media/pair', [MediaController::class, 'pair']);
     });
 
-    Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
+    Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index'])->middleware('auth:student-api,api');
 
     //! User Auth
     Route::prefix('auth/u')->group(function() {

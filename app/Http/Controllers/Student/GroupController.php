@@ -40,7 +40,6 @@ class GroupController extends Controller
     
     public function index($status)
     {
-
         $rules = [
             'status' => 'required|string|in:new,in-progress,completed'
         ];
@@ -62,7 +61,6 @@ class GroupController extends Controller
                 $group_projects = GroupProject::whereHas('group_participant', function ($query) {
                         $query->where('student_id', $this->student_id)->where('participants.status', 1);
                     })->where('status', 'in progress')->withCount('group_participant')->orderBy('created_at', 'desc')->paginate($this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE);
-
                 break;
 
             case "completed":
@@ -121,16 +119,18 @@ class GroupController extends Controller
             $group_projects->save();
 
             // select all of mentor that handle this student 
-            $student = Students::with('users:id')->where('id', $this->student_id)->first();
-            $student_mentor = $student->users;
-            foreach ($student_mentor as $mentor_detail) {
-                $data[] = array(
-                    'group_id' => $group_projects->id,
-                    'user_id' => $mentor_detail->id
-                );
+            if ($student = Students::with('users:id')->where('id', $this->student_id)->first()) {
+                $student_mentor = $student->users;
+                foreach ($student_mentor as $mentor_detail) {
+                    $data[] = array(
+                        'group_id' => $group_projects->id,
+                        'user_id' => $mentor_detail->id
+                    );
+                }
+                
+                $group_projects->assigned_mentor()->attach($data);
             }
             
-            $group_projects->assigned_mentor()->attach($data);
             $group_projects->group_participant()->attach($this->student_id, [
                 'status' => 1,
                 'mail_sent_status' => 1,
@@ -265,7 +265,7 @@ class GroupController extends Controller
 
         return response()->json([
             'success' => true, 
-            'message' => $row_success.' participant has been added to the Group Project : '.$group->project_name
+            'message' => $row_success != 0 ? $row_success : ''.' participant has been added to the Group Project : '.$group->project_name
                         // $failed_participant.' has already joined the Group Project',
         ]);
     }
@@ -306,19 +306,37 @@ class GroupController extends Controller
         return response()->json(['success' => true, 'message' => 'You\'ve removed '.$student_name.' from group']);
     }
 
-    public function confirmation_invitee (Request $request)
+    public function confirmation_invitee ($status = NULL, Request $request)
     {
-        $rules = [
-            'key' => 'required|exists:participants,id',
-            'action' => 'required|in:accept,decline'
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        if ($status != NULL) {
+            // when confirmation from dashboard
+            $rules = [
+                'group_id' => 'required|exists:groups,id',
+                'student_id' => 'required|exists:students,id',
+                'action' => 'required|in:accept,decline'
+            ];
+    
+            $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+            }
+    
+            $participant = Participant::where('group_id', $request->group_id)->where('student_id', $this->student_id)->first();
+            $invitee_id = $participant->id;
+        } else {
+            // when confirmation from email
+            $rules = [
+                'key' => 'required|exists:participants,id',
+                'action' => 'required|in:accept,decline'
+            ];
+    
+            $validator = Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+            }
+    
+            $invitee_id = $request->key;
         }
-
-        $invitee_id = $request->key;
         switch ($request->input('action')) {
             case 'accept':
                 $participant = Participant::find($invitee_id);
