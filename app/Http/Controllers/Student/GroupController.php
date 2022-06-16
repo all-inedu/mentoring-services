@@ -267,9 +267,11 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => $response['error']]);
         }
 
+        $attendee = $row_success != 0 ? $row_success : '';
+
         return response()->json([
             'success' => true, 
-            'message' => $row_success != 0 ? $row_success : ''.' participant has been added to the Group Project : '.$group->project_name
+            'message' => $attendee.' participant has been added to the Group Project : '.$group->project_name
                         // $failed_participant.' has already joined the Group Project',
         ]);
     }

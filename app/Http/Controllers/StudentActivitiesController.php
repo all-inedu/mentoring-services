@@ -350,8 +350,42 @@ class StudentActivitiesController extends Controller
         return response()->json(['success' => true, 'message' => 'Activities has been created', 'data' => $response]);
     }
 
-    public function confirmation_personal_meeting (Request $request)
+    public function confirmation_personal_meeting ($std_act_id, Request $request)
     {
-        
+        $rules = [
+            'person' => 'required|in:student,mentor'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        if (!$activities = StudentActivities::find($std_act_id)) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the activities Id']);
+        }
+
+        DB::beginTransaction();
+        try {
+
+            switch ($request->person) {
+                case "student":
+                    $activities->std_act_status = 'confirmed';
+                    break;
+
+                case "mentor":
+                    $activities->mt_confirm_status = 'confirmed';
+                    break;
+            }
+            $activities->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Confirmation [Student] Meeting Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to confirm attendance. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'You confirm to attend the meeting. Do not forget to check your schedule']);
     }
 }
