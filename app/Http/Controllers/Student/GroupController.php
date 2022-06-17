@@ -84,7 +84,7 @@ class GroupController extends Controller
             'group_info' => $group->makeHidden(['students', 'group_participant', 'group_meeting']),
             'student_info' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.student_id', $this->student_id)->first(),
             'group_member' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'participants.status', 'contribution_role', 'contribution_description')->where('participants.status', '!=', 2)->orderBy('participants.created_at', 'asc')->get(),
-            'group_meeting' => $group->group_meeting()->orderBy('group_meetings.status', 'asc')->orderBy('group_meetings.created_at', 'desc')->get()->makeHidden(['student_attendances', 'user_attendances'])
+            'group_meeting' => $group->group_meeting()->orderBy('group_meetings.status', 'asc')->orderBy('group_meetings.created_at', 'asc')->get()->makeHidden(['student_attendances', 'user_attendances'])
         )]);
     }
 

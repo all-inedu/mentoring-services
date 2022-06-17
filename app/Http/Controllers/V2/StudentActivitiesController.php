@@ -7,15 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\StudentActivities;
+use App\Providers\RouteServiceProvider;
 
 class StudentActivitiesController extends Controller
 {
 
     protected $student_id;
+    protected $STUDENT_MEETING_VIEW_PER_PAGE;
 
     public function __construct()
     {
         $this->student_id = auth()->guard('student-api')->user()->id;
+        $this->STUDENT_MEETING_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_MEETING_VIEW_PER_PAGE;
     }
     
     public function index_by_student ($programme, $status, $recent = NULL, Request $request)
@@ -51,11 +54,20 @@ class StudentActivitiesController extends Controller
             });
         })->whereHas('students', function ($q) {
             $q->where('id', $this->student_id);
+        })->when($status == 'new', function ($q) {
+            $q->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting');
+        })->when($status == 'pending', function ($q) {
+            $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting');
+        })->when($status == 'upcoming', function ($q) {
+            $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting');
+        })->when($status == "history", function ($q) {
+            $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'finished');
         })
         // ->when($using_status, function($query) use ($status){
         //     $query->where('std_act_status', $status);
         // })
-        ->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+        ->orderBy('call_status', 'desc')
+        ->orderBy('created_at', 'desc')->recent($recent, $this->STUDENT_MEETING_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);
     }
