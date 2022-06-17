@@ -39,8 +39,7 @@ class StudentActivitiesController extends Controller
         $use_keyword = $request->get('keyword') ? 1 : 0;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
 
-        $activities = StudentActivities::with(['programmes', 'students', 'users', 'programme_details'])->
-            whereHas('programmes', function($query) use ($programme) {
+        $activities = StudentActivities::whereHas('programmes', function($query) use ($programme) {
                 $query->where('prog_name', $programme);
         })->when($use_keyword, function($query) use ($keyword, $programme) {
             $query->when($programme == "1-on-1-call", function ($q1) use ($keyword) {
@@ -61,7 +60,13 @@ class StudentActivitiesController extends Controller
         })->when($status == 'upcoming', function ($q) {
             $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting');
         })->when($status == "history", function ($q) {
-            $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'finished');
+            $q->where(function ($q1) { // history dari call status yg berhasil
+                $q1->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'finished');
+            })->orWhere(function ($q1) { // history dari call status yg cancel 
+                $q1->where('std_act_status', 'cancel')->where('mt_confirm_status', 'confirmed')->where('call_status', 'canceled');
+            })->orWhere(function ($q1) {
+                $q1->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'cancel')->where('call_status', 'canceled');
+            });
         })
         // ->when($using_status, function($query) use ($status){
         //     $query->where('std_act_status', $status);
