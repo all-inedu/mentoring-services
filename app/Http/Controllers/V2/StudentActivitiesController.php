@@ -10,6 +10,13 @@ use App\Models\StudentActivities;
 
 class StudentActivitiesController extends Controller
 {
+
+    protected $student_id;
+
+    public function __construct()
+    {
+        $this->student_id = auth()->guard('student-api')->user()->id;
+    }
     
     public function index_by_student ($programme, $status, $recent = NULL, Request $request)
     {
@@ -18,18 +25,13 @@ class StudentActivitiesController extends Controller
             'status' => 'nullable|in:new,pending,upcoming,history'
         ];
 
-        $validator = Validator::make([
-            'programme' => $programme,
-            'status' => $status
-        ], $rules);
+        $validator = Validator::make(['programme' => $programme, 'status' => $status], $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $using_status = $request->get('status') ? 1 : 0;
-        $status = $request->get('status') != NULL ? $request->get('status') : false;
-        
-        $id = auth()->guard('student-api')->user()->id;
+        // $using_status = $request->get('status') ? 1 : 0;
+        // $status = $request->get('status') != NULL ? $request->get('status') : false;
 
         $use_keyword = $request->get('keyword') ? 1 : 0;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
@@ -47,11 +49,13 @@ class StudentActivitiesController extends Controller
                     });
                 });
             });
-        })->whereHas('students', function ($q) use ($id) {
-            $q->where('id', $id);
-        })->when($using_status, function($query) use ($id, $status){
-            $query->where('std_act_status', $status);
-        })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+        })->whereHas('students', function ($q) {
+            $q->where('id', $this->student_id);
+        })
+        // ->when($using_status, function($query) use ($status){
+        //     $query->where('std_act_status', $status);
+        // })
+        ->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);
     }
