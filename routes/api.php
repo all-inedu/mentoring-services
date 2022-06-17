@@ -115,6 +115,7 @@ Route::prefix('v1')->group(function(){
         //** New */
         Route::put('confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
         Route::get('list/activities/{programme}/{status}/{recent?}', [V2StudentActivitiesController::class, 'index_by_student']);
+        Route::put('cancel/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_personal_meeting']);
 
         //** New */
         Route::get('interest', [InterestController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
@@ -157,6 +158,7 @@ Route::prefix('v1')->group(function(){
         Route::get('university/shortlisted/{status}', [UniversityController::class, 'index']);
 
         //* New */
+        Route::get('university/requirement', [UniversityController::class, 'index_requirement']);
         Route::post('academic/requirement', [UniversityController::class, 'store_academic_requirement']);
         Route::post('document/requirement', [UniversityController::class, 'store_document_requirement']);
         Route::post('media/pair', [MediaController::class, 'pair']);

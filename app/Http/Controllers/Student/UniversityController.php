@@ -50,6 +50,28 @@ class UniversityController extends Controller
         return response()->json(['success' => true, 'data' => $uni_shortlisted]);
     }
 
+    public function index_requirement ()
+    {
+        $academic = AcademicRequirement::where('student_id', $this->student_id)->groupBy('category')->orderBy('category', 'asc')->get()->makeHidden(['created_at', 'updated_at']);
+
+        // $media_requirement_data = [];
+        // $uni_shortlisted = UniShortlisted::where('student_id', $this->student_id)->whereHas('medias')->get();
+        // foreach ($uni_shortlisted as $university) {
+        //     $echo[] = $university->medias;
+            // $uni_shortlisted['medias'] = array(
+            //     'med_title' => $university->medias->med_title,
+            //     'med_desc' => $university->medias->med_desc,
+            //     'med_file_path' => $university->medias->med_file_path,
+            //     'med_file_name' => $university->medias->med_file_name,
+            //     'med_file_format' => $university->medias->med_file_format,
+            // );
+        // }
+        // $uploaded_file = $uni_shortlisted->medias; // get all media yang diupload by uni shortlisted
+
+        $data = collect($academic)->groupBy('category');
+        return response()->json(['success' => true, 'data' => $data]);
+    }
+
     //** for university requirement / academic requirement  */
     public function list_of_uni_in_files ($file_category)
     {

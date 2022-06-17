@@ -15,6 +15,7 @@ use App\Models\Students;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use App\Rules\CheckAvailabilityUserSchedule;
+use App\Rules\PersonalMeetingChecker;
 use Illuminate\Support\Facades\Auth;
 
 class StudentActivitiesController extends Controller
@@ -382,10 +383,55 @@ class StudentActivitiesController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Confirmation [Student] Meeting Issue : '.$e->getMessage());
+            Log::error('Confirmation ['.ucfirst($request->person).'] Meeting Issue : '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to confirm attendance. Please try again.']);
         }
 
         return response()->json(['success' => true, 'message' => 'You confirm to attend the meeting. Do not forget to check your schedule']);
+    }
+
+    public function cancel_personal_meeting ($std_act_id, Request $request)
+    {
+        $rules = [
+            'person' => 'required|in:student,mentor',
+            'std_act_id' => [new PersonalMeetingChecker($request->person)]
+        ];
+
+        $validator = Validator::make($request->all() + ['std_act_id' => $std_act_id], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        if (!$activities = StudentActivities::find($std_act_id)) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the activities Id']);
+        }
+
+        if ($activities->call_status == "finished") {
+            return response()->json(['success' => false, 'error' => 'You cannot cancel the meeting that already finished']);
+        }
+
+        DB::beginTransaction();
+        try {
+
+            switch ($request->person) {
+                case "student":
+                    $activities->std_act_status = 'cancel';
+                    break;
+
+                case "mentor":
+                    $activities->mt_confirm_status = 'cancel';
+                    break;
+            }
+            $activities->call_status = "cancelled";
+            $activities->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Cancelation ['.ucfirst($request->person).'] Meeting Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to cancel meeting. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => "You successfully refuse to attend the meeting"]);
     }
 }
