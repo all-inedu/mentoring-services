@@ -158,9 +158,9 @@ Route::prefix('v1')->group(function(){
         Route::get('university/shortlisted/{status}', [UniversityController::class, 'index']);
 
         //* New */
-        Route::get('university/requirement', [UniversityController::class, 'index_requirement']);
-        Route::post('academic/requirement', [UniversityController::class, 'store_academic_requirement']);
-        Route::post('document/requirement', [UniversityController::class, 'store_document_requirement']);
+        Route::get('university/requirement/{category}/{show_item?}', [UniversityController::class, 'index_requirement']);
+        // Route::post('academic/requirement', [UniversityController::class, 'store_academic_requirement']);
+        // Route::post('document/requirement', [UniversityController::class, 'store_document_requirement']);
         Route::post('media/pair', [MediaController::class, 'pair']);
 
         

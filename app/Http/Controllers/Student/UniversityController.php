@@ -45,31 +45,92 @@ class UniversityController extends Controller
                                     $query->where('status', 2);
                                 })->when($status == 'rejected', function($query) {
                                     $query->where('status', 3);
+                                })->when($status == 'all', function($query) {
+                                    $query->where('status', '!=', 99);
                                 })->orderBy('uni_name', 'asc')->orderBy('uni_major', 'asc')->get();
 
         return response()->json(['success' => true, 'data' => $uni_shortlisted]);
     }
 
-    public function index_requirement ()
+    public function index_requirement($category, $show_item = null)
+    {
+        $rules = ['category' => 'in:academic,document'];
+        $validator = Validator::make(['category' => $category], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        switch ($category) {
+            case "academic":
+                return $this->index_academic_requirement();
+                break;
+
+            case "document":
+                return $this->index_document_requirement($show_item);
+                break;
+        }
+    }
+
+    public function index_academic_requirement ()
     {
         $academic = AcademicRequirement::where('student_id', $this->student_id)->groupBy('category')->orderBy('category', 'asc')->get()->makeHidden(['created_at', 'updated_at']);
-
-        // $media_requirement_data = [];
-        // $uni_shortlisted = UniShortlisted::where('student_id', $this->student_id)->whereHas('medias')->get();
-        // foreach ($uni_shortlisted as $university) {
-        //     $echo[] = $university->medias;
-            // $uni_shortlisted['medias'] = array(
-            //     'med_title' => $university->medias->med_title,
-            //     'med_desc' => $university->medias->med_desc,
-            //     'med_file_path' => $university->medias->med_file_path,
-            //     'med_file_name' => $university->medias->med_file_name,
-            //     'med_file_format' => $university->medias->med_file_format,
-            // );
-        // }
-        // $uploaded_file = $uni_shortlisted->medias; // get all media yang diupload by uni shortlisted
-
         $data = collect($academic)->groupBy('category');
+
+        $category = [
+            'sat',
+            'publication_links',
+            'ielts',
+            'toefl',
+            'ap_score'
+        ];
+
+        for ($i = 0 ; $i < count($category) ; $i++) {
+            if (!array_key_exists($category[$i], $data->toArray())) {
+                $data[$category[$i]] = [];
+            }
+        }
+
         return response()->json(['success' => true, 'data' => $data]);
+    }
+
+    public function index_document_requirement ($show_item)
+    {
+        
+        switch ($show_item) {
+            case "all":
+                $media['essay'] = Medias::whereHas('media_categories', function($query) {
+                    return $query->where('name', 'Essay');
+                })->get()->makeHidden('pivot');
+
+                $media['lor'] = Medias::whereHas('media_categories', function($query) {
+                    return $query->where('name', 'Letter of Recommendation');
+                })->get()->makeHidden('pivot');
+
+                $media['transcript'] = Medias::whereHas('media_categories', function($query) {
+                    return $query->where('name', 'Transcript');
+                })->get()->makeHidden('pivot');
+                return response()->json(['success' => true, 'data' => $media]);
+
+                break;
+
+            default:
+                $uni_shortlisted = UniShortlisted::where('student_id', $this->student_id)->whereHas('medias')->get()->makeHidden(['user_id', 'student_id', 'status', 'created_at', 'updated_at']);
+                foreach ($uni_shortlisted as $university) {
+                    $university['essay'] = $university->medias()->whereHas('media_categories', function($query) {
+                        return $query->where('name', 'Essay');
+                    })->get()->makeHidden('pivot');
+        
+                    $university['lor'] = $university->medias()->whereHas('media_categories', function($query) {
+                        return $query->where('name', 'Letter of Recommendation');
+                    })->get()->makeHidden('pivot');
+        
+                    $university['transcript'] = $university->medias()->whereHas('media_categories', function($query) {
+                        return $query->where('name', 'Transcript');
+                    })->get()->makeHidden('pivot');
+                }
+                return response()->json(['success' => true, 'data' => $uni_shortlisted]);
+        }
+
     }
 
     //** for university requirement / academic requirement  */
@@ -148,7 +209,7 @@ class UniversityController extends Controller
             'name' => 'required|regex:/^[A-Za-z ]+$/|max:255',
             'file_category' => 'required|in:essay,letter_of_recommendation,transcript',
             // 'subject' => 'required|string|max:255',
-            'uploaded_file' => 'required|mimes:doc,docx,pdf,jpg,jpeg,png|max:2048'
+            'uploaded_file' => 'required|mimes:doc,docx,pdf,jpg,jpeg,png|max:1000'
         ];
 
         $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
