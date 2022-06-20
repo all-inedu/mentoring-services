@@ -91,6 +91,7 @@ class ProgrammeDetailController extends Controller
             'dtl_desc'       => 'required',
             'dtl_price'      => 'required|integer|min:0',
             'dtl_video_link' => 'nullable',
+            'dtl_date'       => 'required|date|after:today|date_format:Y-m-d H:i',
             'status'         => 'required|in:active,inactive'
         ];
 
@@ -122,6 +123,7 @@ class ProgrammeDetailController extends Controller
             $prog_details->dtl_desc = $request->dtl_desc;
             $prog_details->dtl_price = $request->dtl_price;
             $prog_details->dtl_video_link = $request->dtl_video_link;
+            $prog_details->dtl_date = $request->dtl_date;
             $prog_details->status = $request->status;
             $prog_details->save();
 

@@ -22,6 +22,7 @@ class ProgrammeDetails extends Model
         'dtl_desc',
         'dtl_price',
         'dtl_video_link',
+        'dtl_date',
         'status'
     ];
 

@@ -288,7 +288,7 @@ class StudentActivitiesController extends Controller
             'handled_by' => ['nullable', new RolesChecking('admin')],
             'location_link' => 'required|url',
             'location_pw' => 'required',
-            'prog_dtl_id'=> 'nullable|exists:programme_details,id',
+            'prog_dtl_id'=> 'nullable|required_if:activities,webinar,event|exists:programme_details,id',
             'call_with' => 'required|in:mentor,alumni,editor',
             'module' => 'required|in:life skills,career exploration,university admission,life university',
             'call_date' => ['required'/*, new CheckAvailabilityUserSchedule($request->user_id)*/]
@@ -309,24 +309,49 @@ class StudentActivitiesController extends Controller
             $programmes = Programmes::find($request->prog_id);
             $prog_price = $programmes->prog_price; //price that will be inserted into transaction
 
+            //! bikin prog pricenya get dari programme detail kalau programme details id nya tidak null
+
             // check if the student is the internal student or external
             $student = Students::find($request->student_id);
             $total_amount = ($student->imported_id != NULL) ? 0 : $prog_price; //set to 0 if student is internal student
 
-            $activities = new StudentActivities;
-            $activities->prog_id = $request->prog_id;
-            $activities->student_id = $request->student_id;
-            $activities->user_id = $request->user_id;
-            $activities->std_act_status = 'confirmed';
-            $activities->mt_confirm_status = 'waiting';
-            $activities->handled_by = $request->handled_by;
-            $activities->location_link = $request->location_link;
-            $activities->prog_dtl_id = $request->prog_dtl_id;
-            $activities->call_with = $request->call_with;
-            $activities->module = $request->module;
-            $activities->call_date = $request->call_date;
-            $activities->call_status = "waiting";
-            $activities->save();
+            switch ($activities) {
+                case "1-on-1-call":
+                    $activities = new StudentActivities;
+                    $activities->prog_id = $request->prog_id;
+                    $activities->student_id = $request->student_id;
+                    $activities->user_id = $request->user_id;
+                    $activities->std_act_status = 'confirmed';
+                    $activities->mt_confirm_status = 'waiting';
+                    $activities->handled_by = $request->handled_by;
+                    $activities->location_link = $request->location_link;
+                    $activities->prog_dtl_id = $request->prog_dtl_id;
+                    $activities->call_with = $request->call_with;
+                    $activities->module = $request->module;
+                    $activities->call_date = $request->call_date;
+                    $activities->call_status = "waiting";
+                    $activities->save();
+
+                    break;
+                
+                case "event":
+                    $activities = new StudentActivities;
+                    $activities->prog_id = $request->prog_id;
+                    $activities->student_id = $request->student_id;
+                    $activities->user_id = null;
+                    $activities->std_act_status = 'confirmed';
+                    $activities->mt_confirm_status = null;
+                    $activities->handled_by = $request->handled_by;
+                    $activities->location_link = $request->location_link;
+                    $activities->prog_dtl_id = $request->prog_dtl_id;
+                    $activities->call_with = null;
+                    $activities->module = $request->module;
+                    $activities->call_date = null;
+                    $activities->call_status = "waiting";
+                    $activities->save();
+                    break;
+            }
+
             $response['activities'] = $activities;
             $st_act_id = $activities->id;
 

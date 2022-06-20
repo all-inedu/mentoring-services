@@ -80,10 +80,28 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the group']);
         }
 
+        $owner_id = $group->student_id;
+
+        $group_member = $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'participants.status', 'contribution_role', 'contribution_description')->where('participants.status', '!=', 2)->orderBy('participants.created_at', 'asc')->get();
+
+        foreach ($group_member as $member) {
+            if ($member->id == $owner_id) {
+                $member['owner'] = 'yes';
+            } else {
+                $member['owner'] = 'no';
+            }
+        }
+
+        //
+
+        $student_info = $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.student_id', $this->student_id)->first();
+
+        $student_info['owner'] = ($this->student_id == $owner_id) ? "yes" : "no";
+
         return response()->json(['success' => true, 'data' => array(
             'group_info' => $group->makeHidden(['students', 'group_participant', 'group_meeting']),
-            'student_info' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.student_id', $this->student_id)->first(),
-            'group_member' => $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'participants.status', 'contribution_role', 'contribution_description')->where('participants.status', '!=', 2)->orderBy('participants.created_at', 'asc')->get(),
+            'student_info' => $student_info,
+            'group_member' => $group_member,
             'group_meeting' => $group->group_meeting()->orderBy('group_meetings.status', 'asc')->orderBy('group_meetings.created_at', 'asc')->get()->makeHidden(['student_attendances', 'user_attendances'])
         )]);
     }
@@ -502,6 +520,8 @@ class GroupController extends Controller
         if (!$meeting_detail = GroupMeeting::find($meeting_id)) {
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting']);
         }
+
+        if ($meeting_detail->group_project()->where('student_id', ))
 
         $mixed_data = array();
         $participants = $meeting_detail->student_attendances;
