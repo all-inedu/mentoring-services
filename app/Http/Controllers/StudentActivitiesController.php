@@ -336,7 +336,7 @@ class StudentActivitiesController extends Controller
                 
                 case "event":
                     $activities = new StudentActivities;
-                    $activities->prog_id = $request->prog_id;
+                    $activities->prog_id = $request->prog_id; //! di hardcode utk id programme event
                     $activities->student_id = $request->student_id;
                     $activities->user_id = null;
                     $activities->std_act_status = 'confirmed';

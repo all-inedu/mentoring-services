@@ -47,7 +47,7 @@ class UniversityController extends Controller
                                     $query->where('status', 3);
                                 })->when($status == 'all', function($query) {
                                     $query->where('status', '!=', 99);
-                                })->orderBy('uni_name', 'asc')->orderBy('uni_major', 'asc')->get();
+                                })->where('student_id', $this->student_id)->orderBy('uni_name', 'asc')->orderBy('uni_major', 'asc')->get();
 
         return response()->json(['success' => true, 'data' => $uni_shortlisted]);
     }
@@ -98,17 +98,20 @@ class UniversityController extends Controller
         
         switch ($show_item) {
             case "all":
-                $media['essay'] = Medias::whereHas('media_categories', function($query) {
+                $media['essay'] = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
+                with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
+                whereHas('media_categories', function($query) {
                     return $query->where('name', 'Essay');
-                })->get()->makeHidden('pivot');
+                })->where('student_id', $this->student_id)->get();
 
                 $media['lor'] = Medias::whereHas('media_categories', function($query) {
                     return $query->where('name', 'Letter of Recommendation');
-                })->get()->makeHidden('pivot');
+                })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
 
                 $media['transcript'] = Medias::whereHas('media_categories', function($query) {
                     return $query->where('name', 'Transcript');
-                })->get()->makeHidden('pivot');
+                })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
+                
                 return response()->json(['success' => true, 'data' => $media]);
 
                 break;
@@ -209,7 +212,7 @@ class UniversityController extends Controller
             'name' => 'required|regex:/^[A-Za-z ]+$/|max:255',
             'file_category' => 'required|in:essay,letter_of_recommendation,transcript',
             // 'subject' => 'required|string|max:255',
-            'uploaded_file' => 'required|mimes:doc,docx,pdf,jpg,jpeg,png|max:1000'
+            'uploaded_file' => 'required|mimes:doc,docx,pdf,jpg,jpeg,png|max:2048'
         ];
 
         $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);

@@ -22,6 +22,8 @@ class UniShortlisted extends Model
         'status'
     ];
 
+    protected $hidden = ['pivot'];
+
     public function users()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
