@@ -80,7 +80,7 @@ class UniversityController extends Controller
 
     public function index_academic_requirement ()
     {
-        $academic = AcademicRequirement::where('student_id', $this->student_id)->groupBy('category')->orderBy('category', 'asc')->get()->makeHidden(['created_at', 'updated_at']);
+        $academic = AcademicRequirement::where('student_id', $this->student_id)->orderBy('category', 'asc')->get()->makeHidden(['created_at', 'updated_at']);
         $data = collect($academic)->groupBy('category');
 
         $category = [
@@ -210,7 +210,7 @@ class UniversityController extends Controller
             for ($i = 0; $i < count($request->subject) ; $i++) {
 
                 //* kalau ada data academic requirement dengan subject dan student id yg sama maka update
-                if ($academic_req = AcademicRequirement::where('subject', $request->subject[$i])->where('student_id', $this->student_id)->first()) {
+                if ($academic_req = AcademicRequirement::where('category', $request->category)->where('subject', $request->subject[$i])->where('student_id', $this->student_id)->first()) {
                     $academic_req->subject = $request->subject[$i];
                     $academic_req->value = $request->value[$i];
                     $academic_req->save();
