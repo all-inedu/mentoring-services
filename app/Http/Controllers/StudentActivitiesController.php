@@ -347,7 +347,7 @@ class StudentActivitiesController extends Controller
                     $activities->call_with = null;
                     $activities->module = $request->module;
                     $activities->call_date = null;
-                    $activities->call_status = "waiting";
+                    $activities->call_status = null;
                     $activities->save();
                     break;
             }

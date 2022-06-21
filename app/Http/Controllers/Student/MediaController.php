@@ -33,26 +33,45 @@ class MediaController extends Controller
         $this->STUDENT_STORE_MEDIA_PATH = RouteServiceProvider::STUDENT_STORE_MEDIA_PATH;
         $this->STUDENT_LIST_MEDIA_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_LIST_MEDIA_VIEW_PER_PAGE;
     }
-
-    public function split ()
-    {
-
-    }
     
+
+    // update media that been attached to university shortlisted
     public function pair (Request $request)
-    {   
-        $university = UniShortlisted::where('imported_id', $request->uni_id)->where('student_id', $this->student_id)->first();
+    {  
+        $media_update = 0;
+
+        if (!$university = UniShortlisted::where('imported_id', $request->uni_id)->where('student_id', $this->student_id)->first()) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the university']);
+        }
+        
         $rules = [
             'general' => 'required|boolean',
             'student_id' => 'required|exists:students,id',
             'media_id' => ['required', new MediaPairChecker($request->general, $this->student_id, $university->id, $university->uni_name)],
+            'name' => 'required|regex:/^[A-Za-z0-9 ]+$/|max:255',
             'uni_id' => ['nullable', Rule::exists(UniShortlisted::class, 'imported_id')->where(function ($query) {
                 $query->where('student_id', $this->student_id);
             })],
         ];
 
+        // checking media name id
+        // if media name changed, then it should update 
+        if ($media = Medias::find($request->media_id)) {
+            if ($media->med_title != $request->name) {
+                // if media title from database is not equal with request name
+                // then update the name
+                $media->med_title = $request->name;
+                $media->med_desc = $request->name;
+                $media->save();
+                $media_update = 1;
+            }
+        }
+
         $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
         if ($validator->fails()) {
+            if ($media_update == 1) {
+                $validator->getMessageBag()->add('file_name', "You've also changed the file name");
+            }
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
