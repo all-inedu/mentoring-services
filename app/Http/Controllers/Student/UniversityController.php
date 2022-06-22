@@ -103,12 +103,15 @@ class UniversityController extends Controller
     public function index_document_requirement ($show_item)
     {
 
+        // $media = Medias::doesntHave('uni_shortlisted')->get();
+        // return response()->json($media);
+        
         $media['essay'] = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
             with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
             whereHas('media_categories', function($query) {
                 return $query->where('name', 'Essay');
         })->when($show_item != "all", function ($query) use ($show_item) {
-            $query->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
+            $query->doesntHave('uni_shortlisted')->orWhereHas('uni_shortlisted', function ($query1) use ($show_item) {
                 $query1->where('imported_id', $show_item);
             });
         })->where('student_id', $this->student_id)->get();
@@ -118,7 +121,7 @@ class UniversityController extends Controller
             whereHas('media_categories', function($query) {
                 return $query->where('name', 'Letter of Recommendation');
         })->when($show_item != "all", function ($query) use ($show_item) {
-            $query->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
+            $query->doesntHave('uni_shortlisted')->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
                 $query1->where('imported_id', $show_item);
             });
         })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
@@ -128,7 +131,7 @@ class UniversityController extends Controller
             whereHas('media_categories', function($query) {
                 return $query->where('name', 'Transcript');
         })->when($show_item != "all", function ($query) use ($show_item) {
-            $query->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
+            $query->doesntHave('uni_shortlisted')->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
                 $query1->where('imported_id', $show_item);
             });
         })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
