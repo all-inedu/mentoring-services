@@ -320,21 +320,27 @@ class MediaController extends Controller
 
     public function delete($media_id)
     {
-        $media = Medias::findOrFail($media_id);
+        $media = Medias::where('id', $media_id)->where('student_id', $this->student_id)->first();
         if (!$media) {
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the file']);
         }
 
+
         DB::beginTransaction();
         try {
+
+            $media_file_path = $media->med_file_path;
+            $file_path = substr($media_file_path, 7);
             
-            if (File::exists($media->med_file_path)) {
-                File::delete($media->med_file_path);
+            $isExists = File::exists(public_path($file_path));
+            // dd($isExists);
+            if ($isExists) {
+                File::delete(public_path($file_path));
 
                 //delete record file from database
-                if ($media->student_id == Auth::user()->id) {
-                    $media->delete();
-                }
+                $media->delete();
+            } else {
+                throw new Exception("Error occured");
             }
 
             DB::commit();
