@@ -102,29 +102,44 @@ class UniversityController extends Controller
 
     public function index_document_requirement ($show_item)
     {
-
-        // $media = Medias::doesntHave('uni_shortlisted')->get();
-        // return response()->json($media);
         
-        $media['essay'] = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
+        $essay_has_uni = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
             with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
             whereHas('media_categories', function($query) {
                 return $query->where('name', 'Essay');
         })->when($show_item != "all", function ($query) use ($show_item) {
-            $query->doesntHave('uni_shortlisted')->orWhereHas('uni_shortlisted', function ($query1) use ($show_item) {
+            $query->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
                 $query1->where('imported_id', $show_item);
             });
         })->where('student_id', $this->student_id)->get();
 
-        $media['lor'] = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
+        $lor_has_uni = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
             with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
             whereHas('media_categories', function($query) {
                 return $query->where('name', 'Letter of Recommendation');
         })->when($show_item != "all", function ($query) use ($show_item) {
-            $query->doesntHave('uni_shortlisted')->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
+            $query->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
                 $query1->where('imported_id', $show_item);
             });
         })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
+        
+        if ($show_item != "all") {
+            $essay_doesnt_have_uni = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
+                with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
+                whereHas('media_categories', function($query) {
+                    return $query->where('name', 'Essay');
+            })->doesntHave('uni_shortlisted')->where('student_id', $this->student_id)->get();
+
+            $lor_doesnt_have_uni = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
+                with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
+                whereHas('media_categories', function($query) {
+                    return $query->where('name', 'Letter of Recommendation');
+            })->doesntHave('uni_shortlisted')->where('student_id', $this->student_id)->get();
+        }
+
+        $media['essay'] = ($show_item != "all") ? $essay_has_uni->merge($essay_doesnt_have_uni) : $essay_has_uni;
+        $media['lor'] = ($show_item != "all") ? $lor_has_uni->merge($lor_doesnt_have_uni) : $lor_has_uni;
+
 
         $media['transcript'] = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
             with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
