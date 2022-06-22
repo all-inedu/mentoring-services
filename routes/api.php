@@ -165,6 +165,7 @@ Route::prefix('v1')->group(function(){
         Route::post('document/requirement', [UniversityController::class, 'store_document_requirement']);
         Route::put('document/requirement/{med_id}', [UniversityController::class, 'update_document_requirement']);
         Route::post('media/pair', [MediaController::class, 'pair']);
+        Route::post('media/update', [MediaController::class, 'update']);
 
         
     });

@@ -106,10 +106,47 @@ class MediaController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function update (Request $request)
+    {
+        $rules = [
+            'student_id' => 'required|exists:students,id',
+            'media_id' => ['required',
+                Rule::exists(Medias::class, 'id')->where(function ($query) {
+                    $query->where('student_id', $this->student_id);
+                })],
+            'name' => 'required|regex:/^[A-Za-z0-9 ]+$/|max:255',
+        ];
+
+        $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $media = Medias::find($request->media_id);
+
+        DB::beginTransaction();
+        if ($media->med_title != $request->name) {
+            // if media title from database is not equal with request name
+            // then update the name
+            try {
+
+                $media->med_title = $request->name;
+                $media->med_desc = $request->name;
+                $media->save();
+                DB::commit();
+            } catch (Exception $e) {
+                DB::rollBack();
+                Log::error('Update Media File Issue : ['.json_encode($request->all() + array('student_id' => $this->student_id )).'] '.$e->getMessage());
+                return response()->json(['success' => false, 'error' => 'Failed to update media file. Please try again.']);
+            }
+
+            return response()->json(['success' => true, 'message' => 'The filename has been changed']);
+        }
+   
+    }
+
     public function pair (Request $request)
     {  
-        
-        
         $rules = [
             'general' => 'required|boolean',
             'student_id' => 'required|exists:students,id',
@@ -123,6 +160,7 @@ class MediaController extends Controller
             })],
         ];
 
+        DB::beginTransaction();
         // checking media name id
         // if media name changed, then it should update 
         if ($media = Medias::find($request->media_id)) {
@@ -160,7 +198,7 @@ class MediaController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
    
-        DB::beginTransaction();
+        
         try {
             // general means file tidak mengikat ke uni manapun.
             // general = true adalah file hanya ada di medias
