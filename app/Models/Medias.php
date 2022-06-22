@@ -46,4 +46,14 @@ class Medias extends Model
     {
         return $this->belongsToMany(UniShortlisted::class, 'uni_requirement_media', 'med_id', 'uni_shortlisted_id');
     }
+
+    // public function essay_uni_shortlisted()
+    // {
+    //     return $this->belongsTo(UniShortlisted::class, 'essay_med_id', 'id');
+    // }
+
+    // public function lor_uni_shortlisted()
+    // {
+    //     return $this->belongsTo(UniShortlisted::class, 'lor_med_id', 'id');
+    // }
 }

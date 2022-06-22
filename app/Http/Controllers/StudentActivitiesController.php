@@ -17,9 +17,11 @@ use App\Providers\RouteServiceProvider;
 use App\Rules\CheckAvailabilityUserSchedule;
 use App\Rules\PersonalMeetingChecker;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Traits\CreateActivitiesTrait;
 
 class StudentActivitiesController extends Controller
 {
+    use CreateActivitiesTrait;
     protected $ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
 
     public function __construct()
@@ -271,14 +273,7 @@ class StudentActivitiesController extends Controller
 
     public function store_by_student ($activities, Request $request)
     {
-        /** list of programmes
-         * 1. 1-on-1-call
-         * 2. contact-mentor
-         * 3. webinar
-         * 4. event
-         * 5. subscription
-         */
-
+        $student_id = Auth::guard('student-api')->user()->id;
         $rules = [
             'activities' => 'nullable|in:1-on-1-call,webinar,event',
             'prog_id' => 'required|exists:programmes,id',  
@@ -289,9 +284,9 @@ class StudentActivitiesController extends Controller
             'location_link' => 'required|url',
             'location_pw' => 'required',
             'prog_dtl_id'=> 'nullable|required_if:activities,webinar,event|exists:programme_details,id',
-            'call_with' => 'required|in:mentor,alumni,editor',
+            'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
             'module' => 'required|in:life skills,career exploration,university admission,life university',
-            'call_date' => ['required'/*, new CheckAvailabilityUserSchedule($request->user_id)*/]
+            'call_date' => ['required_if:activities,1-on-1-call'/*, new CheckAvailabilityUserSchedule($request->user_id)*/]
         ];
 
         $validator = Validator::make($request->all() + ['activities' => $activities], $rules);
@@ -299,82 +294,183 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        if (StudentActivities::where('student_id', $request->student_id)->where('call_date', $request->call_date)->first()) {
-            return response()->json(['success' => false, 'error' => 'You already make an appoinment at '.date('l, d M Y H:i', strtotime($request->call_date))]);
-        }
+        switch ($activities) {
+            case "1-on-1-call":
+                $programme_id = 1; //! hardcode for now
+                if (StudentActivities::where('student_id', $student_id)->where('prog_id', $programme_id)->where('call_date', $request->call_date)->first()) {
+                    return response()->json(['success' => false, 'error' => 'You already make an appoinment at '.date('l, d M Y H:i', strtotime($request->call_date))]);
+                }
 
-        DB::beginTransaction();
-        try {
-            //select programmes 
-            $programmes = Programmes::find($request->prog_id);
-            $prog_price = $programmes->prog_price; //price that will be inserted into transaction
+                $request_data = [
+                    'prog_id' => $programme_id, 
+                    'student_id' => $student_id,
+                    'user_id' => $request->user_id,
+                    'std_act_status' => 'confirmed',
+                    'mt_confirm_status' => 'waiting',
+                    'handled_by' => NULL, //! for now set to null
+                    'location_link' => $request->location_link,
+                    'prog_dtl_id' => $request->prog_dtl_id,
+                    'call_with' => $request->call_with,
+                    'module' => $request->module,
+                    'call_date' => $request->call_date,
+                    'call_status' => 'waiting'
+                ];
+                break;
 
-            //! bikin prog pricenya get dari programme detail kalau programme details id nya tidak null
+            case "event":
+                $programme_id = 4; //! hardcode for now
+                if (StudentActivities::where('student_id', $student_id)->where('prog_id', $programme_id)->where('prog_dtl_id', $request->prog_dtl_id)->first()) {
+                    return response()->json(['success' => false, 'error' => 'You already joined the event']);
+                }
 
-            // check if the student is the internal student or external
-            $student = Students::find($request->student_id);
-            $total_amount = ($student->imported_id != NULL) ? 0 : $prog_price; //set to 0 if student is internal student
-
-            switch ($activities) {
-                case "1-on-1-call":
-                    $activities = new StudentActivities;
-                    $activities->prog_id = $request->prog_id;
-                    $activities->student_id = $request->student_id;
-                    $activities->user_id = $request->user_id;
-                    $activities->std_act_status = 'confirmed';
-                    $activities->mt_confirm_status = 'waiting';
-                    $activities->handled_by = $request->handled_by;
-                    $activities->location_link = $request->location_link;
-                    $activities->prog_dtl_id = $request->prog_dtl_id;
-                    $activities->call_with = $request->call_with;
-                    $activities->module = $request->module;
-                    $activities->call_date = $request->call_date;
-                    $activities->call_status = "waiting";
-                    $activities->save();
-
-                    break;
+                $request_data = [
+                    'prog_id' => $programme_id,
+                    'student_id' => $student_id,
+                    'user_id' => NULL,
+                    'std_act_status' => 'confirmed',
+                    'mt_confirm_status' => NULL,
+                    'handled_by' => NULL, //! for now set to null
+                    'location_link' => $request->location_link,
+                    'prog_dtl_id' => $request->prog_dtl_id,
+                    'call_with' => NULL,
+                    'module' => $request->module,
+                    'call_date' => NULL,
+                    'call_status' => NULL
+                ];
+                break;    
                 
-                case "event":
-                    $activities = new StudentActivities;
-                    $activities->prog_id = $request->prog_id; //! di hardcode utk id programme event
-                    $activities->student_id = $request->student_id;
-                    $activities->user_id = null;
-                    $activities->std_act_status = 'confirmed';
-                    $activities->mt_confirm_status = null;
-                    $activities->handled_by = $request->handled_by;
-                    $activities->location_link = $request->location_link;
-                    $activities->prog_dtl_id = $request->prog_dtl_id;
-                    $activities->call_with = null;
-                    $activities->module = $request->module;
-                    $activities->call_date = null;
-                    $activities->call_status = null;
-                    $activities->save();
-                    break;
-            }
+            case "webinar":
+                $programme_id = 3; //! hardcode for now
+                if (StudentActivities::where('student_id', $student_id)->where('prog_id', $programme_id)->where('prog_dtl_id', $request->prog_dtl_id)->first()) {
+                    return response()->json(['success' => false, 'error' => 'You already joined the webinar']);
+                }
 
-            $response['activities'] = $activities;
-            $st_act_id = $activities->id;
-
-            $data = [
-                'student_id' => $request->student_id,
-                'st_act_id'   => $st_act_id,
-                'amount'       => $prog_price,
-                'total_amount' => $total_amount,
-                'status'       => 'paid' //! sementara langsung paid, ke depannya akan diubah dari pending dlu
-            ];
-
-            $transaction = new TransactionController;
-            $response['transaction'] = $transaction->store($data);
-
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollBack();
-            Log::error('Create Student Activities Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to create student activities. Please try again.']);
+                $request_data = [
+                    'prog_id' => $programme_id,
+                    'student_id' => $student_id,
+                    'user_id' => NULL,
+                    'std_act_status' => 'confirmed',
+                    'mt_confirm_status' => NULL,
+                    'handled_by' => NULL, //! for now set to null
+                    'location_link' => NULL,
+                    'prog_dtl_id' => $request->prog_dtl_id,
+                    'call_with' => NULL,
+                    'module' => $request->module,
+                    'call_date' => NULL,
+                    'call_status' => NULL
+                ];
+                break;
         }
 
-        return response()->json(['success' => true, 'message' => 'Activities has been created', 'data' => $response]);
+        return $this->store_activities($request_data);
     }
+
+    // public function store_by_student ($activities, Request $request)
+    // {
+    //     /** list of programmes
+    //      * 1. 1-on-1-call
+    //      * 2. contact-mentor
+    //      * 3. webinar
+    //      * 4. event
+    //      * 5. subscription
+    //      */
+
+    //     $rules = [
+    //         'activities' => 'nullable|in:1-on-1-call,webinar,event',
+    //         'prog_id' => 'required|exists:programmes,id',  
+    //         'student_id' => 'required|exists:students,id',
+    //         'user_id' => ['nullable', new RolesChecking($request->call_with)],
+    //         // 'std_act_status' => 'required|in:waiting,confirmed',
+    //         'handled_by' => ['nullable', new RolesChecking('admin')],
+    //         'location_link' => 'required|url',
+    //         'location_pw' => 'required',
+    //         'prog_dtl_id'=> 'nullable|required_if:activities,webinar,event|exists:programme_details,id',
+    //         'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
+    //         'module' => 'required|in:life skills,career exploration,university admission,life university',
+    //         'call_date' => ['required_if:activities,1-on-1-call'/*, new CheckAvailabilityUserSchedule($request->user_id)*/]
+    //     ];
+
+    //     $validator = Validator::make($request->all() + ['activities' => $activities], $rules);
+    //     if ($validator->fails()) {
+    //         return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+    //     }
+
+    //     if (StudentActivities::where('student_id', $request->student_id)->where('call_date', $request->call_date)->first()) {
+    //         return response()->json(['success' => false, 'error' => 'You already make an appoinment at '.date('l, d M Y H:i', strtotime($request->call_date))]);
+    //     }
+
+    //     DB::beginTransaction();
+    //     try {
+    //         //select programmes 
+    //         $programmes = Programmes::find($request->prog_id);
+    //         $prog_price = $programmes->prog_price; //price that will be inserted into transaction
+
+    //         //! bikin prog pricenya get dari programme detail kalau programme details id nya tidak null
+
+    //         // check if the student is the internal student or external
+    //         $student = Students::find($request->student_id);
+    //         $total_amount = ($student->imported_id != NULL) ? 0 : $prog_price; //set to 0 if student is internal student
+
+    //         switch ($activities) {
+    //             case "1-on-1-call":
+    //                 $activities = new StudentActivities;
+    //                 $activities->prog_id = $request->prog_id;
+    //                 $activities->student_id = $request->student_id;
+    //                 $activities->user_id = $request->user_id;
+    //                 $activities->std_act_status = 'confirmed';
+    //                 $activities->mt_confirm_status = 'waiting';
+    //                 $activities->handled_by = $request->handled_by;
+    //                 $activities->location_link = $request->location_link;
+    //                 $activities->prog_dtl_id = $request->prog_dtl_id;
+    //                 $activities->call_with = $request->call_with;
+    //                 $activities->module = $request->module;
+    //                 $activities->call_date = $request->call_date;
+    //                 $activities->call_status = "waiting";
+    //                 $activities->save();
+
+    //                 break;
+                
+    //             case "event":
+    //                 $activities = new StudentActivities;
+    //                 $activities->prog_id = $request->prog_id; //! di hardcode utk id programme event
+    //                 $activities->student_id = $request->student_id;
+    //                 $activities->user_id = null;
+    //                 $activities->std_act_status = 'confirmed';
+    //                 $activities->mt_confirm_status = null;
+    //                 $activities->handled_by = $request->handled_by;
+    //                 $activities->location_link = $request->location_link;
+    //                 $activities->prog_dtl_id = $request->prog_dtl_id;
+    //                 $activities->call_with = null;
+    //                 $activities->module = $request->module;
+    //                 $activities->call_date = null;
+    //                 $activities->call_status = null;
+    //                 $activities->save();
+    //                 break;
+    //         }
+
+    //         $response['activities'] = $activities;
+    //         $st_act_id = $activities->id;
+
+    //         $data = [
+    //             'student_id' => $request->student_id,
+    //             'st_act_id'   => $st_act_id,
+    //             'amount'       => $prog_price,
+    //             'total_amount' => $total_amount,
+    //             'status'       => 'paid' //! sementara langsung paid, ke depannya akan diubah dari pending dlu
+    //         ];
+
+    //         $transaction = new TransactionController;
+    //         $response['transaction'] = $transaction->store($data);
+
+    //         DB::commit();
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Create Student Activities Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
+    //         return response()->json(['success' => false, 'error' => 'Failed to create student activities. Please try again.']);
+    //     }
+
+    //     return response()->json(['success' => true, 'message' => 'Activities has been created', 'data' => $response]);
+    // }
 
     public function confirmation_personal_meeting ($std_act_id, Request $request)
     {

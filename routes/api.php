@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\APController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -160,6 +161,7 @@ Route::prefix('v1')->group(function(){
         //* New */
         Route::get('university/requirement/{category}/{show_item?}', [UniversityController::class, 'index_requirement']);
         Route::post('academic/requirement', [UniversityController::class, 'store_academic_requirement']);
+        Route::delete('academic/requirement/{academic_id}', [UniversityController::class, 'delete_academic_requirement']);
         Route::post('document/requirement', [UniversityController::class, 'store_document_requirement']);
         Route::put('document/requirement/{med_id}', [UniversityController::class, 'update_document_requirement']);
         Route::post('media/pair', [MediaController::class, 'pair']);
@@ -183,8 +185,17 @@ Route::prefix('v1')->group(function(){
         Route::get('{user}/schedule/{user_sch_id}', [UserScheduleController::class, 'find']); //user = mentor, alumni, editor
 
         Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
+
+        //* New */
+        Route::get('ap/list', [APController::class, 'index']);
     });
 
+    Route::prefix('list')->group(function() {
+        // Route::get('programme/{type?}', [ProgrammeController::class, 'index'])->middleware('student-api');
+        Route::get('programme/{type?}', function (Request $request) {
+            return Auth::guard('student-api')->user();
+        });
+    });
     Route::get('transaction/{trx_id}/{type}', [TransactionController::class, 'invoice']);
 
     //! Admin Scopes
@@ -219,7 +230,7 @@ Route::prefix('v1')->group(function(){
         Route::prefix('list')->group(function() {
             Route::get('mail/log/{param}', [MailLogController::class, 'index']);
             Route::get('programme/module', [ProgrammeModuleController::class, 'index']);
-            Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
+            // Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
             Route::get('role', [PermissionController::class, 'index']);
             Route::get('user/{role_name?}', [UserController::class, 'index']); //user = mentor, alumni, editor
             Route::get('promotion', [PromotionController::class, 'index']);

@@ -19,7 +19,9 @@ class UniShortlisted extends Model
         'imported_id',
         'uni_name',
         'uni_major',
-        'status'
+        'status',
+        'essay_med_id',
+        'lor_med_id'
     ];
 
     protected $hidden = ['pivot'];
@@ -43,4 +45,14 @@ class UniShortlisted extends Model
     {
         return $this->belongsToMany(Medias::class, 'uni_requirement_media', 'uni_shortlisted_id', 'med_id');
     }
+
+    // public function essay_media()
+    // {
+    //     return $this->hasOne(Medias::class, 'essay_med_id', 'id');
+    // }
+
+    // public function lor_media()
+    // {
+    //     return $this->hasOne(Medias::class, 'lor_med_id', 'id');
+    // }
 }

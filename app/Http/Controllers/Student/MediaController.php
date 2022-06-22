@@ -36,23 +36,98 @@ class MediaController extends Controller
     
 
     // update media that been attached to university shortlisted
+    public function pair_one_to_one (Request $request) 
+    {
+        $success = 0;
+        $essay_med_id = $request->essay_med_id;
+        $lor_media_id = $request->lor_med_id;
+
+        $rules = [
+            'pair' => 'nullable|boolean',
+            'student_id' => 'required|exists:students,id',
+            'category' => 'required|in:essay,lor',
+            'essay_med_id' => [
+                'nullable', 'required_if:category,essay', 
+                'unique:uni_shortlisteds,essay_med_id', 'unique:uni_shortlisteds,lor_med_id', 
+                Rule::exists(Medias::class, 'id')->where(function ($query) {
+                    $query->where('student_id', $this->student_id);
+                })],
+            'lor_med_id' => [
+                'nullable', 'required_if:category,lor', 
+                'unique:uni_shortlisteds,lor_med_id', 'unique:uni_shortlisteds,essay_med_id',
+                Rule::exists(Medias::class, 'id')->where(function ($query) {
+                    $query->where('student_id', $this->student_id);
+                })],
+            'uni_id' => ['nullable', Rule::exists(UniShortlisted::class, 'imported_id')->where(function ($query) {
+                $query->where('student_id', $this->student_id);
+            })],
+            'change_name' => 'nullable|boolean',
+            'file_name' => 'required_if:change_name,true'
+        ];
+
+        $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+        
+        // change name function
+        if ($request->change_name == true) {
+
+            $med_id = ($request->essay_med_id != "") ? $request->essay_med_id : $request->lor_med_id;
+            $media = Medias::find($med_id);
+            $media_name = $media->med_title;
+
+            // matching the name
+            // if media name different from request filename then update
+            if ($media_name != $request->file_name) {
+                $media->med_title = $request->file_name;
+                $media->save();
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $uni_doc = UniShortlisted::where('imported_id', $request->uni_id)->first();
+            if ($essay_med_id != "")
+                $uni_doc->essay_med_id = $essay_med_id;
+
+            if ($lor_media_id != "")
+                $uni_doc->lor_med_id = $lor_media_id;
+
+            $uni_doc->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Pair Media File Issue : ['.json_encode($request->all() + array('student_id' => $this->student_id )).'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to pair media file. Please try again.']);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
     public function pair (Request $request)
     {  
-        $media_update = 0;
-
-        if (!$university = UniShortlisted::where('imported_id', $request->uni_id)->where('student_id', $this->student_id)->first()) {
-            return response()->json(['success' => false, 'error' => 'Couldn\'t find the university']);
-        }
+        
         
         $rules = [
             'general' => 'required|boolean',
             'student_id' => 'required|exists:students,id',
-            'media_id' => ['required', new MediaPairChecker($request->general, $this->student_id, $university->id, $university->uni_name)],
+            'media_id' => ['required',
+                Rule::exists(Medias::class, 'id')->where(function ($query) {
+                    $query->where('student_id', $this->student_id);
+                })],
             'name' => 'required|regex:/^[A-Za-z0-9 ]+$/|max:255',
             'uni_id' => ['nullable', Rule::exists(UniShortlisted::class, 'imported_id')->where(function ($query) {
                 $query->where('student_id', $this->student_id);
             })],
         ];
+
+        $general = $request->general;
+        if ($general == false) {
+            // $rules['media_id'] = 'unique:uni_requirement_media,med_id';
+            $rules['media_id'][] = Rule::unique('uni_requirement_media', 'med_id')->ignore($request->media_id, 'med_id');
+        }
 
         // checking media name id
         // if media name changed, then it should update 
@@ -63,18 +138,14 @@ class MediaController extends Controller
                 $media->med_title = $request->name;
                 $media->med_desc = $request->name;
                 $media->save();
-                $media_update = 1;
             }
         }
 
         $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
         if ($validator->fails()) {
-            if ($media_update == 1) {
-                $validator->getMessageBag()->add('file_name', "You've also changed the file name");
-            }
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
-
+        
         DB::beginTransaction();
         try {
             // general means file tidak mengikat ke uni manapun.
@@ -82,10 +153,14 @@ class MediaController extends Controller
             // general = false adalah file akan di  pair ke suatu uni
             switch ($request->general) {
                 case true:
-                    $university->medias()->detach($request->media_id);
+                    $media->uni_shortlisted()->detach(['uni_shortlisted_id' => $media->uni_shortlisted()->first()->pivot->uni_shortlisted_id]);
+                    // $university->medias()->detach($request->media_id);
                     break;
 
                 case false:
+                    if (!$university = UniShortlisted::where('imported_id', $request->uni_id)->where('student_id', $this->student_id)->first()) {
+                        return response()->json(['success' => false, 'error' => 'Couldn\'t find the university']);
+                    }
                     $university->medias()->attach($request->media_id, [
                                     'created_at' => Carbon::now(),
                                     'updated_at' => Carbon::now(),
@@ -108,8 +183,8 @@ class MediaController extends Controller
         return response()->json([
             'success' => true, 
             'message' => $request->general == false ? 
-                'The '.$media_category_name.' of yours has successfully submitted to '.$university->uni_name
-                : 'The submitted '.$media_category_name.' has successfully canceled from '.$university->uni_name]);
+                'The '.$media_category_name.' of yours has successfully submitted to '.$university_name
+                : 'The submitted '.$media_category_name.' has successfully dettach']);
     }
 
     public function switch ($file_id, Request $request)

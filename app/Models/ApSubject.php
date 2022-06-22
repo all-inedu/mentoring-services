@@ -17,4 +17,6 @@ class ApSubject extends Model
     protected $fillable = [
         'subject'
     ];
+
+    protected $hidden = ['created_at', 'updated_at'];
 }

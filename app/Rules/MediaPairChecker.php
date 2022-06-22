@@ -41,10 +41,10 @@ class MediaPairChecker implements Rule
 
         switch ($this->general) {
             case true:
-                if (!$media->uni_shortlisted()->where('uni_shortlisted_id', $this->university_id)->first()) {
-                    $this->custom_message = 'The file has not submitted to '. $this->university_name;
-                    return false;
-                }
+                // if (!$media->uni_shortlisted()->where('uni_shortlisted_id', $this->university_id)->first()) {
+                //     $this->custom_message = 'The file has not submitted to '. $this->university_name;
+                //     return false;
+                // }
                 break;
 
             case false:

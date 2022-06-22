@@ -237,25 +237,28 @@ class UniversityController extends Controller
         return response()->json(['success' => true, 'message' => 'Uni requirement has been added']);
     }
 
-    public function update_document_requirement ($med_id, Request $request) 
+    public function delete_academic_requirement ($academic_id) 
     {
-        $rules = [
-            'student_id' => 'required|exists:students,id',
-            'media_id' => ['required', Rule::exists(Medias::class, 'id')->where(function ($query) {
-                $query->has('uni_shortlisted');
-            })],
-            'uni_id' => ['nullable', Rule::exists(UniShortlisted::class, 'imported_id')->where(function ($query) {
-                $query->where('student_id', $this->student_id);
-            })],
-            'name' => 'required|regex:/^[A-Za-z ]+$/|max:255'
-        ];
-
-        $validator = Validator::make($request->all() + array('media_id' => $med_id,'student_id' => $this->student_id), $rules);
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        if (!$academic = AcademicRequirement::find($academic_id)) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the Academic Report']);
         }
 
+        DB::beginTransaction();
+        try {
 
+            $academic->delete();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Delete Academic Report Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to delete academic report. Please try again.']);
+        }
+
+        $academic = AcademicRequirement::where('student_id', $this->student_id)->get();
+        $collection = collect($academic)->groupBy('category');
+
+        return response()->json(['success' => true, 'data' => $collection]);
     }
 
     public function store_document_requirement (Request $request)
