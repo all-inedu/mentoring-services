@@ -142,15 +142,24 @@ class MediaController extends Controller
 
         $general = $request->general;
         if ($general == false) {
-            $rules['media_id'] = 'unique:uni_requirement_media,med_id';
-            // $rules['media_id'][] = Rule::unique('uni_requirement_media', 'med_id')->ignore($request->media_id, 'med_id');
+            // periksa apakah file tsb sudah ada di table uni requirement media
+            if ($media->uni_shortlisted()->count() > 0) {
+                // jika ada periksa kembali
+                // apakah uni id yg diinput sama dengan yg tercatat di table uni requirement media
+                if ($media->uni_shortlisted()->where('imported_id', $request->uni_id)->count() == 0) {
+                    // jika uni id yang diinput berbeda maka dettach yang lama 
+                    $media->uni_shortlisted()->detach(['uni_shortlisted_id' => $media->uni_shortlisted()->first()->pivot->uni_shortlisted_id]);
+                }
+                $rules['media_id'][] = 'unique:uni_requirement_media,med_id,'.$request->media_id;
+                // $rules['media_id'][] = Rule::unique('uni_requirement_media', 'med_id')->ignore($request->media_id, 'med_id');
+            }
         }
 
         $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
-        
+   
         DB::beginTransaction();
         try {
             // general means file tidak mengikat ke uni manapun.
@@ -158,7 +167,8 @@ class MediaController extends Controller
             // general = false adalah file akan di  pair ke suatu uni
             switch ($request->general) {
                 case true:
-                    $media->uni_shortlisted()->detach(['uni_shortlisted_id' => $media->uni_shortlisted()->first()->pivot->uni_shortlisted_id]);
+                    if ($media->uni_shortlisted()->count() > 0)
+                        $media->uni_shortlisted()->detach(['uni_shortlisted_id' => $media->uni_shortlisted()->first()->pivot->uni_shortlisted_id]);
                     // $university->medias()->detach($request->media_id);
                     break;
 
@@ -166,6 +176,7 @@ class MediaController extends Controller
                     if (!$university = UniShortlisted::where('imported_id', $request->uni_id)->where('student_id', $this->student_id)->first()) {
                         return response()->json(['success' => false, 'error' => 'Couldn\'t find the university']);
                     }
+
                     $university->medias()->attach($request->media_id, [
                                     'created_at' => Carbon::now(),
                                     'updated_at' => Carbon::now(),
