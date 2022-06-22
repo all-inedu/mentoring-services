@@ -340,7 +340,7 @@ class MediaController extends Controller
                 //delete record file from database
                 $media->delete();
             } else {
-                throw new Exception("Error occured");
+                throw new Exception("Cannot find the file or the file does not exists");
             }
 
             DB::commit();
