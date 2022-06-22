@@ -181,7 +181,7 @@ Route::prefix('v1')->group(function(){
     });
 
     //! Global Scopes
-    Route::middleware(['auth:api,student-api'])->group(function() {
+    Route::middleware(['auth:api,student-api', 'scope:student,admin,mentor,editor'])->group(function() {
         
         Route::get('{user}/schedule/{user_sch_id}', [UserScheduleController::class, 'find']); //user = mentor, alumni, editor
 
@@ -189,14 +189,11 @@ Route::prefix('v1')->group(function(){
 
         //* New */
         Route::get('ap/list', [APController::class, 'index']);
-    });
-
-    Route::prefix('list')->group(function() {
-        // Route::get('programme/{type?}', [ProgrammeController::class, 'index'])->middleware('student-api');
-        Route::get('programme/{type?}', function (Request $request) {
-            return Auth::guard('student-api')->user();
+        Route::prefix('list')->group(function () {
+            Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
         });
     });
+
     Route::get('transaction/{trx_id}/{type}', [TransactionController::class, 'invoice']);
 
     //! Admin Scopes

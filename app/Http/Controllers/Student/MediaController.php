@@ -160,7 +160,7 @@ class MediaController extends Controller
             })],
         ];
 
-        DB::beginTransaction();
+        
         // checking media name id
         // if media name changed, then it should update 
         if ($media = Medias::find($request->media_id)) {
@@ -170,11 +170,10 @@ class MediaController extends Controller
                 $media->med_title = $request->name;
                 $media->med_desc = $request->name;
                 $media->save();
-
                 
-                if ($media->uni_shortlisted()->where('imported_id', $request->uni_id)->first()) {
+                // if ($media->uni_shortlisted()->where('imported_id', $request->uni_id)->first()) {
                     return response()->json(['success' => true, 'message' => 'The filename has been changed']);
-                }
+                // }
             }
         }
 
@@ -198,7 +197,7 @@ class MediaController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
    
-        
+        DB::beginTransaction();
         try {
             // general means file tidak mengikat ke uni manapun.
             // general = true adalah file hanya ada di medias

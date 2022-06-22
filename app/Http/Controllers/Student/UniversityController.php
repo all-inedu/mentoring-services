@@ -200,8 +200,12 @@ class UniversityController extends Controller
             'student_id' => 'required|exists:students,id',
             'category' => 'required|in:sat,publication_links,ielts,toefl,ap_score',
             'subject.*' => 'required|string|max:255',
-            'value.*' => 'required'
+            'value.*' => ['required']
         ];
+
+        if ($request->category == "publication_links") {
+            $rules['value'][] = 'url';
+        }
 
         $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
         if ($validator->fails()) {
@@ -271,7 +275,7 @@ class UniversityController extends Controller
             'uni_id' => ['nullable', Rule::exists(UniShortlisted::class, 'imported_id')->where(function ($query) {
                 $query->where('student_id', $this->student_id);
             })],
-            'name' => 'required|regex:/^[A-Za-z ]+$/|max:255',
+            'name' => 'required|regex:/^[A-Za-z0-9 ]+$/|max:255',
             'file_category' => 'required|in:essay,letter_of_recommendation,transcript',
             // 'subject' => 'required|string|max:255',
             'uploaded_file' => 'required|mimes:doc,docx,pdf,jpg,jpeg,png|max:2048'
