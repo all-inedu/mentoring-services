@@ -245,7 +245,6 @@ class UniversityController extends Controller
 
         DB::beginTransaction();
         try {
-
             $academic->delete();
 
             DB::commit();
@@ -255,10 +254,7 @@ class UniversityController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to delete academic report. Please try again.']);
         }
 
-        $academic = AcademicRequirement::where('student_id', $this->student_id)->get();
-        $collection = collect($academic)->groupBy('category');
-
-        return response()->json(['success' => true, 'data' => $collection]);
+        return response()->json(['success' => true, 'message' => 'The academic report ['.$academic->category.'] has deleted']);
     }
 
     public function store_document_requirement (Request $request)

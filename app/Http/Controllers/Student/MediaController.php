@@ -123,12 +123,6 @@ class MediaController extends Controller
             })],
         ];
 
-        $general = $request->general;
-        if ($general == false) {
-            // $rules['media_id'] = 'unique:uni_requirement_media,med_id';
-            $rules['media_id'][] = Rule::unique('uni_requirement_media', 'med_id')->ignore($request->media_id, 'med_id');
-        }
-
         // checking media name id
         // if media name changed, then it should update 
         if ($media = Medias::find($request->media_id)) {
@@ -138,7 +132,18 @@ class MediaController extends Controller
                 $media->med_title = $request->name;
                 $media->med_desc = $request->name;
                 $media->save();
+
+                
+                if ($media->uni_shortlisted()->where('imported_id', $request->uni_id)->first()) {
+                    return response()->json(['success' => true, 'message' => 'The filename has been changed']);
+                }
             }
+        }
+
+        $general = $request->general;
+        if ($general == false) {
+            $rules['media_id'] = 'unique:uni_requirement_media,med_id';
+            // $rules['media_id'][] = Rule::unique('uni_requirement_media', 'med_id')->ignore($request->media_id, 'med_id');
         }
 
         $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
@@ -177,13 +182,12 @@ class MediaController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to pair media file. Please try again.']);
         }
 
-        $media = Medias::find($request->media_id);
         $media_category_name = $media->media_categories->name;
 
         return response()->json([
             'success' => true, 
             'message' => $request->general == false ? 
-                'The '.$media_category_name.' of yours has successfully submitted to '.$university_name
+                'The '.$media_category_name.' of yours has successfully submitted to '.$university->uni_name
                 : 'The submitted '.$media_category_name.' has successfully dettach']);
     }
 
