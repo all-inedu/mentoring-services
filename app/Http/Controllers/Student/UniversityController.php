@@ -130,10 +130,6 @@ class UniversityController extends Controller
             with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
             whereHas('media_categories', function($query) {
                 return $query->where('name', 'Transcript');
-        })->when($show_item != "all", function ($query) use ($show_item) {
-            $query->doesntHave('uni_shortlisted')->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
-                $query1->where('imported_id', $show_item);
-            });
         })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
                 
         return response()->json(['success' => true, 'data' => $media]);
