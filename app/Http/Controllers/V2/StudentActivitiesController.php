@@ -54,11 +54,17 @@ class StudentActivitiesController extends Controller
         })->whereHas('students', function ($q) {
             $q->where('id', $this->student_id);
         })->when($status == 'new', function ($q) {
-            $q->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting');
+            $q->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
+            ->orderBy('call_status', 'desc')
+            ->orderBy('call_date', 'asc');
         })->when($status == 'pending', function ($q) {
-            $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting');
+            $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting')
+            ->orderBy('call_status', 'desc')
+            ->orderBy('call_date', 'asc');
         })->when($status == 'upcoming', function ($q) {
-            $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting');
+            $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
+            ->orderBy('call_status', 'desc')
+            ->orderBy('call_date', 'asc');
         })->when($status == "history", function ($q) {
             $q->where(function ($q1) { // history dari call status yg berhasil
                 $q1->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'finished');
@@ -66,13 +72,12 @@ class StudentActivitiesController extends Controller
                 $q1->where('std_act_status', 'cancel')->where('mt_confirm_status', 'confirmed')->where('call_status', 'canceled');
             })->orWhere(function ($q1) {
                 $q1->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'cancel')->where('call_status', 'canceled');
-            });
+            })->orderBy('call_status', 'desc')->orderBy('created_at', 'desc');
         })
         // ->when($using_status, function($query) use ($status){
         //     $query->where('std_act_status', $status);
         // })
-        ->orderBy('call_status', 'desc')
-        ->orderBy('created_at', 'desc')->recent($recent, $this->STUDENT_MEETING_VIEW_PER_PAGE);
+        ->recent($recent, $this->STUDENT_MEETING_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);
     }
