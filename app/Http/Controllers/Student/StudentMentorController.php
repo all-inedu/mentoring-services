@@ -84,9 +84,7 @@ class StudentMentorController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $student->users = User::whereHas('roles', function ($query) {
-            $query->where('role_name', 'mentor');
-        })->get();
+        $user_role = $student->users()->with('roles')->get();
 
         return response()->json(['success' => true, 'data' => $student->users]);
     }
