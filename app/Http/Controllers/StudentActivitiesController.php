@@ -276,8 +276,8 @@ class StudentActivitiesController extends Controller
         $student_id = Auth::guard('student-api')->user()->id;
         $rules = [
             'activities' => 'nullable|in:1-on-1-call,webinar,event',
-            'prog_id' => 'required|exists:programmes,id',  
-            'student_id' => 'required|exists:students,id',
+            // 'prog_id' => 'required|exists:programmes,id',  
+            // 'student_id' => 'required|exists:students,id',
             'user_id' => ['nullable', new RolesChecking($request->call_with)],
             // 'std_act_status' => 'required|in:waiting,confirmed',
             'handled_by' => ['nullable', new RolesChecking('admin')],
