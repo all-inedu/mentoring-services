@@ -84,9 +84,9 @@ class StudentMentorController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $user_role = $student->users()->with('roles')->get();
+        $user_role = $student->users()->get();
 
-        return response()->json(['success' => true, 'data' => $student->users]);
+        return response()->json(['success' => true, 'data' => $user_role->groupBy('roles.*.role_name')->makeHidden('roles')]);
     }
 
     public function store(Request $request)
