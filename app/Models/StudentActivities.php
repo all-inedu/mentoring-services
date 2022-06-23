@@ -26,7 +26,8 @@ class StudentActivities extends Model
         'prog_dtl_id',
         'call_with',
         'module',
-        'call_date'
+        'call_date',
+        'call_status'
     ];
 
     public function programmes ()
