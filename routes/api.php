@@ -116,7 +116,7 @@ Route::prefix('v1')->group(function(){
         //** New */
         Route::put('confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
         Route::get('list/activities/{programme}/{status}/{recent?}', [V2StudentActivitiesController::class, 'index_by_student']);
-        Route::put('cancel/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_personal_meeting']);
+        Route::put('{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);
 
         //** New */
         Route::get('interest', [InterestController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes

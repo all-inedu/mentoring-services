@@ -511,14 +511,15 @@ class StudentActivitiesController extends Controller
         return response()->json(['success' => true, 'message' => 'You confirm to attend the meeting. Do not forget to check your schedule']);
     }
 
-    public function cancel_personal_meeting ($std_act_id, Request $request)
+    public function cancel_reject_personal_meeting ($status, $std_act_id, Request $request)
     {
         $rules = [
             'person' => 'required|in:student,mentor',
+            'status' => 'in:cancel,reject',
             'std_act_id' => [new PersonalMeetingChecker($request->person)]
         ];
 
-        $validator = Validator::make($request->all() + ['std_act_id' => $std_act_id], $rules);
+        $validator = Validator::make($request->all() + ['status' => $status, 'std_act_id' => $std_act_id], $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
@@ -527,30 +528,41 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the activities Id']);
         }
 
-        if ($activities->call_status == "finished") {
-            return response()->json(['success' => false, 'error' => 'You cannot cancel the meeting that already finished']);
+        switch ($activities->call_status) {
+            case "finished":
+                return response()->json(['success' => false, 'error' => 'You cannot '.strtolower($status).' the meeting that already finished']);
+                break;
+
+            case "canceled":
+                return response()->json(['success' => false, 'error' => 'The meeting has already canceled']);
+                break;
+
+            case "rejected":
+                return response()->json(['success' => false, 'error' => 'The meeting has already rejected']);
+                break;
         }
+
 
         DB::beginTransaction();
         try {
 
             switch ($request->person) {
                 case "student":
-                    $activities->std_act_status = 'cancel';
+                    $activities->std_act_status = $status;
                     break;
 
                 case "mentor":
-                    $activities->mt_confirm_status = 'cancel';
+                    $activities->mt_confirm_status = $status;
                     break;
             }
-            $activities->call_status = "cancelled";
+            $activities->call_status = ($status == "cancel") ? "canceled" : "rejected";
             $activities->save();
 
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Cancelation ['.ucfirst($request->person).'] Meeting Issue : '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to cancel meeting. Please try again.']);
+            Log::error($status.' ['.ucfirst($request->person).'] Meeting Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to '.$status.' meeting. Please try again.']);
         }
 
         return response()->json(['success' => true, 'message' => "You successfully refuse to attend the meeting"]);
