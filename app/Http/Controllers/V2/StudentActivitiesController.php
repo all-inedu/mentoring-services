@@ -39,7 +39,7 @@ class StudentActivitiesController extends Controller
         $use_keyword = $request->get('keyword') ? 1 : 0;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
 
-        $activities = StudentActivities::whereHas('programmes', function($query) use ($programme) {
+        $activities = StudentActivities::with('students', 'users')->whereHas('programmes', function($query) use ($programme) {
                 $query->where('prog_name', $programme);
         })->when($use_keyword, function($query) use ($keyword, $programme) {
             $query->when($programme == "1-on-1-call", function ($q1) use ($keyword) {

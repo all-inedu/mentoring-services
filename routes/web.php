@@ -32,3 +32,7 @@ Route::group(['middleware' => ['web']], function () {
         return view('templates.mail.reset-password', ['token' => $token]);
     });
 });
+
+Route::get('coba', function () {
+    echo '<div style="background:red;" ><iframe width="862" height="450" src="https://www.youtube.com/embed/mHA4BxZTXlk?start=600" title="Teaser Weekend: Top University Admission Mentoring" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+});

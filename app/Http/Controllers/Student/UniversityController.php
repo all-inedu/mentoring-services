@@ -148,48 +148,6 @@ class UniversityController extends Controller
         })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
                 
         return response()->json(['success' => true, 'data' => $media]);
-        
-        // switch ($show_item) {
-        //     case "all":
-        //         $media['essay'] = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
-        //         with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
-        //         whereHas('media_categories', function($query) {
-        //             return $query->where('name', 'Essay');
-        //         })->where('student_id', $this->student_id)->get();
-
-        //         $media['lor'] = Medias::whereHas('media_categories', function($query) {
-        //             return $query->where('name', 'Letter of Recommendation');
-        //         })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
-
-        //         $media['transcript'] = Medias::whereHas('media_categories', function($query) {
-        //             return $query->where('name', 'Transcript');
-        //         })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
-                
-        //         return response()->json(['success' => true, 'data' => $media]);
-
-        //         break;
-
-        //     default:
-        //         // v0.1
-        //         $uni_shortlisted = UniShortlisted::where('student_id', $this->student_id)->where('imported_id', $show_item)->
-        //                 whereHas('medias')->get()->makeHidden(['user_id', 'student_id', 'status', 'created_at', 'updated_at']);
-
-        //         foreach ($uni_shortlisted as $university) {
-        //             $university['essay'] = $university->medias()->whereHas('media_categories', function($query) {
-        //                 return $query->where('name', 'Essay');
-        //             })->get()->makeHidden('pivot');
-        
-        //             $university['lor'] = $university->medias()->whereHas('media_categories', function($query) {
-        //                 return $query->where('name', 'Letter of Recommendation');
-        //             })->get()->makeHidden('pivot');
-        
-        //             $university['transcript'] = $university->medias()->whereHas('media_categories', function($query) {
-        //                 return $query->where('name', 'Transcript');
-        //             })->get()->makeHidden('pivot');
-        //         }
-        //         return response()->json(['success' => true, 'data' => $uni_shortlisted]);
-        // }
-
     }
 
     //** for university requirement / academic requirement  */
