@@ -309,6 +309,7 @@ class StudentActivitiesController extends Controller
                     'mt_confirm_status' => 'waiting',
                     'handled_by' => NULL, //! for now set to null
                     'location_link' => $request->location_link,
+                    'location_pw' => $request->location_pw,
                     'prog_dtl_id' => $request->prog_dtl_id,
                     'call_with' => $request->call_with,
                     'module' => $request->module,
@@ -331,6 +332,7 @@ class StudentActivitiesController extends Controller
                     'mt_confirm_status' => NULL,
                     'handled_by' => NULL, //! for now set to null
                     'location_link' => $request->location_link,
+                    'location_pw' => $request->location_pw,
                     'prog_dtl_id' => $request->prog_dtl_id,
                     'call_with' => NULL,
                     'module' => $request->module,
@@ -353,6 +355,7 @@ class StudentActivitiesController extends Controller
                     'mt_confirm_status' => NULL,
                     'handled_by' => NULL, //! for now set to null
                     'location_link' => NULL,
+                    'location_pw' => NULL,
                     'prog_dtl_id' => $request->prog_dtl_id,
                     'call_with' => NULL,
                     'module' => $request->module,

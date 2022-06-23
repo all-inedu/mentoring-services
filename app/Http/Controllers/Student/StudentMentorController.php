@@ -72,7 +72,8 @@ class StudentMentorController extends Controller
     public function list(Request $request)
     {
 
-        $mail = auth()->guard('student-api')->user()->email;
+        $student = auth()->guard('student-api')->user();
+        $mail = $student->email;
 
         $rules = [
             'mail' => 'required|exists:students,email'
@@ -83,7 +84,10 @@ class StudentMentorController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $student = Students::where('email', $mail)->first();
+        $student->users = User::whereHas('roles', function ($query) {
+            $query->where('role_name', 'mentor');
+        })->get();
+
         return response()->json(['success' => true, 'data' => $student->users]);
     }
 
