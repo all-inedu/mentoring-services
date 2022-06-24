@@ -282,10 +282,10 @@ class StudentActivitiesController extends Controller
             // 'std_act_status' => 'required|in:waiting,confirmed',
             'handled_by' => ['nullable', new RolesChecking('admin')],
             'location_link' => 'required|url',
-            'location_pw' => 'required',
+            'location_pw' => 'nullable',
             'prog_dtl_id'=> 'nullable|required_if:activities,webinar,event|exists:programme_details,id',
             'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
-            'module' => 'required|in:life skills,career exploration,university admission,life university',
+            'module' => 'required|in:life skills,career exploration,university admission,life at university',
             'call_date' => ['required_if:activities,1-on-1-call'/*, new CheckAvailabilityUserSchedule($request->user_id)*/]
         ];
 

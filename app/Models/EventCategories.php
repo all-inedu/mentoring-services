@@ -13,8 +13,4 @@ class EventCategories extends Model
         'category_name'
     ];
 
-    public function programme_details ()
-    {
-        return $this->hasMany(ProgrammeDetails::class, 'dtl_category', 'id');
-    }
 }
