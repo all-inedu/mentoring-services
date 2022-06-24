@@ -42,6 +42,8 @@ use App\Http\Controllers\V2\StudentActivitiesController as V2StudentActivitiesCo
 use App\Http\Controllers\VerificationController;
 use App\Models\StudentActivities;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +76,30 @@ Route::get('a', function() {
         )
     );
     return view('templates/mail/cancel-group-meeting-announcement', $data);
+});
+
+Route::get('b', function() {
+    $today = date('Y-m-d');
+        $meeting = StudentActivities::whereHas('programmes', function ($query) {
+                $query->where('prog_name', '1-on-1-call');
+            })->where(function($query) {
+                $query->where('std_act_status', 'waiting')->orWhere('mt_confirm_status', 'waiting');
+            })->where('call_status', 'waiting')->
+            where('call_date', '<', $today)->get();
+
+        DB::beginTransaction();
+        try {
+            foreach ($meeting as $meeting_info) {
+                $meeting_info->update(['call_status' => 'canceled']);
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::channel('scheduler')->error('Cancel Personal Meeting Issue : '.$e->getMessage());
+        }
+
+        Log::channel('scheduler')->info('There are '.count($meeting).' personal meeting canceled');
+        return count($meeting) > 0 ? 1 : 0;
 });
 
 Route::prefix('v1')->group(function(){

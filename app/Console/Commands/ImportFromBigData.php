@@ -58,7 +58,7 @@ class ImportFromBigData extends Command
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::channel('scheduler')->error($e->getMessage());
+            Log::channel('scheduler')->error('Import From Big Data Issue : '.$e->getMessage());
         }
 
         Log::channel('scheduler')->info('Data has been synced');
