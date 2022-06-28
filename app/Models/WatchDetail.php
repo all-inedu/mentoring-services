@@ -14,6 +14,11 @@ class WatchDetail extends Model
         'current_time'
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
     public function joined_activities()
     {
         return $this->belongsTo(StudentActivities::class, 'std_act_id', 'id');

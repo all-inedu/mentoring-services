@@ -82,10 +82,11 @@ class StudentActivitiesController extends Controller
         $rules = [
             'programme' => 'required|in:1-on-1-call,webinar,event',
             'status' => 'nullable|in:new,pending,upcoming,history',
-
-            // this rules available when student choose webinar
-            'category' => 'required_if:programme,webinar|exists:programme_details,dtl_category'
         ];
+        
+        if ($programme == "webinar") {
+            $rules['category'] = $webinar_category != "" ? 'exists:programme_details,dtl_category' : '';
+        }
 
         $validator = Validator::make(['programme' => $programme, 'status' => $status, 'category' => $webinar_category], $rules);
         if ($validator->fails()) {
