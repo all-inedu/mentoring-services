@@ -391,7 +391,7 @@ class StudentActivitiesController extends Controller
                     'location_pw' => NULL,
                     'prog_dtl_id' => $request->prog_dtl_id,
                     'call_with' => NULL,
-                    'module' => $request->module,
+                    'module' => NULL,
                     'call_date' => NULL,
                     'call_status' => NULL
                 ];
