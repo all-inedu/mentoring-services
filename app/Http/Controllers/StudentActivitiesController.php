@@ -59,7 +59,7 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to save watch time. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Watch time has updated']);
+        return response()->json(['success' => true, 'message' => 'Watch time has updated', 'data' => $student_activities->watch_detail]);
     }
 
     public function set_meeting(Request $request)
@@ -318,7 +318,7 @@ class StudentActivitiesController extends Controller
             'location_pw' => 'nullable',
             'prog_dtl_id'=> 'nullable|required_if:activities,webinar,event|exists:programme_details,id',
             'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
-            'module' => 'required|in:life skills,career exploration,university admission,life at university',
+            'module' => 'required_if:activities,1-on-1-call|in:life skills,career exploration,university admission,life at university',
             'call_date' => ['required_if:activities,1-on-1-call'/*, new CheckAvailabilityUserSchedule($request->user_id)*/]
         ];
 
