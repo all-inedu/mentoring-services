@@ -8,6 +8,7 @@ use App\Http\Controllers\CRM\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\EssayController;
+use App\Http\Controllers\EventCategoryController;
 use App\Http\Controllers\Google\GoogleCalendarController;
 use App\Http\Controllers\HelperController;
 use App\Http\Controllers\MailLogController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\Student\GroupController;
 use App\Http\Controllers\Student\InterestController;
 use App\Http\Controllers\Student\MediaController;
 use App\Http\Controllers\Student\ProfileController;
+use App\Http\Controllers\Student\ProgrammeDetailController as StudentProgrammeDetailController;
 use App\Http\Controllers\Student\StudentMentorController;
 use App\Http\Controllers\Student\UniversityController;
 use App\Http\Controllers\Student\VerificationController as StudentVerificationController;
@@ -141,8 +143,12 @@ Route::prefix('v1')->group(function(){
         Route::post('make/{activities}', [StudentActivitiesController::class, 'store_by_student']);
         //** New */
         Route::put('confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
-        Route::get('list/activities/{programme}/{status}/{recent?}', [V2StudentActivitiesController::class, 'index_by_student']);
+        Route::get('list/activities/{programme}/{status?}/{recent?}', [V2StudentActivitiesController::class, 'index_by_student']);
         Route::put('{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);
+        Route::get('list/{programme}/categories', [EventCategoryController::class, 'index']);
+        Route::get('programme/detail/{programme}/{category?}', [StudentProgrammeDetailController::class, 'index']);
+        Route::get('programme/view/detail/{prog_dtl_id}', [StudentProgrammeDetailController::class, 'find']);
+        Route::put('update/watch/{std_act_id}', [StudentActivitiesController::class, 'watch_time']);
 
         //** New */
         Route::get('interest', [InterestController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
@@ -215,6 +221,7 @@ Route::prefix('v1')->group(function(){
 
         //* New */
         Route::get('ap/list', [APController::class, 'index']);
+
         Route::prefix('list')->group(function () {
             Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
         });

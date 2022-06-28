@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use App\Http\Controllers\HelperController;
 use Illuminate\Http\Request;
 use App\Rules\RolesChecking;
 use Illuminate\Support\Facades\Validator;
@@ -9,6 +10,7 @@ use App\Models\Programmes;
 use App\Models\Students;
 use App\Models\StudentActivities;
 use App\Http\Controllers\TransactionController;
+use App\Models\ProgrammeDetails;
 use App\Models\WatchDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,6 +20,8 @@ trait CreateActivitiesTrait
 {
     public function store_activities ($request)
     {
+        $helper = new HelperController;
+        // return $this->get_video_duration("https://youtu.be/mHA4BxZTXlk");
         //select programmes 
         $programmes = Programmes::find($request['prog_id']);
         $prog_name = $programmes->prog_name;
@@ -28,20 +32,26 @@ trait CreateActivitiesTrait
 
             //! bikin prog pricenya get dari programme detail kalau programme details id nya tidak null
 
-            // check if the student is the internal student or external
-            $student = Students::find($request['student_id']);
-            $total_amount = ($student->imported_id != NULL) ? 0 : $prog_price; //set to 0 if student is internal student
-
             $activities = StudentActivities::create($request);
 
             // if programme is webinar
             // then input detail video to detail watch
             // to save student watching progress 
             if ($prog_name == "webinar") {
-                //? lanjut abis bikin list webinar
-                // $watch_detail = new WatchDetail;
-                // $watch_detail->duration
+                // get programme detail to get the programme dtl name and programme dtl price from programme details
+                $prog_detail = ProgrammeDetails::find($request['prog_dtl_id']);
+                $prog_name = $prog_detail->dtl_name;
+                $prog_price = $prog_detail->dtl_price;
+                $prog_video_link = $prog_detail->dtl_video_link;
+                
+                $watch_detail = $activities->watch_detail()->create([
+                    'video_duration' => $helper->videoDetails($prog_video_link),
+                ]);
             }
+
+            // check if the student is the internal student or external
+            $student = Students::find($request['student_id']);
+            $total_amount = ($student->imported_id != NULL) ? 0 : $prog_price; //set to 0 if student is internal student
             
             $response['activities'] = $activities;
             $st_act_id = $activities->id;
@@ -65,5 +75,20 @@ trait CreateActivitiesTrait
         }
 
         return response()->json(['success' => true, 'message' => 'Activities has been created', 'data' => $response]);
+    }
+
+    public function get_video_duration($url)
+    {
+        parse_str(parse_url($url,PHP_URL_QUERY),$arr);
+        $video_id=$arr['v']; 
+
+
+        $data=@file_get_contents('http://gdata.youtube.com/feeds/api/videos/'.$video_id.'?v=2&alt=jsonc');
+        if (false===$data) return false;
+
+        $obj=json_decode($data);
+
+        return $obj->data->duration;
+
     }
 }

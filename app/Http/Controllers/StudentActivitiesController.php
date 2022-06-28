@@ -29,6 +29,39 @@ class StudentActivitiesController extends Controller
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
 
+    public function watch_time($std_act_id, Request $request)
+    {
+        if (!$student_activities = StudentActivities::find($std_act_id)) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the activities']);
+        }
+
+        $rules = [
+            'current_time' => 'required|integer' 
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+
+            $old_current_time = $student_activities->watch_detail->current_time;
+
+            if ($old_current_time < $request->current_time)  
+                $student_activities->watch_detail()->update(['current_time' => $request->current_time]);
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to Save Watch Time : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to save watch time. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Watch time has updated']);
+    }
+
     public function set_meeting(Request $request)
     {
         $rules = [
@@ -281,7 +314,7 @@ class StudentActivitiesController extends Controller
             'user_id' => ['nullable', new RolesChecking($request->call_with)],
             // 'std_act_status' => 'required|in:waiting,confirmed',
             'handled_by' => ['nullable', new RolesChecking('admin')],
-            'location_link' => 'required|url',
+            'location_link' => 'nullable|url',
             'location_pw' => 'nullable',
             'prog_dtl_id'=> 'nullable|required_if:activities,webinar,event|exists:programme_details,id',
             'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',

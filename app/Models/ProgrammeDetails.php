@@ -51,4 +51,9 @@ class ProgrammeDetails extends Model
         return $this->hasMany(StudentActivities::class, 'prog_dtl_id', 'id');
     }
 
+    public function scopeWithAndWhereHas($query, $relation, $constraint){
+        return $query->whereHas($relation, $constraint)
+                     ->with([$relation => $constraint]);
+    }
+
 }
