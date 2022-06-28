@@ -18,7 +18,7 @@ use Exception;
 
 trait CreateActivitiesTrait
 {
-    public function store_activities ($request)
+    public function store_activities ($request, $video_duration)
     {
         $helper = new HelperController;
         // return $this->get_video_duration("https://youtu.be/mHA4BxZTXlk");
@@ -45,8 +45,10 @@ trait CreateActivitiesTrait
                 $prog_video_link = $prog_detail->dtl_video_link;
                 
                 $watch_detail = $activities->watch_detail()->create([
-                    'video_duration' => $helper->videoDetails($prog_video_link),
+                    // 'video_duration' => $helper->videoDetails($prog_video_link),
+                    'video_duration' => $video_duration
                 ]);
+                
             }
 
             // check if the student is the internal student or external

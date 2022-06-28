@@ -306,6 +306,7 @@ class StudentActivitiesController extends Controller
 
     public function store_by_student ($activities, Request $request)
     {
+        $video_duration = null;
         $student_id = Auth::guard('student-api')->user()->id;
         $rules = [
             'activities' => 'nullable|in:1-on-1-call,webinar,event',
@@ -395,10 +396,11 @@ class StudentActivitiesController extends Controller
                     'call_date' => NULL,
                     'call_status' => NULL
                 ];
+                $video_duration = $request->video_duration;
                 break;
         }
 
-        return $this->store_activities($request_data);
+        return $this->store_activities($request_data, $video_duration);
     }
 
     // public function store_by_student ($activities, Request $request)
