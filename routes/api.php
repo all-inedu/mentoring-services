@@ -142,6 +142,7 @@ Route::prefix('v1')->group(function(){
         
         Route::post('make/{activities}', [StudentActivitiesController::class, 'store_by_student']);
         //** New */
+        Route::get('dashboard/summarize', [V2StudentActivitiesController::class, 'index_student_count']);
         Route::put('confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
         Route::get('list/activities/{programme}/{status?}/{recent?}', [V2StudentActivitiesController::class, 'index_by_student']);
         Route::put('{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);

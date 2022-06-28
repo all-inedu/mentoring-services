@@ -557,7 +557,7 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to cancel group meeting. Please try again.']);
         }
         
-        return response()->json(['success' => true, 'message' => 'Group meeting has cancelled']);
+        return response()->json(['success' => true, 'message' => 'Group meeting has canceled']);
     }
 
     //* meeting function end
