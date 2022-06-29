@@ -69,7 +69,7 @@ class ProfileController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to change profile picture. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Profile picture updated']);
+        return response()->json(['success' => true, 'message' => 'Profile picture updated', 'data' => auth()->guard('student-api')->user()->fresh()]);
     }
 
     public function change_password(Request $request)
