@@ -129,6 +129,9 @@ Route::prefix('v1')->group(function(){
 
     Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scopes:student'] ], function(){
 
+        //* New */
+        Route::post('change/profile-picture', [ProfileController::class, 'change_profile_picture']);
+
         Route::post('logout', [StudentAuthController::class, 'logout']);
         Route::post('media/add', [MediaController::class, 'store']);
         Route::delete('media/delete/{media_id}', [MediaController::class, 'delete']);

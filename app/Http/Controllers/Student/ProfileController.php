@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 
 class ProfileController extends Controller
 {
@@ -20,6 +21,55 @@ class ProfileController extends Controller
     public function __construct()
     {
         $this->student_id = auth()->guard('student-api')->user()->id;  
+    }
+
+    public function change_profile_picture(Request $request)
+    {
+        $rules = [
+            'uploaded_file' => 'required|mimes:jpg,png|max:2048'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            $profile = Students::find($this->student_id);
+            $old_image_path = $profile->image;
+            $file_path = substr($old_image_path, 7); // remove "public"
+
+            if ($request->hasFile('uploaded_file')) {
+                
+                // check the old profile picture
+                // if exist do delete;
+                
+                $isExists = File::exists(public_path($file_path));
+                // dd($isExists);
+                if ($isExists) {
+                    File::delete(public_path($file_path));
+                } else {
+                    throw new Exception("Cannot find the file or the file does not exists");
+                }
+
+                $med_file_name = date('Ymd_His').'_profile-picture';
+                $med_file_format = $request->file('uploaded_file')->getClientOriginalExtension();
+                // $med_file_path = $request->file('uploaded_file')->storeAs($this->STUDENT_STORE_MEDIA_PATH.'/'.$request->student_id, $med_file_name.'.'.$med_file_format);
+                $med_file_path = $request->file('uploaded_file')->storeAs($this->student_id, $med_file_name.'.'.$med_file_format, ['disk' => 'student_files']);
+
+                $profile->image = 'public/media/'.$med_file_path;
+                $profile->save();
+            }
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Change Profile Picture Issue : ['.json_encode($this->student_id).'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to change profile picture. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Profile picture updated']);
     }
 
     public function change_password(Request $request)
