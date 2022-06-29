@@ -105,7 +105,9 @@ Route::get('b', function() {
 });
 
 Route::prefix('v1')->group(function(){
-    
+    //** New */
+    Route::get('auth/check', [StudentAuthController::class, 'check']);
+
     // Route::get('daily/mail/error', [MailLogController::class, 'mail_to_tech']);
     Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
     Route::get('test/sync', [ClientController::class, 'import_student']);
@@ -126,7 +128,7 @@ Route::prefix('v1')->group(function(){
     Route::post('reset-password/{token}', [StudentForgotPasswordController::class, 'ResetPassword']);
 
     Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scopes:student'] ], function(){
-         
+
         Route::post('logout', [StudentAuthController::class, 'logout']);
         Route::post('media/add', [MediaController::class, 'store']);
         Route::delete('media/delete/{media_id}', [MediaController::class, 'delete']);

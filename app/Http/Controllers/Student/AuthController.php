@@ -27,6 +27,13 @@ class AuthController extends Controller
         $this->system_name = RouteServiceProvider::SYSTEM_NAME;
     }
 
+    public function check()
+    {
+        if (!Auth::guard('student-api')->check()) {
+            return response()->json(['success' => false, 'error' => 'You have to log in first']);
+        }
+    }
+
     public function logout (Request $request)
     {
         $validator = Validator::make($request->all(), ['token' => 'required']);
