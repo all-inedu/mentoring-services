@@ -39,7 +39,7 @@ trait CreateActivitiesTrait
             // to save student watching progress 
             if ($prog_name == "webinar") {
                 // get programme detail to get the programme dtl name and programme dtl price from programme details
-                $prog_detail = ProgrammeDetails::find($request['prog_dtl_id']);
+                $prog_detail = ProgrammeDetails::withCount('student_activities')->find($request['prog_dtl_id']);
                 $prog_name = $prog_detail->dtl_name;
                 $prog_price = $prog_detail->dtl_price;
                 $prog_video_link = $prog_detail->dtl_video_link;
@@ -47,8 +47,11 @@ trait CreateActivitiesTrait
                 $watch_detail = $activities->watch_detail()->create([
                     // 'video_duration' => $helper->videoDetails($prog_video_link),
                     'video_duration' => $video_duration
-                ]);
-                
+                ]);  
+                $response['detail'] = $prog_detail;    
+                $response['detail']['watch_info'] = WatchDetail::whereHas('joined_activities', function($query) use ($request) {
+                    $query->where('prog_dtl_id', $request['prog_dtl_id'])->where('student_id', $request['student_id']);
+                })->first();          
             }
 
             // check if the student is the internal student or external
