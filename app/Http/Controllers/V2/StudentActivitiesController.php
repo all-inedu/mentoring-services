@@ -99,8 +99,12 @@ class StudentActivitiesController extends Controller
         $use_keyword = $request->get('keyword') ? 1 : 0;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
 
+        $with = ['students', 'users'];
+        if ($programme == "webinar") {
+            array_push($with,"programme_details", "watch_detail");
+        }
         
-        $activities = StudentActivities::with('students', 'users')->whereHas('programmes', function($query) use ($programme) {
+        $activities = StudentActivities::with($with)->whereHas('programmes', function($query) use ($programme) {
                 $query->where('prog_name', $programme);
         })->when($webinar_category != NULL, function ($query) use ($webinar_category) {
             $query->whereHas('programme_details', function ($query1) use ($webinar_category) {

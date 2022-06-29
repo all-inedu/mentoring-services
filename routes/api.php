@@ -106,7 +106,7 @@ Route::get('b', function() {
 
 Route::prefix('v1')->group(function(){
     //** New */
-    Route::get('auth/check', [StudentAuthController::class, 'check']);
+    Route::get('auth/check', [StudentAuthController::class, 'check']);  
 
     // Route::get('daily/mail/error', [MailLogController::class, 'mail_to_tech']);
     Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
