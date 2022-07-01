@@ -99,9 +99,17 @@ class StudentActivitiesController extends Controller
             $query->where('prog_name', '1-on-1-call');
         })->whereHas('students', function($query) {
             $query->where('id', $this->student_id);
-        })->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected')->count();
+        })->where(function ($query) {
+            $query->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
+        })->count();
 
+        //! tambahin status tidak include yg cancel
         // group meeting
+        // new request
+        $data['group_m']['upcoming'] = '';
+        $data['group_m']['history'] = '';
+
+        // group project
         // new request
         $data['group']['request'] = GroupProject::whereHas('group_participant', function ($query) {
             $query->where('student_id', $this->student_id)->where('participants.status', 0);

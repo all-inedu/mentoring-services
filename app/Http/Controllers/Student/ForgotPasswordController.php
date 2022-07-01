@@ -108,7 +108,7 @@ class ForgotPasswordController extends Controller
                 'subject'   => $subject,
                 'message'   => NULL,
                 'date_sent' => Carbon::now(),
-                'status'    => count(Mail::failures() == 0) ? "delivered" : "not delivered"
+                'status'    => Mail::failures() ? "delivered" : "not delivered"
             );
     
             $save_log = new MailLogController;
@@ -117,7 +117,7 @@ class ForgotPasswordController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Send Reset Password Link Issue : ['.$email.' '.$name.'] '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to register. Please try again.'], 400);
+            return response()->json(['success' => false, 'error' => 'Failed to send reset password link. Please try again.'], 400);
         }
 
         DB::commit();

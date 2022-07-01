@@ -23,7 +23,7 @@ class RouteServiceProvider extends ServiceProvider
     public const TECH_MAIL_1 = 'manuel.eric@all-inedu.com';
 
     public const STUDENT_LIST_MEDIA_VIEW_PER_PAGE = 10;
-    public const STUDENT_GROUP_PROJECT_VIEW_PER_PAGE = 3;
+    public const STUDENT_GROUP_PROJECT_VIEW_PER_PAGE = 4;
     public const STUDENT_UNIVERSITY_SHORTLISTED_VIEW_PER_PAGE = 10;
     public const STUDENT_MEETING_VIEW_PER_PAGE = 10;
 
