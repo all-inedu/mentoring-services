@@ -20,8 +20,8 @@ class StudentActivitiesController extends Controller
 
     public function __construct()
     {
-        $this->student_id = auth()->guard('student-api') != "" ? auth()->guard('student-api')->user()->id : NULL;
-        $this->user_id = Auth::guard('api') != "" ? Auth::guard('api')->user()->id : NULL;
+        $this->student_id = Auth::guard('student-api')->check() ? auth()->guard('student-api')->user()->id : NULL;
+        $this->user_id = Auth::guard('api')->check() ? Auth::guard('api')->user()->id : NULL;
         $this->STUDENT_MEETING_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_MEETING_VIEW_PER_PAGE;
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
