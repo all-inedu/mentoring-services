@@ -81,6 +81,9 @@ Route::prefix('v1')->group(function(){
         Route::get('{user}/schedule/{user_sch_id}', [UserScheduleController::class, 'find']); //user = mentor, alumni, editor
         Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
         Route::get('ap/list', [APController::class, 'index']);
+        
+        // change
+        Route::put('student/{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);
 
         Route::prefix('list')->group(function () {
             Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
@@ -143,7 +146,6 @@ Route::prefix('v1')->group(function(){
         // change
         Route::post('change/profile-picture', [ProfileController::class, 'change_profile_picture']);
         Route::put('confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
-        Route::put('{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);
         Route::put('update/watch/{std_act_id}', [StudentActivitiesController::class, 'watch_time']);
         Route::post('upload/payment-proof', [TransactionController::class, 'upload_payment_proof']);
         Route::put('profile', [ProfileController::class, 'update']);
@@ -293,7 +295,7 @@ Route::prefix('v1')->group(function(){
         Route::get('student/files', [MediaController::class, 'index']);
 
         Route::prefix('list')->group(function() {
-            
+
         });
     });    
 

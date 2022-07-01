@@ -19,8 +19,8 @@ class StudentActivitiesController extends Controller
 
     public function __construct()
     {
-        $this->student_id = auth()->guard('student-api')->user()->id != "" ? auth()->guard('student-api')->user()->id : NULL;
-        $this->user_id = Auth::guard('api')->user()->id != "" ? Auth::guard('api')->user()->id : NULL;
+        $this->student_id = auth()->guard('student-api') != "" ? auth()->guard('student-api')->user()->id : NULL;
+        $this->user_id = Auth::guard('api') != "" ? Auth::guard('api')->user()->id : NULL;
         $this->STUDENT_MEETING_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_MEETING_VIEW_PER_PAGE;
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
@@ -42,7 +42,7 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $activities = StudentActivities::where('user_id', $this->user_id)
+        $activities = StudentActivities::with(['students', 'users'])->where('user_id', $this->user_id)
                     ->when($status == 'new', function($query) {
                         $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting')
                         ->orderBy('call_status', 'desc')
@@ -181,7 +181,9 @@ class StudentActivitiesController extends Controller
             ->orderBy('call_status', 'desc')
             ->orderBy('call_date', 'asc');
         })->when($status == "history", function ($q) {
-            $q->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected')
+            $q->where(function($q1) { 
+                $q1->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
+            })
             // where(function ($q1) { // history dari call status yg berhasil
             //     $q1->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'finished');
             // })->orWhere(function ($q1) { // history dari call status yg cancel 
@@ -191,8 +193,6 @@ class StudentActivitiesController extends Controller
             // })
             ->orderBy('call_status', 'desc')
             ->orderBy('call_date', 'desc');
-        })->whereHas('students', function ($q) {
-            $q->where('id', $this->student_id);
         })->recent($recent, $this->STUDENT_MEETING_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);
