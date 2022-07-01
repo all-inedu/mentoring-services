@@ -28,9 +28,9 @@ class ForgotPasswordController extends Controller
         $this->reset_password_link = RouteServiceProvider::RESET_PASSWORD_LINK;
     }
 
-    public function ResetPassword(Request $request)
+    public function ResetPassword($token, Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all() + ['token' => $token], [
             'token' => 'required|exists:password_resets,token',
             'email' => 'required|exists:password_resets,email',
             'password' => 'required|string|min:6|confirmed',
@@ -39,7 +39,7 @@ class ForgotPasswordController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 401);
         }
 
-        $token = $request->token;
+        // $token = $request->get('token');
         $email = $request->email;
         $new_password = $request->password;
 
