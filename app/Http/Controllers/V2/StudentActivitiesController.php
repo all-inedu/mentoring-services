@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
+use App\Models\GroupMeeting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -106,8 +107,18 @@ class StudentActivitiesController extends Controller
         //! tambahin status tidak include yg cancel
         // group meeting
         // new request
-        $data['group_m']['upcoming'] = '';
-        $data['group_m']['history'] = '';
+        $data['group_m']['upcoming'] = GroupMeeting::whereHas('group_project', function($query) {
+            $query->whereHas('group_participant', function($query1) {
+                $query1->where('student_id', $this->student_id);
+            });
+        })->where('group_meetings.status', 0)->count();
+        $data['group_m']['history'] = GroupMeeting::whereHas('group_project', function($query) {
+            $query->whereHas('group_participant', function($query1) {
+                $query1->where('student_id', $this->student_id);
+            });
+        })->where(function ($query) {
+            $query->where('group_meetings.status', 1)->orWhere('group_meetings.status', 2);
+        })->count();
 
         // group project
         // new request
