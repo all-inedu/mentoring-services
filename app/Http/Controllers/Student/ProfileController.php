@@ -110,7 +110,7 @@ class ProfileController extends Controller
             'first_name'   => 'required|string|max:255',
             'last_name'    => 'required|string|max:255',
             'birthday'     => 'nullable|date',
-            'phone_number' => 'required|string',
+            'phone_number' => 'required|string|max:25',
             'grade'        => 'nullable|integer|min:7',
             'address'      => 'required'
         ];

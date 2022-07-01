@@ -18,6 +18,7 @@ use App\Rules\CheckAvailabilityUserSchedule;
 use App\Rules\PersonalMeetingChecker;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Traits\CreateActivitiesTrait;
+use Illuminate\Support\Facades\Mail;
 
 class StudentActivitiesController extends Controller
 {
@@ -583,6 +584,27 @@ class StudentActivitiesController extends Controller
 
         DB::beginTransaction();
         try {
+
+            if ($status == "cancel") {
+                $mentor_info = [
+                    'name' => $activities->users->first_name.' '.$activities->users->last_name,
+                    'email' => $activities->users->email,
+                ];
+                
+                $data_mail = [
+                    'name' => $mentor_info['name'],
+                    'module' => $activities->module,
+                    'call_date' => $activities->call_date,
+                    'location_link' => $activities->location_link,
+                    'location_pw' => $activities->location_pw 
+                ];
+
+                Mail::send('templates.mail.cancel-meeting-announcement', $data_mail, function($mail) use ($mentor_info)  {
+                    $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                    $mail->to($mentor_info['email'], $mentor_info['name']);
+                    $mail->subject('The meeting has been canceled');
+                });
+            }
 
             switch ($request->person) {
                 case "student":

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\TransactionController;
 use App\Models\Medias;
+use App\Models\StudentActivities;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,4 +36,24 @@ Route::group(['middleware' => ['web']], function () {
 
 Route::get('coba', function () {
     echo '<div style="background:red;" ><iframe width="862" height="450" src="https://www.youtube.com/embed/mHA4BxZTXlk?start=600" title="Teaser Weekend: Top University Admission Mentoring" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+});
+
+Route::get('mail/test/add/meeting', function() {
+    $data = [
+        'prog_id' => 1, 
+        'student_id' => 1,
+        'user_id' => 3,
+        'std_act_status' => 'confirmed',
+        'mt_confirm_status' => 'waiting',
+        'handled_by' => NULL, //! for now set to null
+        'location_link' => "http://zoom.com/123",
+        'location_pw' => '123',
+        'prog_dtl_id' => NULL,
+        'call_with' => 'mentor',
+        'module' => 'life skills',
+        'call_date' => '2022-06-10 10:20',
+        'call_status' => 'waiting'
+    ];
+
+    return view('templates.mail.next-meeting-announcement', $data);
 });

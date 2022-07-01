@@ -168,6 +168,7 @@ class UniversityController extends Controller
 
     public function store_academic_requirement (Request $request)
     {
+        
         $rules = [
             'student_id' => 'required|exists:students,id',
             'category' => 'required|in:sat,publication_links,ielts,toefl,ap_score',
@@ -176,7 +177,7 @@ class UniversityController extends Controller
         ];
 
         if ($request->category == "publication_links") {
-            $rules['value'][] = 'url';
+            $rules['value.*'][] = 'url';
         }
 
         $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);

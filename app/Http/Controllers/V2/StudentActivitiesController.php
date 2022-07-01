@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\StudentActivities;
 use App\Providers\RouteServiceProvider;
 use App\Models\GroupProject;
+use Illuminate\Support\Facades\Auth;
 
 class StudentActivitiesController extends Controller
 {
@@ -18,8 +19,53 @@ class StudentActivitiesController extends Controller
 
     public function __construct()
     {
-        $this->student_id = auth()->guard('student-api')->user()->id;
+        $this->student_id = auth()->guard('student-api')->user()->id != "" ? auth()->guard('student-api')->user()->id : NULL;
+        $this->user_id = Auth::guard('api')->user()->id != "" ? Auth::guard('api')->user()->id : NULL;
         $this->STUDENT_MEETING_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_MEETING_VIEW_PER_PAGE;
+        $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
+    }
+
+    public function store()
+    {
+        
+    }
+
+    public function index($programme, $status = NULL, $recent = NULL, Request $request)
+    {
+        $rules = [
+            'programme' => 'required|in:1-on-1-call,webinar,event',
+            'status' => 'nullable|in:new,pending,upcoming,history',
+        ];
+
+        $validator = Validator::make(['programme' => $programme, 'status' => $status], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $activities = StudentActivities::where('user_id', $this->user_id)
+                    ->when($status == 'new', function($query) {
+                        $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting')
+                        ->orderBy('call_status', 'desc')
+                        ->orderBy('call_date', 'asc');
+                    })
+                    ->when($status == 'pending', function($query) {
+                        $query->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
+                        ->orderBy('call_status', 'desc')
+                        ->orderBy('call_date', 'asc');
+                    })
+                    ->when($status == 'upcoming', function($query) {
+                        $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
+                        ->orderBy('call_status', 'desc')
+                        ->orderBy('call_date', 'asc');
+                    })
+                    ->when($status == 'history', function($query) {
+                        $query->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected')
+                        ->orderBy('call_status', 'desc')
+                        ->orderBy('call_date', 'desc');
+                    })
+                    ->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+
+        return response()->json(['success' => true, 'data' => $activities]);
     }
 
     public function index_student_count()

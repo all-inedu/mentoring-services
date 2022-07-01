@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 use PHPUnit\TextUI\XmlConfiguration\Group;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,7 @@ class GroupController extends Controller
 
     public function __construct()
     {
-        $this->student_id = Auth::guard('student-api')->user()->id;
+        $this->student_id = Auth::guard('student-api')->user() != "" ? Auth::guard('student-api')->user()->id : NULL;
         $this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_GROUP_PROJECT_VIEW_PER_PAGE;
     }
 
@@ -60,13 +61,21 @@ class GroupController extends Controller
             case "in-progress":
                 $group_projects = GroupProject::whereHas('group_participant', function ($query) {
                         $query->where('student_id', $this->student_id)->where('participants.status', 1);
-                    })->where('status', 'in progress')->withCount('group_participant')->orderBy('created_at', 'desc')->paginate($this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE);
+                    })->where('status', 'in progress')->withCount([
+                        'group_participant' => function (Builder $query) {
+                            $query->where('participants.status', '!=', 2);
+                        }
+                    ])->orderBy('created_at', 'desc')->paginate($this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE);
                 break;
 
             case "completed":
                 $group_projects = GroupProject::whereHas('group_participant', function ($query) {
                     $query->where('student_id', $this->student_id)->where('participants.status', 1);
-                })->where('status', 'completed')->withCount('group_participant')->orderBy('created_at', 'desc')->paginate($this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE);
+                })->where('status', 'completed')->withCount([
+                    'group_participant' => function (Builder $query) {
+                        $query->where('participants.status', '!=', 2);
+                    }
+                ])->orderBy('created_at', 'desc')->paginate($this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE);
 
                 break;
         }
@@ -285,7 +294,7 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => $response['error']]);
         }
 
-        $attendee = $row_success != 0 ? $row_success : '';
+        $attendee = $row_success != 0 ? $row_success : 0;
 
         return response()->json([
             'success' => true, 
@@ -493,9 +502,9 @@ class GroupController extends Controller
         $decrypted_data = Crypt::decrypt($encrypted_data);
 
         // validate
-        if (!GroupMeeting::where('id', $decrypted_data['group_meet_id'])->where('status', 0)->whereHas('student_attendances', function($query) {
-                $query->where('student_id', $this->student_id);
-            })->first()) {
+        if (!GroupMeeting::where('group_meetings.id', $decrypted_data['group_meet_id'])->whereHas('student_attendances', function($query) use ($decrypted_data) {
+            $query->where('student_attendances.id', $decrypted_data['attend_id']);
+        })->where('status', 0)->first()) {
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting or you are not joined in the group project']);
         }
 
@@ -543,7 +552,7 @@ class GroupController extends Controller
         );
 
         //* send email notification that group meeting has been canceled
-        SendAnnouncementCancelGroupMeeting::dispatch($data)->delay(now()->addSeconds(2));
+        SendAnnouncementCancelGroupMeeting::dispatch($data)->delay(now()->addSeconds(60));
 
         DB::beginTransaction();
         try {

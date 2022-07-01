@@ -15,6 +15,7 @@ use App\Models\WatchDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Mail;
 
 trait CreateActivitiesTrait
 {
@@ -37,22 +38,51 @@ trait CreateActivitiesTrait
             // if programme is webinar
             // then input detail video to detail watch
             // to save student watching progress 
-            if ($prog_name == "webinar") {
-                // get programme detail to get the programme dtl name and programme dtl price from programme details
-                $prog_detail = ProgrammeDetails::withCount('student_activities')->find($request['prog_dtl_id']);
-                $prog_name = $prog_detail->dtl_name;
-                $prog_price = $prog_detail->dtl_price;
-                $prog_video_link = $prog_detail->dtl_video_link;
-                
-                $watch_detail = $activities->watch_detail()->create([
-                    // 'video_duration' => $helper->videoDetails($prog_video_link),
-                    'video_duration' => $video_duration
-                ]);  
-                $response['detail'] = $prog_detail;    
-                $response['detail']['watch_info'] = WatchDetail::whereHas('joined_activities', function($query) use ($request) {
-                    $query->where('prog_dtl_id', $request['prog_dtl_id'])->where('student_id', $request['student_id']);
-                })->first();          
+            switch ($prog_name) {
+                case "webinar":
+                    // get programme detail to get the programme dtl name and programme dtl price from programme details
+                    $prog_detail = ProgrammeDetails::withCount('student_activities')->find($request['prog_dtl_id']);
+                    $prog_name = $prog_detail->dtl_name;
+                    $prog_price = $prog_detail->dtl_price;
+                    $prog_video_link = $prog_detail->dtl_video_link;
+
+                    $watch_detail = $activities->watch_detail()->create([
+                        // 'video_duration' => $helper->videoDetails($prog_video_link),
+                        'video_duration' => $video_duration
+                    ]);  
+                    $response['detail'] = $prog_detail;    
+                    $response['detail']['watch_info'] = WatchDetail::whereHas('joined_activities', function($query) use ($request) {
+                        $query->where('prog_dtl_id', $request['prog_dtl_id'])->where('student_id', $request['student_id']);
+                    })->first();   
+                    break;
+
+                case "1-on-1-call":
+
+                    $mentor_info = [
+                        'name' => $activities->users->first_name.' '.$activities->users->last_name,
+                        'email' => $activities->users->email,
+                    ];
+                    
+                    $data_mail = [
+                        'name' => $mentor_info['name'],
+                        'module' => $activities->module,
+                        'call_date' => $activities->call_date,
+                        'location_link' => $activities->location_link,
+                        'location_pw' => $activities->location_pw 
+                    ];
+                    
+                    Mail::send('templates.mail.next-meeting-announcement', $data_mail, function($mail) use ($mentor_info)  {
+                        $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                        $mail->to($mentor_info['email'], $mentor_info['name']);
+                        $mail->subject('1 on 1 Call Reminder');
+                    });
+
+                    if (Mail::failures()) {
+                        throw new Exception("Cannot send email");
+                    }
+                    break;
             }
+
 
             // check if the student is the internal student or external
             $student = Students::find($request['student_id']);

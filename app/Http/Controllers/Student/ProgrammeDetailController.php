@@ -66,7 +66,7 @@ class ProgrammeDetailController extends Controller
 
             $other = ProgrammeDetails::whereHas('programmes', function ($query) use ($prog_detail) {
                 $query->where('prog_id', $prog_detail->prog_id);
-            })->where('id', '!=', $prog_dtl_id)->get();
+            })->where('id', '!=', $prog_dtl_id)->where('dtl_category', $prog_detail->dtl_category)->get();
             
         } catch (Exception $e) {
             Log::error('Find Programme Detail by Id Issue : ['.$prog_dtl_id.'] '.$e->getMessage());
