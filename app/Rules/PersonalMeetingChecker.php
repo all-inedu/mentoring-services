@@ -29,7 +29,9 @@ class PersonalMeetingChecker implements Rule
      */
     public function passes($attribute, $value)
     {
+        // get id depends on who's the user role
         $id = $this->person == 'student' ? Auth::guard('student-api')->user()->id : Auth::guard('api')->user()->id;
+        
         $activities = StudentActivities::where('id', $value)
                 ->when($this->person == "student", function ($q) use ($id) {
                     $q->where('student_id', $id);

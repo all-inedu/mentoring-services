@@ -59,7 +59,9 @@ class StudentActivitiesController extends Controller
                         ->orderBy('call_date', 'asc');
                     })
                     ->when($status == 'history', function($query) {
-                        $query->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected')
+                        $query->where(function ($query1) {
+                            $query1->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
+                        })
                         ->orderBy('call_status', 'desc')
                         ->orderBy('call_date', 'desc');
                     })

@@ -550,15 +550,15 @@ class StudentActivitiesController extends Controller
         return response()->json(['success' => true, 'message' => 'You confirm to attend the meeting. Do not forget to check your schedule']);
     }
 
-    public function cancel_reject_personal_meeting ($status, $std_act_id, Request $request)
+    public function cancel_reject_personal_meeting ($person, $status, $std_act_id, Request $request)
     {
         $rules = [
             'person' => 'required|in:student,mentor',
             'status' => 'in:cancel,reject',
-            'std_act_id' => [new PersonalMeetingChecker($request->person)]
+            'std_act_id' => [new PersonalMeetingChecker($person)]
         ];
 
-        $validator = Validator::make($request->all() + ['status' => $status, 'std_act_id' => $std_act_id], $rules);
+        $validator = Validator::make($request->all() + ['person' => strtolower($person), 'status' => $status, 'std_act_id' => $std_act_id], $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
@@ -585,46 +585,63 @@ class StudentActivitiesController extends Controller
         DB::beginTransaction();
         try {
 
-            if ($status == "cancel") {
-                $mentor_info = [
-                    'name' => $activities->users->first_name.' '.$activities->users->last_name,
-                    'email' => $activities->users->email,
-                ];
-                
-                $data_mail = [
-                    'name' => $mentor_info['name'],
-                    'module' => $activities->module,
-                    'call_date' => $activities->call_date,
-                    'location_link' => $activities->location_link,
-                    'location_pw' => $activities->location_pw 
-                ];
-
-                Mail::send('templates.mail.cancel-meeting-announcement', $data_mail, function($mail) use ($mentor_info)  {
-                    $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
-                    $mail->to($mentor_info['email'], $mentor_info['name']);
-                    $mail->subject('The meeting has been canceled');
-                });
-            }
-
             switch ($request->person) {
                 case "student":
+                    if ($status == "cancel") {
+                        $person_info = [
+                            'name' => $activities->users->first_name.' '.$activities->users->last_name,
+                            'email' => $activities->users->email,
+                        ];       
+                    }
                     $activities->std_act_status = $status;
                     break;
 
                 case "mentor":
+                    if ($status == "cancel") {
+                        $person_info = [
+                            'name' => $activities->students->first_name.' '.$activities->students->last_name,
+                            'email' => $activities->students->email,
+                        ];
+                    }
                     $activities->mt_confirm_status = $status;
                     break;
             }
+
+            $data_mail = [
+                'name' => $person_info['name'],
+                'module' => $activities->module,
+                'call_date' => $activities->call_date,
+                'location_link' => $activities->location_link,
+                'location_pw' => $activities->location_pw 
+            ];
+            $this->send_mail_cancel($person, $status, $data_mail, $person_info);
+
             $activities->call_status = ($status == "cancel") ? "canceled" : "rejected";
             $activities->save();
 
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error($status.' ['.ucfirst($request->person).'] Meeting Issue : '.$e->getMessage());
+            Log::error($status.' ['.ucfirst($person).'] Meeting Issue : '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to '.$status.' meeting. Please try again.']);
         }
 
         return response()->json(['success' => true, 'message' => "You successfully refuse to attend the meeting"]);
+    }
+
+    //////
+
+    public function send_mail_cancel($person, $status, $data_mail, $person_info)
+    {
+        try {
+
+            Mail::send('templates.mail.cancel-meeting-announcement', $data_mail, function($mail) use ($person_info)  {
+                $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                $mail->to($person_info['email'], $person_info['name']);
+                $mail->subject('The meeting has been canceled');
+            });
+        } catch (Exception $e) {
+            Log::error('Send Email '.$status.' ['.ucfirst($person).'] Meeting Issue : '.$e->getMessage());
+        }
     }
 }

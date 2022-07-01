@@ -83,7 +83,8 @@ Route::prefix('v1')->group(function(){
         Route::get('ap/list', [APController::class, 'index']);
         
         // change
-        Route::put('student/{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);
+        Route::put('confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
+        Route::put('{person}/{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);
 
         Route::prefix('list')->group(function () {
             Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
@@ -145,7 +146,6 @@ Route::prefix('v1')->group(function(){
         
         // change
         Route::post('change/profile-picture', [ProfileController::class, 'change_profile_picture']);
-        Route::put('confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
         Route::put('update/watch/{std_act_id}', [StudentActivitiesController::class, 'watch_time']);
         Route::post('upload/payment-proof', [TransactionController::class, 'upload_payment_proof']);
         Route::put('profile', [ProfileController::class, 'update']);
