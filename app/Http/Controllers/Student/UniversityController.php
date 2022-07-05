@@ -78,9 +78,10 @@ class UniversityController extends Controller
         }
     }
 
-    public function index_academic_requirement ()
+    public function index_academic_requirement ($student_id = null)
     {
-        $academic = AcademicRequirement::where('student_id', $this->student_id)->orderBy('category', 'asc')->get()->makeHidden(['created_at', 'updated_at']);
+        $id = $student_id != null ? $student_id : $this->student_id;
+        $academic = AcademicRequirement::where('student_id', $id)->orderBy('category', 'asc')->get()->makeHidden(['created_at', 'updated_at']);
         $data = collect($academic)->groupBy('category');
 
         $category = [
@@ -100,9 +101,9 @@ class UniversityController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    public function index_document_requirement ($show_item)
+    public function index_document_requirement ($student_id = null, $show_item)
     {
-        
+        $id = $student_id != null ? $student_id : $this->student_id;
         $essay_has_uni = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
             with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
             whereHas('media_categories', function($query) {
@@ -111,7 +112,7 @@ class UniversityController extends Controller
             $query->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
                 $query1->where('imported_id', $show_item);
             });
-        })->where('student_id', $this->student_id)->get();
+        })->where('student_id', $id)->get();
 
         $lor_has_uni = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
             with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
@@ -121,31 +122,30 @@ class UniversityController extends Controller
             $query->whereHas('uni_shortlisted', function ($query1) use ($show_item) {
                 $query1->where('imported_id', $show_item);
             });
-        })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
+        })->where('student_id', $id)->get()->makeHidden('pivot');
         
         if ($show_item != "all") {
             $essay_doesnt_have_uni = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
                 with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
                 whereHas('media_categories', function($query) {
                     return $query->where('name', 'Essay');
-            })->doesntHave('uni_shortlisted')->where('student_id', $this->student_id)->get();
+            })->doesntHave('uni_shortlisted')->where('student_id', $id)->get();
 
             $lor_doesnt_have_uni = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
                 with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
                 whereHas('media_categories', function($query) {
                     return $query->where('name', 'Letter of Recommendation');
-            })->doesntHave('uni_shortlisted')->where('student_id', $this->student_id)->get();
+            })->doesntHave('uni_shortlisted')->where('student_id', $id)->get();
         }
 
         $media['essay'] = ($show_item != "all") ? $essay_has_uni->merge($essay_doesnt_have_uni) : $essay_has_uni;
         $media['lor'] = ($show_item != "all") ? $lor_has_uni->merge($lor_doesnt_have_uni) : $lor_has_uni;
 
-
         $media['transcript'] = Medias::select(['id', 'med_title', 'med_desc', 'med_file_path', 'med_file_name', 'med_file_format'])->
             with('uni_shortlisted:id,imported_id,uni_name,uni_major')->
             whereHas('media_categories', function($query) {
                 return $query->where('name', 'Transcript');
-        })->where('student_id', $this->student_id)->get()->makeHidden('pivot');
+        })->where('student_id', $id)->get()->makeHidden('pivot');
                 
         return response()->json(['success' => true, 'data' => $media]);
     }

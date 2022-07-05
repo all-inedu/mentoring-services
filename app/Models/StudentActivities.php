@@ -27,7 +27,7 @@ class StudentActivities extends Model
         'call_with',
         'module',
         'call_date',
-        'call_status'
+        'call_status',
     ];
 
     public function programmes ()

@@ -11,6 +11,12 @@ use App\Models\StudentActivities;
 use App\Providers\RouteServiceProvider;
 use App\Models\GroupProject;
 use Illuminate\Support\Facades\Auth;
+use App\Rules\RolesChecking;
+use App\Models\Programmes;
+use App\Models\Students;
+use App\Http\Controllers\TransactionController;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class StudentActivitiesController extends Controller
 {
@@ -26,9 +32,111 @@ class StudentActivitiesController extends Controller
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     }
 
-    public function store()
+    public function store(Request $request)
     {
+        /** list of programmes
+         * 1. 1-on-1-call
+         * 2. contact-mentor
+         * 3. webinar
+         * 4. event
+         * 5. subscription
+         */
+        $programme_id = 1; //! for 1-on-1 call
+        $student_id = $request->student_id;
+
+        $rules = [
+            'student_id' => 'required|exists:students,id',
+            'handled_by' => ['nullable', new RolesChecking('admin')],
+            'location_link' => 'nullable|url',
+            'location_pw' => 'nullable',
+            'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
+            'module' => 'required_if:activities,1-on-1-call|in:life skills,career exploration,university admission,life at university',
+            'call_date' => ['required_if:activities,1-on-1-call|date'/*, new CheckAvailabilityUserSchedule($request->user_id)*/],
+            'created_by' => 'required|in:mentor,editor,alumni'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $request_date = $request->call_date;
+        $hour_before = date('Y-m-d H:i', strtotime("-1 hour", strtotime($request_date)));
+        $hour_after = date('Y-m-d H:i', strtotime("+1 hour", strtotime($request_date)));
+
+        if ($activity = StudentActivities::where(function($query) use ($student_id){
+            $query->where('student_id', $student_id)->orWhere('user_id', $this->user_id);
+        })
+        ->where('prog_id', $programme_id)->where('call_status', 'waiting')
+        ->where(function($query) use ($hour_before, $hour_after, $request_date) {
+            $query->whereBetween('call_date', [$hour_before, $request_date])
+            ->orWhereBetween('call_date', [$request_date, $hour_after]);
+        })->first()){
+
+            // validate if request call_date not clash with the other schedule
+            // will check 1 hour before and 1 hour after
+            if (date('Y-m-d H:i', strtotime("+1 hour", strtotime($activity->call_date))) > $request->call_date) {
+                $custom_msg = ($activity->user_id == $this->user_id) ? " with you" : "";
+                return response()->json([
+                    'success' => false, 
+                    'error' => $activity->mt_confirm_status == "confirmed" ?  
+                        'You already make an appoinment at '.date('l, d M Y H:i', strtotime($activity->call_date)) :
+                        'Your student/mentee already has schedule'.$custom_msg.' at '.date('l, d M Y H:i', strtotime($request->call_date))
+                ]);
+            }
+        }
         
+        DB::beginTransaction();
+        try {
+
+            $request_data = [
+                'prog_id' => $programme_id, 
+                'student_id' => $request->student_id,
+                'user_id' => $this->user_id,
+                'std_act_status' => 'waiting',
+                'mt_confirm_status' => 'confirmed',
+                'handled_by' => NULL, //! for now set to null
+                'location_link' => $request->location_link,
+                'location_pw' => $request->location_pw,
+                'prog_dtl_id' => NULL,
+                'call_with' => $request->call_with,
+                'module' => $request->module,
+                'call_date' => $request->call_date,
+                'call_status' => 'waiting',
+                'created_by' => $request->created_by
+            ];
+
+            //select programmes 
+            $programmes = Programmes::find($programme_id);
+            $prog_price = $programmes->prog_price; //price that will be inserted into transaction
+
+            // check if the student is the internal student or external
+            $student = Students::find($request->student_id);
+            $total_amount = ($student->imported_id != NULL) ? 0 : $prog_price; //set to 0 if student is internal student
+
+            $activities = StudentActivities::create($request_data);
+            $response['activities'] = $activities;
+            $st_act_id = $activities->id;
+
+            $data = [
+                'student_id' => $request->student_id,
+                'st_act_id'   => $st_act_id,
+                'amount'       => $prog_price,
+                'total_amount' => $total_amount,
+                'status'       => 'paid' //! sementara langsung paid, ke depannya akan diubah dari pending dlu
+            ];
+
+            $transaction = new TransactionController;
+            $response['transaction'] = $transaction->store($data);
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Create Student Activities from Mentor Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to create 1 on 1 call. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => '1 on 1 Call has been made', 'data' => $response['activities']]);
     }
 
     public function index($programme, $status = NULL, $recent = NULL, Request $request)

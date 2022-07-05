@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CRM\ClientController;
+use App\Http\Controllers\CRM\UniversityController as CRMUniversityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\EssayController;
@@ -36,6 +37,8 @@ use App\Http\Controllers\Student\VerificationController as StudentVerificationCo
 use App\Http\Controllers\StudentActivitiesController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\User\UniRequirementController;
+use App\Http\Controllers\User\UniShortlistedController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\UserRolesController;
 use App\Http\Controllers\UserScheduleController;
@@ -83,7 +86,7 @@ Route::prefix('v1')->group(function(){
         Route::get('ap/list', [APController::class, 'index']);
         
         // change
-        Route::put('confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
+        Route::put('{person}/confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
         Route::put('{person}/{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);
 
         Route::prefix('list')->group(function () {
@@ -295,7 +298,21 @@ Route::prefix('v1')->group(function(){
         Route::get('student/files', [MediaController::class, 'index']);
 
         Route::prefix('list')->group(function() {
+            Route::get('country/university', [CRMUniversityController::class, 'country']);
+            Route::get('university/{country?}', [CRMUniversityController::class, 'index']);
+            Route::get('requirement/{category}/{student_id}/{univ_id?}', [UniRequirementController::class, 'index']);
+        });
 
+        Route::prefix('find')->group(function() {
+            
+        });
+
+        Route::prefix('select')->group(function() {
+            Route::get('shortlisted/{student_id}', [UniShortlistedController::class, 'select']);
+        });
+
+        Route::prefix('create')->group(function() {
+            Route::post('shortlisted', [UniShortlistedController::class, 'store']);
         });
     });    
 
