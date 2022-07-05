@@ -38,7 +38,8 @@ class Students extends Authenticatable
         'school_name',
         'tag',
         'competitiveness_level',
-        'personal_brand_dev_progress'
+        'personal_brand_dev_progress',
+        'progress_status',
     ];
 
     /**

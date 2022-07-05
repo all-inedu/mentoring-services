@@ -27,6 +27,8 @@ class RouteServiceProvider extends ServiceProvider
     public const STUDENT_UNIVERSITY_SHORTLISTED_VIEW_PER_PAGE = 10;
     public const STUDENT_MEETING_VIEW_PER_PAGE = 10;
 
+    public const MENTOR_GROUP_PROJECT_VIEW_PER_PAGE = 10;
+
     public const ADMIN_LIST_STUDENT_VIEW_PER_PAGE = 10;
     public const ADMIN_LIST_USER_VIEW_PER_PAGE = 10;
     public const ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = 10;

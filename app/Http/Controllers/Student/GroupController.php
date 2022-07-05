@@ -30,17 +30,22 @@ class GroupController extends Controller
 {
     protected $student_id;
     protected $STUDENT_GROUP_PROJECT_VIEW_PER_PAGE;
+    protected $MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
 
     public function __construct()
     {
         $this->student_id = Auth::guard('student-api')->user() != "" ? Auth::guard('student-api')->user()->id : NULL;
         $this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_GROUP_PROJECT_VIEW_PER_PAGE;
+        $this->MENTOR_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
     }
 
     //* group project main function start
     
-    public function index($status)
+    public function index($status, $student_id = NULL)
     {
+        $id = $student_id != NULL ? $student_id : $this->student_id;
+        $view_per_page = $student_id != NULL ? $this->MENTOR_GROUP_PROJECT_VIEW_PER_PAGE : $this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE;
+
         $rules = [
             'status' => 'required|string|in:new,in-progress,completed'
         ];
@@ -52,30 +57,30 @@ class GroupController extends Controller
 
         switch ($status) {
             case "new":
-                $group_projects = GroupProject::whereHas('group_participant', function ($query) {
-                        $query->where('student_id', $this->student_id)->where('participants.status', 0);
-                    })->orderBy('created_at', 'desc')->paginate($this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE);
+                $group_projects = GroupProject::whereHas('group_participant', function ($query) use ($id){
+                        $query->where('student_id', $id)->where('participants.status', 0);
+                    })->orderBy('created_at', 'desc')->paginate($view_per_page);
 
                 break;
 
             case "in-progress":
-                $group_projects = GroupProject::whereHas('group_participant', function ($query) {
-                        $query->where('student_id', $this->student_id)->where('participants.status', 1);
+                $group_projects = GroupProject::whereHas('group_participant', function ($query) use ($id) {
+                        $query->where('student_id', $id)->where('participants.status', 1);
                     })->where('status', 'in progress')->withCount([
                         'group_participant' => function (Builder $query) {
                             $query->where('participants.status', '!=', 2);
                         }
-                    ])->orderBy('created_at', 'desc')->paginate($this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE);
+                    ])->orderBy('created_at', 'desc')->paginate($view_per_page);
                 break;
 
             case "completed":
-                $group_projects = GroupProject::whereHas('group_participant', function ($query) {
-                    $query->where('student_id', $this->student_id)->where('participants.status', 1);
+                $group_projects = GroupProject::whereHas('group_participant', function ($query) use ($id) {
+                    $query->where('student_id', $id)->where('participants.status', 1);
                 })->where('status', 'completed')->withCount([
                     'group_participant' => function (Builder $query) {
                         $query->where('participants.status', '!=', 2);
                     }
-                ])->orderBy('created_at', 'desc')->paginate($this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE);
+                ])->orderBy('created_at', 'desc')->paginate($view_per_page);
 
                 break;
         }
@@ -123,7 +128,7 @@ class GroupController extends Controller
             'project_desc'    => 'required',
             'progress_status' => 'nullable|in:on track,behind,ahead',
             'status'          => 'required|in:in progress,completed',
-            'owner_type'      => 'required|in:student,mentor'
+            'owner_type'      => 'required|in:student'
         ];
 
         $input = $request->all();
@@ -151,7 +156,9 @@ class GroupController extends Controller
                 foreach ($student_mentor as $mentor_detail) {
                     $data[] = array(
                         'group_id' => $group_projects->id,
-                        'user_id' => $mentor_detail->id
+                        'user_id' => $mentor_detail->id,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
                     );
                 }
                 

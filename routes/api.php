@@ -37,6 +37,8 @@ use App\Http\Controllers\Student\VerificationController as StudentVerificationCo
 use App\Http\Controllers\StudentActivitiesController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\User\GroupMeetingController;
+use App\Http\Controllers\User\GroupProjectController;
 use App\Http\Controllers\User\UniRequirementController;
 use App\Http\Controllers\User\UniShortlistedController;
 use App\Http\Controllers\User\UserController;
@@ -92,6 +94,12 @@ Route::prefix('v1')->group(function(){
         Route::prefix('list')->group(function () {
             Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
         });
+
+        Route::prefix('student')->group(function() {
+            Route::get('group/project/{status}/{student_id?}', [GroupController::class, 'index']);
+            Route::post('group/project/participant', [GroupController::class, 'add_participant']);
+            Route::delete('group/project/participant/{group_id}/{student_id}', [GroupController::class, 'remove_participant']);
+        });
     });
 
     //! /////////////////////////////////////////////////////
@@ -125,7 +133,7 @@ Route::prefix('v1')->group(function(){
         Route::get('interest', [InterestController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
         Route::get('competition', [CompetitionController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
         Route::get('academic', [AcademicController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
-        Route::get('group/project/{status}', [GroupController::class, 'index']);
+        
         Route::get('university/shortlisted/{status}', [UniversityController::class, 'index']);
         Route::get('university/requirement/{category}/{show_item?}', [UniversityController::class, 'index_requirement']);
 
@@ -142,7 +150,6 @@ Route::prefix('v1')->group(function(){
         Route::post('competition', [CompetitionController::class, 'store']);
         Route::post('academic', [AcademicController::class, 'store']);
         Route::post('group/project', [GroupController::class, 'store']);
-        Route::post('group/project/participant', [GroupController::class, 'add_participant']);
         Route::post('group/project/meeting', [GroupController::class, 'create_meeting']);
         Route::post('academic/requirement', [UniversityController::class, 'store_academic_requirement']);
         Route::post('document/requirement', [UniversityController::class, 'store_document_requirement']);
@@ -171,7 +178,6 @@ Route::prefix('v1')->group(function(){
         Route::delete('interest/{interest_id}', [InterestController::class, 'delete']);
         Route::delete('competition/{comp_id}', [CompetitionController::class, 'delete']);
         Route::delete('academic/{aca_id}', [AcademicController::class, 'delete']);
-        Route::delete('group/project/participant/{group_id}/{student_id}', [GroupController::class, 'remove_participant']);
         Route::delete('academic/requirement/{academic_id}', [UniversityController::class, 'delete_academic_requirement']);
 
         Route::post('logout', [StudentAuthController::class, 'logout']);
@@ -301,6 +307,7 @@ Route::prefix('v1')->group(function(){
             Route::get('country/university', [CRMUniversityController::class, 'country']);
             Route::get('university/{country?}', [CRMUniversityController::class, 'index']);
             Route::get('requirement/{category}/{student_id}/{univ_id?}', [UniRequirementController::class, 'index']);
+            Route::get('mentor/group/project/{status}', [GroupProjectController::class, 'index']);
         });
 
         Route::prefix('find')->group(function() {
@@ -313,6 +320,12 @@ Route::prefix('v1')->group(function(){
 
         Route::prefix('create')->group(function() {
             Route::post('shortlisted', [UniShortlistedController::class, 'store']);
+            Route::post('group/project', [GroupProjectController::class, 'store']);
+            Route::post('group/meeting', [GroupMeetingController::class, 'store']);
+        });
+
+        Route::prefix('update')->group(function() {
+            Route::put('student/{student_id}/{profile_column}', [StudentController::class, 'profile']);
         });
     });    
 
