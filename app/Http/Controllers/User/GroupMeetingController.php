@@ -12,6 +12,7 @@ use App\Models\GroupMeeting;
 use App\Models\GroupProject;
 use Illuminate\Support\Carbon;
 use App\Jobs\ReminderNextGroupMeeting;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,10 +20,45 @@ class GroupMeetingController extends Controller
 {
 
     protected $user_id;
+    protected $MENTOR_MEETING_VIEW_PER_PAGE;
 
     public function __construct()
     {
         $this->user_id = Auth::guard('api')->check() ? Auth::guard('api')->user()->id : null;
+        $this->MENTOR_MEETING_VIEW_PER_PAGE = RouteServiceProvider::MENTOR_MEETING_VIEW_PER_PAGE;
+    }
+
+    public function index($status, $recent = NULL)
+    {
+        $rules = [
+            'status' => 'in:upcoming,attendance'
+        ];
+
+        $validator = Validator::make(['status' => $status], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $meetings = GroupMeeting::with('group_project')->withCount('student_attendances as group_member')->whereHas('user_attendances', function($query) use ($status) {
+                $query->where('user_id', $this->user_id)
+                ->when($status == "upcoming", function($query1) {
+                    $query1->where('attend_status', 1);
+                })->when($status == "attendance", function($query1) {
+                    $query1->where('attend_status', 0);
+                });
+            })->whereHas('group_project', function ($query) {
+                $query->where('status', 'in progress');
+            })->where('status', 0)->recent($recent, $this->MENTOR_MEETING_VIEW_PER_PAGE)->makeHidden(['student_attendances', 'user_attendances']);
+
+        foreach ($meetings as $meeting) {
+            
+            $meeting['attendance_info'] = array(
+                'attend_id' => $meeting->user_attendances->first()->pivot->id,
+                'attend_status' => $meeting->user_attendances->first()->pivot->attend_status
+            );
+        }
+
+        return response()->json(['success' => true, 'data' => $meetings]);
     }
     
     public function store(Request $request)

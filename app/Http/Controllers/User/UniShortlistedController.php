@@ -27,7 +27,7 @@ class UniShortlistedController extends Controller
     {
         $rules = [
             'uni_sh_id' => 'required|exists:uni_shortlisteds,id',
-            'status'   => 'integer|in:0,1,2,3'
+            'status'   => 'string|in:waitlist,accept,apply,reject'
         ];
 
         $custom_message = [
@@ -58,25 +58,29 @@ class UniShortlistedController extends Controller
             $old_status = $shortlist->status;
 
             switch ($status) {
-                case 0:
+                case "waitlist":
                     $message = "waitlisted";
+                    $status_code = 0;
                     break;
-                case 1:
+                case "accept":
                     $message = "accepted";
+                    $status_code = 1;
                     break;
-                case 2:
+                case "apply":
                     $message = "applied";
+                    $status_code = 2;
                     break;
-                case 3:
+                case "reject":
                     $message = "rejected";
+                    $status_code = 3;
                     break;
             }
             
-            if ($old_status == $status) {
+            if ($old_status == $status_code) {
                 return response()->json(['success' => false, 'error' => 'Uni shortlisted is already on '.$message]);
             }
 
-            $shortlist->status = $status;
+            $shortlist->status = $status_code;
             $shortlist->save();
             DB::commit();
 
@@ -86,8 +90,6 @@ class UniShortlistedController extends Controller
             Log::error('Switch Status Uni Shortlisted Issue : ['.$request->prog_id.', '.$status.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to switch uni shortlisted status. Please try again.']);
         }
-
-        
         
         return response()->json(['success' => true, 'message' => 'The uni shortlisted has been changed to '.$message]);
     }

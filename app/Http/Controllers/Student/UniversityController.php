@@ -73,7 +73,7 @@ class UniversityController extends Controller
                 break;
 
             case "document":
-                return $this->index_document_requirement($show_item);
+                return $this->index_document_requirement(null, $show_item);
                 break;
         }
     }

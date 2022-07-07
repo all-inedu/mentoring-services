@@ -23,6 +23,14 @@ class GroupMeeting extends Model
     ];
     protected $with = ['student_attendances', 'user_attendances'];
 
+    public function scopeRecent($query, $recent, $paginate)
+    {
+        if (!$recent)
+            return $query->paginate($paginate);
+        else
+            return $query->get();
+    }
+
     public function group_project()
     {
         return $this->belongsTo(GroupProject::class, 'group_id', 'id');

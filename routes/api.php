@@ -313,6 +313,7 @@ Route::prefix('v1')->group(function(){
             Route::get('university/{country?}', [CRMUniversityController::class, 'index']);
             Route::get('requirement/{category}/{student_id}/{univ_id?}', [UniRequirementController::class, 'index']);
             Route::get('mentor/group/project/{status}', [GroupProjectController::class, 'index']);
+            Route::get('group/meeting/{status}/{recent?}', [GroupMeetingController::class, 'index']);
         });
 
         Route::prefix('find')->group(function() {
@@ -382,6 +383,7 @@ Route::prefix('v2')->group(function() {
 
     //! Mentor Scopes
     Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
+
         Route::prefix('list')->group(function() {
             Route::get('activities/{programme}/{status}/{recent?}', [V2StudentActivitiesController::class, 'index']);
         });
