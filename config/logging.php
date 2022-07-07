@@ -130,6 +130,11 @@ return [
             'path' => storage_path('logs/finish_meeting.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
+        'finish_group_meeting' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/finish_group_meeting.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
 
         'groupinvitationlog' => [ // * invitation group project logging */
             'driver' => 'single',
