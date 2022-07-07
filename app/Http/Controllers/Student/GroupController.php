@@ -29,12 +29,14 @@ use Illuminate\Support\Facades\Mail;
 class GroupController extends Controller
 {
     protected $student_id;
+    protected $user_id;
     protected $STUDENT_GROUP_PROJECT_VIEW_PER_PAGE;
     protected $MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
 
     public function __construct()
     {
-        $this->student_id = Auth::guard('student-api')->user() != "" ? Auth::guard('student-api')->user()->id : NULL;
+        $this->student_id = Auth::guard('student-api')->check() ? Auth::guard('student-api')->user()->id : NULL;
+        $this->user_id = Auth::guard('api')->check() ? Auth::guard('api')->user()->id : NULL;
         $this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_GROUP_PROJECT_VIEW_PER_PAGE;
         $this->MENTOR_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
     }
@@ -444,9 +446,11 @@ class GroupController extends Controller
     {
         
         $rules = [
-            'group_id' => 'required|exists:group_projects,id',
+            'group_id' => ['required', Rule::exists('group_projects', 'id')->where(function($query) {
+                $query->where('student_id', $this->student_id);
+            })],
             'meeting_date' => ['required', 'date_format:Y-m-d H:i', Rule::unique('group_meetings')->where(function ($query) use ($request) {
-                return $query->where('group_id', $request->group_id);
+                return $query->where('group_id', $request->group_id)->where('status', 0);
             })],
             'meeting_link' => 'required|string|URL',
             'meeting_subject' => 'required|string|max:255'
@@ -457,8 +461,26 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        // $request_date = $request->meeting_date;
+        // $hour_before = date('Y-m-d H:i', strtotime("-1 hour", strtotime($request_date)));
+        // $hour_after = date('Y-m-d H:i', strtotime("+1 hour", strtotime($request_date)));
+
+        // if ($group_meeting = GroupMeeting::where(function($query) use ($request_date, $hour_before, $hour_after) {
+        //     $query->whereBetween('meeting_date', [$hour_before, $request_date])
+        //     ->orWhereBetween('meeting_date', [$request_date, $hour_after]);
+        // })->whereHas('student_attendances', function($query) {
+        //     // adakah student yang memiliki jadwal group meeting di range tgl tersebut
+        //     $query->where('student_id', $this->student_id)->where('attend_status', 1);
+        // })->where('group_meetings.status', 0)->count() > 0) {
+        //     return response()->json([
+        //         'success' => false, 
+        //         'error' => 'You already have group meeting around '.date('d M Y H:i', strtotime($request_date)).'. Please make sure you don\'t have any group meeting schedule schedule before creating a new one.',
+        //     ]);
+        // }
+
         DB::beginTransaction();
         try {
+
             $meeting = new GroupMeeting;
             $meeting->group_id = $request->group_id;
             $meeting->meeting_date = $request->meeting_date;
@@ -473,9 +495,12 @@ class GroupController extends Controller
             //* add participant to attendance
             $participant = $group->group_participant;
             foreach ($participant as $detail) {
+                
                 $meeting->student_attendances()->attach($meeting->id, [
                     'student_id' => $detail->id,
-                    'created_at' => Carbon::now()
+                    'attend_status' => $detail->id == $this->student_id ? 1 : 0,
+                    'mail_sent' => $detail->id == $this->student_id ? 1 : 0,
+                    'created_at' => Carbon::now(),
                 ]);
             }
 
@@ -531,13 +556,20 @@ class GroupController extends Controller
         return response()->json(['success' => true, 'message' => 'Attendance status has updated']);
     }
 
-    public function cancel_meeting ($meeting_id)
+    public function cancel_meeting ($person, $meeting_id)
     {
         if (!$meeting_detail = GroupMeeting::find($meeting_id)) {
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting']);
         }
 
-        if ($meeting_detail->group_project()->where('student_id', ))
+        if (!$meeting_detail->group_project()->when($person == "mentor", function($query) {
+                $query->where('user_id', $this->user_id);
+            })->when($person == "student", function($query) {
+                $query->where('student_id', $this->student_id);
+            })->first()
+        ) {
+            return response()->json(['success' => false, 'error' => 'You don\'t have permission to cancel this meeting']);
+        }
 
         $mixed_data = array();
         $participants = $meeting_detail->student_attendances;

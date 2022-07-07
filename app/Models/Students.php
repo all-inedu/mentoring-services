@@ -76,6 +76,12 @@ class Students extends Authenticatable
         return strip_tags($value);
     }
 
+    public function getTagAttribute($value)
+    {
+        $explode = explode(', ', $value);
+        return $value == NULL ? NULL : $explode;
+    }
+
     public function medias()
     {
         return $this->hasMany(Medias::class, 'student_id', 'id');

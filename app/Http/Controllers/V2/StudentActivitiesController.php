@@ -60,31 +60,31 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $request_date = $request->call_date;
-        $hour_before = date('Y-m-d H:i', strtotime("-1 hour", strtotime($request_date)));
-        $hour_after = date('Y-m-d H:i', strtotime("+1 hour", strtotime($request_date)));
+        // $request_date = $request->call_date;
+        // $hour_before = date('Y-m-d H:i', strtotime("-1 hour", strtotime($request_date)));
+        // $hour_after = date('Y-m-d H:i', strtotime("+1 hour", strtotime($request_date)));
 
-        if ($activity = StudentActivities::where(function($query) use ($student_id){
-            $query->where('student_id', $student_id)->orWhere('user_id', $this->user_id);
-        })
-        ->where('prog_id', $programme_id)->where('call_status', 'waiting')
-        ->where(function($query) use ($hour_before, $hour_after, $request_date) {
-            $query->whereBetween('call_date', [$hour_before, $request_date])
-            ->orWhereBetween('call_date', [$request_date, $hour_after]);
-        })->first()){
+        // if ($activity = StudentActivities::where(function($query) use ($student_id){
+        //     $query->where('student_id', $student_id)->orWhere('user_id', $this->user_id);
+        // })
+        // ->where('prog_id', $programme_id)->where('call_status', 'waiting')
+        // ->where(function($query) use ($hour_before, $hour_after, $request_date) {
+        //     $query->whereBetween('call_date', [$hour_before, $request_date])
+        //     ->orWhereBetween('call_date', [$request_date, $hour_after]);
+        // })->first()){
 
-            // validate if request call_date not clash with the other schedule
-            // will check 1 hour before and 1 hour after
-            if (date('Y-m-d H:i', strtotime("+1 hour", strtotime($activity->call_date))) > $request->call_date) {
-                $custom_msg = ($activity->user_id == $this->user_id) ? " with you" : "";
-                return response()->json([
-                    'success' => false, 
-                    'error' => $activity->mt_confirm_status == "confirmed" ?  
-                        'You already make an appoinment at '.date('l, d M Y H:i', strtotime($activity->call_date)) :
-                        'Your student/mentee already has schedule'.$custom_msg.' at '.date('l, d M Y H:i', strtotime($request->call_date))
-                ]);
-            }
-        }
+        //     // validate if request call_date not clash with the other schedule
+        //     // will check 1 hour before and 1 hour after
+        //     if (date('Y-m-d H:i', strtotime("+1 hour", strtotime($activity->call_date))) > $request->call_date) {
+        //         $custom_msg = ($activity->user_id == $this->user_id) ? " with you" : "";
+        //         return response()->json([
+        //             'success' => false, 
+        //             'error' => $activity->mt_confirm_status == "confirmed" ?  
+        //                 'You already make an appoinment at '.date('l, d M Y H:i', strtotime($activity->call_date)) :
+        //                 'Your student/mentee already has schedule'.$custom_msg.' at '.date('l, d M Y H:i', strtotime($request->call_date))
+        //         ]);
+        //     }
+        // }
         
         DB::beginTransaction();
         try {
@@ -251,10 +251,11 @@ class StudentActivitiesController extends Controller
         ]);
     }
     
-    public function index_by_student ($programme, $status = NULL, $recent = NULL, Request $request)
+    public function index_by_student ($person, $programme, $status = NULL, $recent = NULL, Request $request)
     {
         $webinar_category = $request->get('category');
         $rules = [
+            'person' => 'required|in:mentor,student',
             'programme' => 'required|in:1-on-1-call,webinar,event',
             'status' => 'nullable|in:new,pending,upcoming,history',
         ];
@@ -263,10 +264,18 @@ class StudentActivitiesController extends Controller
             $rules['category'] = $webinar_category != "" ? 'exists:programme_details,dtl_category' : '';
         }
 
-        $validator = Validator::make(['programme' => $programme, 'status' => $status, 'category' => $webinar_category], $rules);
+        $validator = Validator::make(['person' => $person, 'programme' => $programme, 'status' => $status, 'category' => $webinar_category], $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
+
+        if (($person == "mentor") && (!$request->get('student'))) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the students webinar history']);
+        } else if (($person == "student") && ($request->get('student'))) {
+            return response()->json(['success' => false, 'error' => 'No access']);
+        }
+        
+        $student_id = $request->get('student') ? $request->get('student') : $this->student_id;
 
         // $using_status = $request->get('status') ? 1 : 0;
         // $status = $request->get('status') != NULL ? $request->get('status') : false;
@@ -295,8 +304,8 @@ class StudentActivitiesController extends Controller
                     });
                 });
             });
-        })->whereHas('students', function ($q) {
-            $q->where('id', $this->student_id);
+        })->whereHas('students', function ($q) use ($student_id) {
+            $q->where('id', $student_id);
         })->when($status == 'new', function ($q) {
             $q->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
             ->orderBy('call_status', 'desc')

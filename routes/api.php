@@ -90,6 +90,9 @@ Route::prefix('v1')->group(function(){
         // change
         Route::put('{person}/confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
         Route::put('{person}/{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);
+        
+        Route::get('{person}/list/activities/{programme}/{status?}/{recent?}', [V2StudentActivitiesController::class, 'index_by_student']);
+        Route::put('{person}/group/project/meeting/{meeting_id}', [GroupController::class, 'cancel_meeting']);
 
         Route::prefix('list')->group(function () {
             Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
@@ -127,7 +130,6 @@ Route::prefix('v1')->group(function(){
         Route::get('mentor/list', [StudentMentorController::class, 'list']);
         Route::get('media/list', [MediaController::class, 'index_by_student']);
         Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_student']);
-        Route::get('list/activities/{programme}/{status?}/{recent?}', [V2StudentActivitiesController::class, 'index_by_student']);
         Route::get('list/{programme}/categories', [EventCategoryController::class, 'index']);
         Route::get('programme/detail/{programme}/{category?}', [StudentProgrammeDetailController::class, 'index']);
         Route::get('interest', [InterestController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
@@ -167,7 +169,6 @@ Route::prefix('v1')->group(function(){
         Route::put('group/project/{group_id}', [GroupController::class, 'update']);
         Route::put('group/project/participant/{group_id}', [GroupController::class, 'update_participant_role_contribution']);
         Route::post('group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
-        Route::put('group/project/meeting/{meeting_id}', [GroupController::class, 'cancel_meeting']);
         Route::put('document/requirement/{med_id}', [UniversityController::class, 'update_document_requirement']);
         Route::post('media/pair', [MediaController::class, 'pair']);
         Route::post('media/update', [MediaController::class, 'update']);
@@ -302,6 +303,10 @@ Route::prefix('v1')->group(function(){
         Route::get('student/list', [StudentController::class, 'select_by_auth']);
         Route::get('student/detail', [StudentController::class, 'index']);
         Route::get('student/files', [MediaController::class, 'index']);
+
+        Route::prefix('switch')->group(function() {
+            Route::post('shortlisted/{status}', [UniShortlistedController::class, 'switch']);
+        });
 
         Route::prefix('list')->group(function() {
             Route::get('country/university', [CRMUniversityController::class, 'country']);

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
 {
@@ -30,7 +31,8 @@ class StudentController extends Controller
         $rules = [
             'profile_column' => 'required|in:progress-status,tag',
             'progress' => 'nullable|required_if:profile_column,progress-status|in:ontrack,behind,ahead',
-            'tag' => 'nullable|required_if:profile_column,tag',
+            // 'tag' => 'nullable|string|required_if:profile_column,tag|required_if:remove_tag,null',
+            'remove_tag' => 'nullable|string'
         ];
 
         $validator = Validator::make($request->all() + ['profile_column' => $profile_column], $rules);
@@ -46,7 +48,28 @@ class StudentController extends Controller
                     break;
 
                 case "tag":
-                    $student->tag = $request->tag;
+                    $student_tag = $student->tag;
+                    if (in_array($request->get('tag'), $student_tag, TRUE)) {
+                        return response()->json(['success' => false, 'error' => "Tag already exist"]);
+                    }
+
+                    // do this to remove tag
+                    if ($request->get('remove_tag')) {
+                        $founded_key = array_keys($student_tag, $request->get('remove_tag'));
+                        //find array key of whatever tag inputted
+                        if (count($founded_key) == 0) {
+                            return response()->json(['success' => false, 'error' => 'Tag doesn\'t exist']);
+                        }
+                        
+                        unset($student_tag[0]);
+                        $student->tag = implode(", ", $student_tag);
+                    }
+
+                    // do this to add tag
+                    if ($request->get('tag')) {
+                        $array_tag = array_merge($student->tag, array($request->get('tag')));
+                        $student->tag = implode(", ", $array_tag);
+                    }
                     break;
             }
             $student->save();
