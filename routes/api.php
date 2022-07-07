@@ -142,7 +142,7 @@ Route::prefix('v1')->group(function(){
         // find or select
         Route::get('appoinment/{mentor_id}', [StudentMentorController::class, 'find']);
         Route::get('programme/view/detail/{prog_dtl_id}', [StudentProgrammeDetailController::class, 'find']);
-        Route::get('group/project/detail/{group_id}', [GroupController::class, 'find']);
+        Route::get('detail/group/project/{group_id}', [GroupController::class, 'find']);
 
         // add
         Route::post('media/add', [MediaController::class, 'store']);
