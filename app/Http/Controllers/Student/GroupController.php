@@ -90,12 +90,23 @@ class GroupController extends Controller
         return response()->json(['success' => true, 'data' => $group_projects]);
     }
 
-    public function find ($group_id)
+    public function find ($person, $group_id, $student_id = NULL)
     {
+        $rules = [
+            'person'    => 'required|in:mentor,student',
+            'student_id' => 'nullable|required_if:person,mentor|exists:students,id'
+        ];
+
+        $validator = Validator::make(['person' => $person, 'student_id' => $student_id], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
         if (!$group = GroupProject::without(['students'])->find($group_id)) {
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the group']);
         }
 
+        $student_id = ($person == "mentor") ? $student_id : $this->student_id;
         $owner_id = $group->student_id;
 
         $group_member = $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'participants.status', 'contribution_role', 'contribution_description')->where('participants.status', '!=', 2)->orderBy('participants.created_at', 'asc')->get();
@@ -112,7 +123,7 @@ class GroupController extends Controller
 
         $student_info = $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.student_id', $this->student_id)->first();
 
-        $student_info['owner'] = ($this->student_id == $owner_id) ? "yes" : "no";
+        $student_info['owner'] = ($student_id == $owner_id) ? "yes" : "no";
 
         return response()->json(['success' => true, 'data' => array(
             'group_info' => $group->makeHidden(['students', 'group_participant', 'group_meeting']),

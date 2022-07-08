@@ -23,11 +23,11 @@ class UniShortlistedController extends Controller
         $this->user_id = $this->user->id; 
     }
 
-    public function switch($status, Request $request)
+    public function switch($status = null, Request $request)
     {
         $rules = [
             'uni_sh_id' => 'required|exists:uni_shortlisteds,id',
-            'status'   => 'string|in:waitlist,accept,apply,reject'
+            'status'   => 'nullable|string|in:waitlist,accept,apply,reject'
         ];
 
         $custom_message = [
@@ -74,10 +74,14 @@ class UniShortlistedController extends Controller
                     $message = "rejected";
                     $status_code = 3;
                     break;
+                default:
+                    $message = "shortlisted";
+                    $status_code = 99;
+                    break;
             }
             
             if ($old_status == $status_code) {
-                return response()->json(['success' => false, 'error' => 'Uni shortlisted is already on '.$message]);
+                return response()->json(['success' => false, 'error' => 'University is already on '.$message]);
             }
 
             $shortlist->status = $status_code;
@@ -91,7 +95,7 @@ class UniShortlistedController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to switch uni shortlisted status. Please try again.']);
         }
         
-        return response()->json(['success' => true, 'message' => 'The uni shortlisted has been changed to '.$message]);
+        return response()->json(['success' => true, 'message' => 'The university has been changed to '.$message]);
     }
 
     public function select($student_id)
@@ -101,6 +105,7 @@ class UniShortlistedController extends Controller
             return response()->json(['success' => false, 'error' => 'He/she doesn\'t have Uni Shortlisted']);
         }
 
+        $data['shortlisted'] = $uni_shortlisted->where('status', 99)->get();
         $data['waitlisted'] = $uni_shortlisted->where('status', 0)->get();
         $data['accepted'] = $uni_shortlisted->where('status', 1)->get();
         $data['applied'] = $uni_shortlisted->where('status', 2)->get();

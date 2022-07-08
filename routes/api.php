@@ -32,6 +32,7 @@ use App\Http\Controllers\Student\MediaController;
 use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\Student\ProgrammeDetailController as StudentProgrammeDetailController;
 use App\Http\Controllers\Student\StudentMentorController;
+use App\Http\Controllers\Student\TodosController as StudentTodosController;
 use App\Http\Controllers\Student\UniversityController;
 use App\Http\Controllers\Student\VerificationController as StudentVerificationController;
 use App\Http\Controllers\StudentActivitiesController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\User\GroupMeetingController;
 use App\Http\Controllers\User\GroupProjectController;
+use App\Http\Controllers\User\TodosController;
 use App\Http\Controllers\User\UniRequirementController;
 use App\Http\Controllers\User\UniShortlistedController;
 use App\Http\Controllers\User\UserController;
@@ -93,9 +95,14 @@ Route::prefix('v1')->group(function(){
         
         Route::get('{person}/list/activities/{programme}/{status?}/{recent?}', [V2StudentActivitiesController::class, 'index_by_student']);
         Route::put('{person}/group/project/meeting/{meeting_id}', [GroupController::class, 'cancel_meeting']);
+        Route::get('{person}/detail/group/project/{group_id}/{student_id?}', [GroupController::class, 'find']);
 
         Route::prefix('list')->group(function () {
             Route::get('programme/{type?}', [ProgrammeController::class, 'index']);
+        });
+
+        Route::prefix('switch')->group(function () {
+            Route::post('todos', [TodosController::class, 'switch']);
         });
 
         Route::prefix('student')->group(function() {
@@ -135,6 +142,7 @@ Route::prefix('v1')->group(function(){
         Route::get('interest', [InterestController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
         Route::get('competition', [CompetitionController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
         Route::get('academic', [AcademicController::class, 'index']); //* use parameter mail for admin / mentor scopes & Need to moved to mentor, students scopes
+        Route::get('todos', [StudentTodosController::class, 'index']);
         
         Route::get('university/shortlisted/{status}', [UniversityController::class, 'index']);
         Route::get('university/requirement/{category}/{show_item?}', [UniversityController::class, 'index_requirement']);
@@ -142,7 +150,6 @@ Route::prefix('v1')->group(function(){
         // find or select
         Route::get('appoinment/{mentor_id}', [StudentMentorController::class, 'find']);
         Route::get('programme/view/detail/{prog_dtl_id}', [StudentProgrammeDetailController::class, 'find']);
-        Route::get('detail/group/project/{group_id}', [GroupController::class, 'find']);
 
         // add
         Route::post('media/add', [MediaController::class, 'store']);
@@ -305,7 +312,7 @@ Route::prefix('v1')->group(function(){
         Route::get('student/files', [MediaController::class, 'index']);
 
         Route::prefix('switch')->group(function() {
-            Route::post('shortlisted/{status}', [UniShortlistedController::class, 'switch']);
+            Route::post('shortlisted/{status?}', [UniShortlistedController::class, 'switch']);
         });
 
         Route::prefix('list')->group(function() {
@@ -322,16 +329,22 @@ Route::prefix('v1')->group(function(){
 
         Route::prefix('select')->group(function() {
             Route::get('shortlisted/{student_id}', [UniShortlistedController::class, 'select']);
+            Route::get('todos/{student_id}', [TodosController::class, 'select']);
         });
 
         Route::prefix('create')->group(function() {
             Route::post('shortlisted', [UniShortlistedController::class, 'store']);
             Route::post('group/project', [GroupProjectController::class, 'store']);
             Route::post('group/meeting', [GroupMeetingController::class, 'store']);
+            Route::post('todos', [TodosController::class, 'store']);
         });
 
         Route::prefix('update')->group(function() {
             Route::put('student/{student_id}/{profile_column}', [StudentController::class, 'profile']);
+        });
+
+        Route::prefix('delete')->group(function() {
+            Route::delete('todos/{todos_id}', [TodosController::class, 'delete']);
         });
     });    
 
