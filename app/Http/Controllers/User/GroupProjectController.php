@@ -27,6 +27,107 @@ class GroupProjectController extends Controller
         $this->MENTOR_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
     }
 
+    public function finishing($group_id)
+    {
+        if (!$group = GroupProject::where('user_id', $this->user_id)->where('status', 'in progress')->find($group_id)) {
+            return response()->json(['success' => true, 'message' => 'Couldn\'t find the Group Project']);
+        }
+
+        DB::beginTransaction();
+        try {
+            $group->status = 'completed';
+            $group->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Finishing Group Project Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to finishing group project. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'The group project was note as finished']);
+    }
+
+    public function update_progress($group_id, $progress)
+    {
+        $rules = [
+            'group_id' => 'exists:group_projects,id',
+            'progress' => 'in:on-track,behind,ahead',
+        ];
+
+        $validator = Validator::make(['group_id' => $group_id, 'progress' => $progress], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+
+            $group = GroupProject::find($group_id);
+            $group->progress_status = $progress;
+            $group->save();
+            
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Update Progress Status Group Project Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update progress status group project. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Progress status has been updated']);
+    }
+
+    public function update($group_id, Request $request)
+    {
+        $rules = [
+            'group_id'        => 'required|exists:group_projects,id',
+            'project_name'    => 'required|string|max:255',
+            'project_type'    => 'required|string|max:255|in:group mentoring,profile building mentoring',
+            'project_desc'    => 'required',
+            'progress_status' => 'nullable|in:on track,behind,ahead',
+            'status'          => 'required|in:in progress,completed',
+            'owner_type'      => 'nullable|in:student,mentor'
+        ];
+
+        $input = $request->all() + array('group_id' => $group_id);
+        $input['project_type'] = strtolower($request->project_type);
+
+        $validator = Validator::make($input, $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+
+            $group_project = GroupProject::find($group_id);
+            //* validate only owner (mentor) of the group able to update 
+            $owner = $group_project->owner_type == "mentor" ? $group_project->user_id : null; //* validate student (change null with user_id if the controller being called from admin)
+            if ($owner != $this->user_id) {
+                return response()->json(['success' => false, 'error' => 'You\'ve no permission to change the group info']);
+            }
+            
+            $group_project->project_name = $request->project_name;
+            $group_project->project_type = $request->project_type;
+            $group_project->project_desc = $request->project_desc;
+            if ($request->status != NULL) { //! will be deleted soon
+                $group_project->status = $request->status;
+            }
+            if ($request->owner_type != NULL) { //! will be deleted soon
+                $group_project->owner_type = $request->owner_type;
+            }
+            $group_project->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Update Mentor Group Project Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update mentor group project. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Group Project has been updated', 'data' => $group_project]);
+    }
+
     public function index($status)
     {
         $rules = [
@@ -97,6 +198,7 @@ class GroupProjectController extends Controller
             $group_projects->save();
 
             // select all of student that handled by user id <mentor>
+            // add participant
             for ($i = 0 ; $i < count($request->student_id) ; $i++) {
 
                 $group_projects->group_participant()->attach($request->student_id[$i], [

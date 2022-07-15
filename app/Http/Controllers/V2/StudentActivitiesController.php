@@ -15,6 +15,8 @@ use App\Rules\RolesChecking;
 use App\Models\Programmes;
 use App\Models\Students;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\User\MeetingMinuteController;
+use App\Models\MeetingMinutes;
 use Illuminate\Support\Facades\Log;
 use Exception;
 

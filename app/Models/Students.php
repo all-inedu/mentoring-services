@@ -97,6 +97,11 @@ class Students extends Authenticatable
         return $this->hasManyThrough(PlanToDoList::class, StudentMentors::class, 'student_id', 'student_mentors_id', 'id', 'id');
     }
 
+    public function meeting_minutes()
+    {
+        return $this->hasOneThrough(MeetingMinutes::class, StudentActivities::class, 'student_id', 'st_act_id', 'id', 'id');
+    }
+
     public function student_activities()
     {
         return $this->hasMany(StudentActivities::class, 'student_id', 'id');

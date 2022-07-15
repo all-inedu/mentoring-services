@@ -28,6 +28,33 @@ class GroupMeetingController extends Controller
         $this->MENTOR_MEETING_VIEW_PER_PAGE = RouteServiceProvider::MENTOR_MEETING_VIEW_PER_PAGE;
     }
 
+    public function attended($group_meet_id)
+    {
+        if (!$group_meeting = GroupMeeting::find($group_meet_id)) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the Group Meeting']);
+        }
+
+        $pivot = $group_meeting->user_attendances->where('id', $this->user_id)->first()->pivot;
+
+        DB::beginTransaction();
+        try {
+            $pivot = $group_meeting->user_attendances->where('id', $this->user_id)->first()->pivot;
+            if ($pivot->attend_status == 1) {
+                return response()->json(['success' => true, 'message' => 'You already confirmed to attend the group meeting is held at '.date('M d, Y H:i', strtotime($group_meeting->meeting_date))]);
+            }
+            $pivot->attend_status = 1;
+            $pivot->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Confirm Mentor Attendance Group Meeting Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to confirm mentor attendance. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'You\'ve confirmed to attend the group meeting that is held at '.date('M d, Y H:i', strtotime($group_meeting->meeting_date))]);
+    }
+
     public function index($status, $recent = NULL)
     {
         $rules = [

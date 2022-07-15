@@ -151,4 +151,24 @@ class UniShortlistedController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Uni Shortlisted has been made']);
     }
+
+    public function delete($uni_shortlisted_id)
+    {
+        if (!$unishortlisted = UniShortlisted::find($uni_shortlisted_id)) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the University Shortlisted']);
+        }
+
+        DB::beginTransaction();
+        try {
+            $unishortlisted->delete();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Delete University Shortlisted Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to delete university shortlisted. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Uni Shortlisted has successfully deleted']);
+    }
 }

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Database\Seeders\V2\ProgrammeDetailSeeder as V2ProgrammeDetailSeeder;
 use Database\Seeders\V2\ProgrammeSeeder as V2ProgrammeSeeder;
+use Database\Seeders\User\GroupProjectSeeder as UserGroupProjectSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -17,20 +18,21 @@ class DatabaseSeeder extends Seeder
     {
         // \App\Models\User::factory(10)->create();
         $this->call([
-            RoleSeeder::class,
-            UserSeeder::class,
-            UserAccessSeeder::class,
-            // ProgrammeModuleSeeder::class,
-            // ProgrammeSeeder::class,
-            V2ProgrammeSeeder::class,
-            V2ProgrammeDetailSeeder::class,
-            UserRoleSeeder::class,
-            StudentSeeder::class,
-            StudentActivitiesSeeder::class,
+            // RoleSeeder::class,
+            // UserSeeder::class,
+            // UserAccessSeeder::class,
+            // // ProgrammeModuleSeeder::class,
+            // // ProgrammeSeeder::class,
+            // V2ProgrammeSeeder::class,
+            // V2ProgrammeDetailSeeder::class,
+            // UserRoleSeeder::class,
+            // StudentSeeder::class,
+            // StudentActivitiesSeeder::class,
 
-            //* New 
-            UniShortlistedSeeder::class,
-            ApSubjectSeeder::class,
+            // //* New 
+            // UniShortlistedSeeder::class,
+            // ApSubjectSeeder::class,
+            UserGroupProjectSeeder::class,
         ]);
     }
 }

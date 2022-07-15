@@ -119,8 +119,6 @@ class GroupController extends Controller
             }
         }
 
-        //
-
         $student_info = $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'contribution_role', 'contribution_description')->where('participants.student_id', $this->student_id)->first();
 
         $student_info['owner'] = ($student_id == $owner_id) ? "yes" : "no";

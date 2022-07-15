@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\URL;
 use App\Http\Traits\UploadMediaTrait;
 use App\Models\MediaCategory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class UniversityController extends Controller
 {
@@ -30,12 +31,22 @@ class UniversityController extends Controller
 
     public function __construct()
     {
-        $this->student_id = auth()->guard('student-api')->user()->id;
+        $this->student_id = Auth::guard('student-api')->check() ? auth()->guard('student-api')->user()->id : null;
         $this->STUDENT_UNIVERSITY_SHORTLISTED_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_UNIVERSITY_SHORTLISTED_VIEW_PER_PAGE;
     }
     
-    public function index ($status)
+    public function index ($status, $student_id = NULL)
     {
+        $rules = [
+            'status' => 'in:waitlisted,accepted,applied,rejected,shortlisted,all'
+        ];
+
+        $validator = Validator::make(['status' => $status], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        $id = ($student_id != NULL) ? $student_id : $this->student_id;
         $status = strtolower($status);
         $uni_shortlisted = UniShortlisted::when($status == 'waitlisted', function($query) {
                                     $query->where('status', 0);
@@ -45,9 +56,11 @@ class UniversityController extends Controller
                                     $query->where('status', 2);
                                 })->when($status == 'rejected', function($query) {
                                     $query->where('status', 3);
+                                })->when($status == 'shortlisted', function($query) {
+                                    $query->where('status', 99);
                                 })->when($status == 'all', function($query) {
-                                    $query->where('status', '!=', 99);
-                                })->where('student_id', $this->student_id)->orderBy('uni_name', 'asc')->orderBy('uni_major', 'asc')->get();
+                                    $query->where('status', '!=', 100);
+                                })->where('student_id', $id)->orderBy('uni_name', 'asc')->orderBy('uni_major', 'asc')->get();
 
         return response()->json(['success' => true, 'data' => $uni_shortlisted]);
     }
