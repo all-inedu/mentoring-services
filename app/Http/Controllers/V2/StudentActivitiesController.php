@@ -153,7 +153,7 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $activities = StudentActivities::with(['students', 'users'])->where('user_id', $this->user_id)
+        $activities = StudentActivities::with(['students', 'users'])->withCount('meeting_minutes as meeting_minute')->where('user_id', $this->user_id)
                     ->when($status == 'new', function($query) {
                         $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting')
                         ->orderBy('call_status', 'desc')
@@ -177,6 +177,7 @@ class StudentActivitiesController extends Controller
                         ->orderBy('call_date', 'desc');
                     })
                     ->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+        
 
         return response()->json(['success' => true, 'data' => $activities]);
     }
