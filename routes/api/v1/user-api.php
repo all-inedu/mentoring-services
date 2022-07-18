@@ -220,33 +220,3 @@ Route::middleware(['auth:api', 'scope:admin,mentor,editor', 'cors'])->group(func
         Route::delete('schedule/{schedule_id}', [UserScheduleController::class, 'delete']);
     });
 });
-
-
-// Version 2
-//! Admin Scopes v2
-Route::middleware(['auth:api', 'scopes:admin'])->group(function() {
-
-    Route::prefix('list')->group(function() {
-        Route::get('programme/{type}', [V2ProgrammeController::class, 'index']);
-    });
-
-    Route::prefix('create')->group(function() {
-        Route::post('programme', [V2ProgrammeController::class, 'store']);
-    });
-
-    Route::prefix('update')->group(function() {
-        Route::put('programme/{prog_id}', [V2ProgrammeController::class, 'update']);
-    });
-});
-
-//! Mentor Scopes
-Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
-
-    Route::prefix('list')->group(function() {
-        Route::get('activities/{programme}/{status}/{recent?}', [V2StudentActivitiesController::class, 'index']);
-    });
-
-    Route::prefix('create')->group(function() {
-        Route::post('activities/1-on-1-call', [V2StudentActivitiesController::class, 'store']);
-    });
-});

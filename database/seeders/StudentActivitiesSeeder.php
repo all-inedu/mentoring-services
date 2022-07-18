@@ -139,6 +139,26 @@ class StudentActivitiesSeeder extends Seeder
             ),
         );
 
+        for ($i = 0; $i < 15 ; $i++) {
+            $data[] = array(
+                'prog_id' => 1,
+                'student_id' => Students::inRandomOrder()->first()->id,
+                'user_id' => 2,
+                'std_act_status' => "waiting",
+                'mt_confirm_status' => "confirmed",
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+                'handled_by' => NULL,
+                'location_link' => 'http://example-meeting.com/'.Str::random(10),
+                'location_pw' => Str::random(10),
+                'prog_dtl_id' => NULL,
+                'call_with' => 'mentor',
+                'module' => 'life skills',
+                'call_date' => date('Y-m-d', strtotime('+1 day', strtotime(date('Y-m-d H:i:s')))).' 10:00:00',
+                'call_status' => 'waiting'
+            );
+        }
+
         DB::table('student_activities')->insert($data);
     }
 }
