@@ -98,6 +98,7 @@ class StudentController extends Controller
 
     public function select_by_auth (Request $request)
     {
+        $paginate = !$request->get('paginate') ? "yes" : $request->get('paginate');
         $is_searching = $request->get('keyword') ? true : false;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
         $user_id = auth()->guard('api')->user()->id;
@@ -108,7 +109,8 @@ class StudentController extends Controller
                 $query->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
                     orWhere('email', 'like', '%'.$keyword.'%')->
                     orWhere('school_name', 'like', '%'.$keyword.'%');
-            })->orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
+            })->orderBy('created_at', 'desc')->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
+            
         } catch (Exception $e) {
             Log::error('Select Student Use User Id  Issue : ['.$user_id.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to select student use User Id. Please try again.']);

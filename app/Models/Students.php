@@ -150,6 +150,14 @@ class Students extends Authenticatable
             return $query->first();
     }
 
+    public function scopeCustomPaginate($query, $use_paginate, $paginate)
+    {
+        if ($use_paginate == "yes")
+            return $query->paginate($paginate);
+        else
+            return $query->get();
+    }
+
     public function attendances()
     {
         return $this->belongsToMany(GroupMeeting::class, 'student_attendances', 'student_id', 'group_meet_id');
