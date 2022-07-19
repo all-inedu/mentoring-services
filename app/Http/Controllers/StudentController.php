@@ -48,7 +48,7 @@ class StudentController extends Controller
                     break;
 
                 case "tag":
-                    $student_tag = $student->tag;
+                    $student_tag = $student->tag == NULL ? [] : $student->tag;
                     if (in_array($request->get('tag'), $student_tag, TRUE)) {
                         return response()->json(['success' => false, 'error' => "Tag already exist"]);
                     }
@@ -67,7 +67,7 @@ class StudentController extends Controller
 
                     // do this to add tag
                     if ($request->get('tag')) {
-                        $array_tag = array_merge($student->tag, array($request->get('tag')));
+                        $array_tag = array_merge($student_tag, array($request->get('tag')));
                         $student->tag = implode(", ", $array_tag);
                     }
                     break;
@@ -76,8 +76,8 @@ class StudentController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Update Student Progress Status Issue : '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to update progress status. Please try again.']);
+            Log::error('Update Student '.$profile_column.' Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update '.$profile_column.'. Please try again.']);
         }
 
         return response()->json(['success' => true, 'message' => 'Students profile has been updated']);

@@ -153,7 +153,34 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        switch ($status) {
+            case "new":
+            case "pending":
+            case "upcoming":
+                $call_status = "desc";
+                $call_date = "asc";
+                break;
+
+            case "history":
+                $call_status = "desc";
+                $call_date = "desc";
+                break;
+        }
+
         $activities = StudentActivities::with(['students', 'users'])->withCount('meeting_minutes as meeting_minute')->where('user_id', $this->user_id)
+        ->when($status == 'new', function($query) {
+            $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting');
+        }, $status == "pending", function($query) {
+            $query->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting');
+        }, $status == "upcoming", function($query) {
+            $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting');
+        }, $status == "history", function($query) {
+            $query->where(function ($query1) {
+                $query1->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
+            });
+        })->orderBy('call_status', $call_status)->orderBy('call_date', $call_date)->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+
+        $old_activities = StudentActivities::with(['students', 'users'])->withCount('meeting_minutes as meeting_minute')->where('user_id', $this->user_id)
                     ->when($status == 'new', function($query) {
                         $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting')
                         ->orderBy('call_status', 'desc')
