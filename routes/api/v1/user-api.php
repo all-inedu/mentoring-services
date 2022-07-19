@@ -146,7 +146,7 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
 //! Mentor Scopes
 Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
     Route::get('student/list', [StudentController::class, 'select_by_auth']);
-    Route::get('student/detail', [StudentController::class, 'index']);
+    Route::get('student/detail/{student_id?}', [StudentController::class, 'index']);
     Route::get('student/files', [MediaController::class, 'index']);
 
     Route::prefix('switch')->group(function() {
