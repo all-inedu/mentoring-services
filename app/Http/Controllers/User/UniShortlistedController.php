@@ -100,16 +100,15 @@ class UniShortlistedController extends Controller
 
     public function select($student_id)
     {
-        $uni_shortlisted = UniShortlisted::where('student_id', $student_id)->orderBy('imported_id', 'asc');
-        if ($uni_shortlisted->count() == 0) {
+        if (!$uni_shortlisted = UniShortlisted::where('student_id', $student_id)->orderBy('imported_id', 'asc')->get()){
             return response()->json(['success' => false, 'error' => 'He/she doesn\'t have Uni Shortlisted']);
         }
 
-        $data['shortlisted'] = $uni_shortlisted->where('status', 99)->get();
-        $data['waitlisted'] = $uni_shortlisted->where('status', 0)->get();
-        $data['accepted'] = $uni_shortlisted->where('status', 1)->get();
-        $data['applied'] = $uni_shortlisted->where('status', 2)->get();
-        $data['rejected'] = $uni_shortlisted->where('status', 3)->get();
+        $data['shortlisted'] = $uni_shortlisted->where('status', 99);
+        $data['waitlisted'] = $uni_shortlisted->where('status', 0);
+        $data['accepted'] = $uni_shortlisted->where('status', 1);
+        $data['applied'] = $uni_shortlisted->where('status', 2);
+        $data['rejected'] = $uni_shortlisted->where('status', 3);
 
         return response()->json(['success' => true, 'data' => $data]);
     }
