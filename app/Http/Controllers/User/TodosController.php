@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Student\UniversityController;
 use App\Models\PlanToDoList;
 use App\Models\Students;
 use Illuminate\Http\Request;
@@ -23,6 +24,32 @@ class TodosController extends Controller
     {
         $this->user = Auth::guard('api')->check() ? Auth::guard('api')->user() : NULL;
         $this->user_id = $this->user->id;
+    }
+
+    // fungsi get todos dan university shortlisted
+    public function select_todos_shortlisted($student_id)
+    {
+        if (!$student = Students::find($student_id))
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the student/mentee']);
+
+        $response_todos = json_decode($this->select($student_id)->getContent());
+        $data['todos'] = $response_todos->data;
+
+        $university = new UniversityController;
+        $response_shortlisted = json_decode($university->index('shortlisted', $student_id)->getContent());
+        $response_waitlisted = json_decode($university->index('waitlisted', $student_id)->getContent());
+        $response_accepted = json_decode($university->index('accepted', $student_id)->getContent());
+        $response_applied = json_decode($university->index('applied', $student_id)->getContent());
+        $response_rejected = json_decode($university->index('rejected', $student_id)->getContent());
+
+
+        $data['university']['shortlisted'] = $response_shortlisted->data;
+        $data['university']['waitlisted'] = $response_waitlisted->data;
+        $data['university']['accepted'] = $response_accepted->data;
+        $data['university']['applied'] = $response_applied->data;
+        $data['university']['rejected'] = $response_rejected->data;
+
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function delete($todos_id)
@@ -52,7 +79,7 @@ class TodosController extends Controller
         $data['confirmation_need'] = $student->todos()->where('plan_to_do_lists.status', 1)->get();
         $data['completed'] = $student->todos()->where('plan_to_do_lists.status', 3)->get();
 
-        return response()->json($data);
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     public function switch(Request $request)

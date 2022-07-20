@@ -169,6 +169,8 @@ Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
         Route::get('shortlisted/{student_id}', [UniShortlistedController::class, 'select']);
         Route::get('todos/{student_id}', [TodosController::class, 'select']);
         Route::get('meeting-minutes/{st_act_id}', [MeetingMinuteController::class, 'select']);
+        Route::get('todos-shortlist/use/{student_id}', [TodosController::class, 'select_todos_shortlisted']);
+        
     });
 
     Route::prefix('create')->group(function() {
