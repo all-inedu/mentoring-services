@@ -29,8 +29,12 @@ class GroupProjectController extends Controller
 
     public function finishing($group_id)
     {
-        if (!$group = GroupProject::where('user_id', $this->user_id)->where('status', 'in progress')->find($group_id)) {
-            return response()->json(['success' => true, 'message' => 'Couldn\'t find the Group Project']);
+        if (!$group = GroupProject::where(function($query) {
+            $query->where('user_id', $this->user_id)->orWhereHas('assigned_mentor', function ($query1) {
+                $query1->where('users.id', $this->user_id);
+            });
+        })->where('status', 'in progress')->find($group_id)) {
+            return response()->json(['success' => false, 'message' => 'Couldn\'t find the Group Project']);
         }
 
         DB::beginTransaction();
