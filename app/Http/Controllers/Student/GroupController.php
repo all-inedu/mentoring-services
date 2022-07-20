@@ -573,7 +573,11 @@ class GroupController extends Controller
         }
 
         if (!$meeting_detail->group_project()->when($person == "mentor", function($query) {
-                $query->where('user_id', $this->user_id);
+                $query->where(function($query1){
+                    $query1->where('user_id', $this->user_id)->orWhereHas('assigned_mentor', function ($query2) {
+                        $query2->where('users.id', $this->user_id);
+                    });
+                });
             })->when($person == "student", function($query) {
                 $query->where('student_id', $this->student_id);
             })->first()
