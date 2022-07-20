@@ -13,6 +13,7 @@ use App\Models\GroupProject;
 use Illuminate\Support\Carbon;
 use App\Jobs\ReminderNextGroupMeeting;
 use App\Providers\RouteServiceProvider;
+use App\Rules\IsJoinGroupChecker;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
@@ -90,10 +91,9 @@ class GroupMeetingController extends Controller
     
     public function store(Request $request)
     {
+
         $rules = [
-            'group_id' => ['required', Rule::exists('group_projects', 'id')->where(function($query) {
-                $query->where('user_id', $this->user_id);
-            })],
+            'group_id' => ['required', new IsJoinGroupChecker($this->user_id)],
             'meeting_date' => ['required', 'date_format:Y-m-d H:i', Rule::unique('group_meetings')->where(function ($query) use ($request) {
                 return $query->where('group_id', $request->group_id);
             })],
