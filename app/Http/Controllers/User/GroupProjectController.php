@@ -59,7 +59,7 @@ class GroupProjectController extends Controller
 
         DB::beginTransaction();
         try {
-            $field = $request->field;
+            $field = str_replace('-', ' ', $request->field);
             if ($field == "status")
                 $group->status = $request->value;
             else
