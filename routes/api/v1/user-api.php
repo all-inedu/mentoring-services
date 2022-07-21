@@ -184,7 +184,7 @@ Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
     Route::prefix('update')->group(function() {
         Route::put('student/{student_id}/{profile_column}', [StudentController::class, 'profile']);
         Route::put('group/project/{group_id}', [GroupProjectController::class, 'update']);
-        Route::put('status/group/project/{group_id}', [GroupProjectController::class, 'finishing']);
+        Route::put('{field}/group/project/{group_id}', [GroupProjectController::class, 'update_field']);
         Route::put('progress/status/group/project/{group_id}/{progress}', [GroupProjectController::class, 'update_progress']);
         Route::put('group/meeting/attendance/{group_meet_id}', [GroupMeetingController::class, 'attended']);
     });

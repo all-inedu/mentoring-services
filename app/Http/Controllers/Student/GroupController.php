@@ -95,7 +95,7 @@ class GroupController extends Controller
         $rules = [
             'person'    => 'required|in:mentor,student',
             // 'student_id' => 'nullable|required_if:person,mentor|exists:students,id'
-            'student_id' => 'nullable|required_if:person,student|exists:students,id'
+            // 'student_id' => 'nullable|required_if:person,student|exists:students,id'
         ];
 
         $validator = Validator::make(['person' => $person, 'student_id' => $student_id], $rules);

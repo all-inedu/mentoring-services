@@ -27,29 +27,55 @@ class GroupProjectController extends Controller
         $this->MENTOR_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
     }
 
-    public function finishing($group_id)
+    public function update_field($field, $group_id, Request $request)
     {
+        $rules = [
+            'field' => 'required|in:status,progress-status',
+            'value' => 'required'
+        ];
+
+        switch ($request->field) {
+            case "status":
+                $rules['value'] .= '|in:in progress,completed';
+                break;
+
+            case "progress-status":
+                $rules['value'] .= '|in:on-track,behind,ahead';
+                break;
+        }
+
+        $validator = Validator::make($request->all() + ['field' => $field], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
         if (!$group = GroupProject::where(function($query) {
             $query->where('user_id', $this->user_id)->orWhereHas('assigned_mentor', function ($query1) {
                 $query1->where('users.id', $this->user_id);
             });
-        })->where('status', 'in progress')->find($group_id)) {
+        })->find($group_id)) {
             return response()->json(['success' => false, 'message' => 'Couldn\'t find the Group Project']);
         }
 
         DB::beginTransaction();
         try {
-            $group->status = 'completed';
+            $field = $request->field;
+            if ($field == "status")
+                $group->status = $request->value;
+            else
+                $group->progress_status = $request->value;
+
+
             $group->save();
 
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Finishing Group Project Issue : '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to finishing group project. Please try again.']);
+            Log::error('Update Group Project '.ucfirst(strtolower($field)).' Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update '.ucfirst(strtolower($field)).' group project. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'The group project was note as finished']);
+        return response()->json(['success' => true, 'message' => 'The group project '.strtolower($field).' was updated']);
     }
 
     public function update_progress($group_id, $progress)
