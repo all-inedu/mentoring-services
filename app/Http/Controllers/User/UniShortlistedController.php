@@ -104,11 +104,13 @@ class UniShortlistedController extends Controller
             return response()->json(['success' => false, 'error' => 'He/she doesn\'t have Uni Shortlisted']);
         }
 
-        $data['shortlisted'] = $uni_shortlisted->where('status', 99);
-        $data['waitlisted'] = $uni_shortlisted->where('status', 0);
-        $data['accepted'] = $uni_shortlisted->where('status', 1);
-        $data['applied'] = $uni_shortlisted->where('status', 2);
-        $data['rejected'] = $uni_shortlisted->where('status', 3);
+        // return $uni_shortlisted->where('status', 0)->unique('id')->values();
+
+        $data['shortlisted'] = $uni_shortlisted->where('status', 99)->unique('id')->values();
+        $data['waitlisted'] = $uni_shortlisted->where('status', 0)->unique('id')->values();
+        $data['accepted'] = $uni_shortlisted->where('status', 1)->unique('id')->values();
+        $data['applied'] = $uni_shortlisted->where('status', 2)->unique('id')->values();
+        $data['rejected'] = $uni_shortlisted->where('status', 3)->unique('id')->values();
 
         return response()->json(['success' => true, 'data' => $data]);
     }
