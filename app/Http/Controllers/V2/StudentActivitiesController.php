@@ -155,37 +155,52 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        $activities = StudentActivities::with(['students', 'users'])->withCount('meeting_minutes as meeting_minute')->where('user_id', $this->user_id)
-                    ->when($status == 'new', function($query) {
-                        $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting')
-                        ->orderBy('call_status', 'desc')
-                        ->orderBy('call_date', 'asc');
-                    })
-                    ->when($status == 'pending', function($query) {
-                        $query->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
-                        ->orderBy('call_status', 'desc')
-                        ->orderBy('call_date', 'asc');
-                    })
-                    ->when($status == 'upcoming', function($query) {
-                        $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
-                        ->orderBy('call_status', 'desc')
-                        ->orderBy('call_date', 'asc');
-                    })
-                    ->when($status == 'history', function($query) use ($meeting_minutes) {
-                        $query->when($meeting_minutes == NULL, function ($query1) {
-                            $query1->where(function ($query2) {
-                                $query2->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
-                            });
-                        }, function($query1) {
-                            $query1->where('call_status', 'finished');
-                        })
-                        ->orderBy('call_status', 'desc')
-                        ->orderBy('call_date', 'desc');
-                    })
-                    ->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+        if ($recent != NULL) {
+            // $data['recent_activities'] = $this->get_index($programme, $status, $recent, null);
+            $data['latest_meeting'] = $this->get_index($programme, $status, $recent, "yes")->where('meeting_minute', 0)->unique('id')->values();
+        } else {
+            $data = $this->get_index($programme, $status, $recent, $meeting_minutes);
+        }
         
 
-        return response()->json(['success' => true, 'data' => $activities]);
+        return response()->json(['success' => true, 'data' => $data]);
+    }
+
+    public function get_index($programme, $status, $recent, $meeting_minutes)
+    {
+        $activities = StudentActivities::with(['students', 'users'])->withCount('meeting_minutes as meeting_minute')->where('user_id', $this->user_id)
+        ->when($status == 'new', function($query) {
+            $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting')
+            ->orderBy('call_status', 'desc')
+            ->orderBy('call_date', 'asc');
+        })
+        ->when($status == 'pending', function($query) {
+            $query->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
+            ->orderBy('call_status', 'desc')
+            ->orderBy('call_date', 'asc');
+        })
+        ->when($status == 'upcoming', function($query) {
+            $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
+            ->orderBy('call_status', 'desc')
+            ->orderBy('call_date', 'asc');
+        })
+        ->when($status == 'history', function($query) use ($meeting_minutes) {
+            $query->when($meeting_minutes == NULL, function ($query1) {
+                $query1->where(function ($query2) {
+                    $query2->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
+                });
+            }, function($query1) {
+                $query1->where('call_status', 'finished');
+            })
+            ->orderBy('call_status', 'desc')
+            ->orderBy('call_date', 'desc');
+        })
+        ->whereHas('programmes', function($query) use ($programme) {
+            $query->where('prog_name', $programme);
+        })
+        ->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+
+        return $activities;
     }
 
     public function index_student_count()
