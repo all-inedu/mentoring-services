@@ -67,16 +67,30 @@ class GroupMeetingController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        if (($status == "upcoming") && ($recent != NULL)) {
+            $data['attendances'] = $this->get_index("attendance", $recent);
+            $data['upcoming'] = $this->get_index("upcoming", $recent);
+        } else {
+            $data = $this->get_index($status, $recent);
+        }
+
+        return response()->json(['success' => true, 'data' => $data]);
+        
+    }
+
+    public function get_index($status, $recent)
+    {
+
         $meetings = GroupMeeting::with('group_project')->withCount('student_attendances as group_member')->whereHas('user_attendances', function($query) use ($status) {
-                $query->where('user_id', $this->user_id)
-                ->when($status == "upcoming", function($query1) {
-                    $query1->where('attend_status', 1);
-                })->when($status == "attendance", function($query1) {
-                    $query1->where('attend_status', 0);
-                });
-            })->whereHas('group_project', function ($query) {
-                $query->where('status', 'in progress');
-            })->where('status', 0)->recent($recent, $this->MENTOR_MEETING_VIEW_PER_PAGE)->makeHidden(['student_attendances', 'user_attendances']);
+            $query->where('user_id', $this->user_id)
+            ->when($status == "upcoming", function($query1) {
+                $query1->where('attend_status', 1);
+            })->when($status == "attendance", function($query1) {
+                $query1->where('attend_status', 0);
+            });
+        })->whereHas('group_project', function ($query) {
+            $query->where('status', 'in progress');
+        })->where('status', 0)->recent($recent, $this->MENTOR_MEETING_VIEW_PER_PAGE)->makeHidden(['student_attendances', 'user_attendances']);
 
         foreach ($meetings as $meeting) {
             
@@ -86,7 +100,7 @@ class GroupMeetingController extends Controller
             );
         }
 
-        return response()->json(['success' => true, 'data' => $meetings]);
+        return $meetings;
     }
     
     public function store(Request $request)
