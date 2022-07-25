@@ -155,8 +155,8 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        if ($recent != NULL) {
-            $data['recent_activities'] = $this->get_index($programme, $status, $recent, null);
+        if (($recent != NULL) && ($status == "upcoming")) {
+            $data['upcoming'] = $this->get_index($programme, $status, $recent, null);
             $data['latest_meeting'] = $this->get_index($programme, $status, $recent, "yes")->where('meeting_minute', 0)->unique('id')->values();
         } else {
             $data = $this->get_index($programme, $status, $recent, $meeting_minutes);
