@@ -156,7 +156,7 @@ class StudentActivitiesController extends Controller
         }
 
         if ($recent != NULL) {
-            // $data['recent_activities'] = $this->get_index($programme, $status, $recent, null);
+            $data['recent_activities'] = $this->get_index($programme, $status, $recent, null);
             $data['latest_meeting'] = $this->get_index($programme, $status, $recent, "yes")->where('meeting_minute', 0)->unique('id')->values();
         } else {
             $data = $this->get_index($programme, $status, $recent, $meeting_minutes);
