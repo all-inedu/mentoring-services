@@ -189,7 +189,8 @@ class ClientController extends Controller
                     'phone_number' => $this->remove_blank($data->phone),
                     'email' => $this->remove_blank($data->email),
                     'email_verified_at' => $data->email === '' ? null : Carbon::now(),
-                    'password' => $this->remove_blank($data->password),
+                    // 'password' => $this->remove_blank($data->password),
+                    'password' => NULL, //! set to null for now
                     'status' => $data->status,
                     'is_verified' => $data->email === '' ? 0 : 1,
                     'remember_token' => null,

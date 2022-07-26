@@ -187,6 +187,15 @@ class UserController extends Controller
 
     public function authenticate(Request $request)
     {
+        //if user (mentor/editor/alumni) hasn't setup the password
+        //or never login before
+        //do this
+        $check = User::where('email', $request->email)->where('password', NULL)->first();
+        if ($check) {
+            return response()->json(['success' => true, 'message' => 'You need to set a password', 'data' => $check]);
+        }
+
+        // authenticate function below
         $credentials = $request->only('email', 'password');
 
         //Error messages

@@ -117,8 +117,8 @@ class UniShortlistedController extends Controller
     {
         $rules = [
             'student_id' => 'required|exists:students,id',
-            'univ_id.*' => 'required|unique:uni_shortlisteds,imported_id|exists:mysql_crm.tbl_univ,univ_id',
-            'major.*' => 'required|string'
+            'univ_id' => 'required|unique:uni_shortlisteds,imported_id|exists:mysql_crm.tbl_univ,univ_id',
+            'major' => 'required|string'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -128,19 +128,18 @@ class UniShortlistedController extends Controller
 
         DB::beginTransaction();
         try {
-            for ($i = 0; $i < count($request->univ_id); $i++) {
-                $university = University::where('univ_id', $request->univ_id[$i])->first();
-                $university_name = $university->univ_name;
+            $university = University::where('univ_id', $request->univ_id)->first();
+            $university_name = $university->univ_name;
 
-                $shortlisted = new UniShortlisted;
-                $shortlisted->user_id = $this->user_id;
-                $shortlisted->student_id = $request->student_id;
-                $shortlisted->imported_id = $request->univ_id[$i];
-                $shortlisted->uni_name = $university_name;
-                $shortlisted->uni_major = $request->major[$i];
-                $shortlisted->status = 0;
-                $shortlisted->save();
-            }
+            $shortlisted = new UniShortlisted;
+            $shortlisted->user_id = $this->user_id;
+            $shortlisted->student_id = $request->student_id;
+            $shortlisted->imported_id = $request->univ_id;
+            $shortlisted->uni_name = $university_name;
+            $shortlisted->uni_major = $request->major;
+            $shortlisted->status = 0;
+            $shortlisted->save();
+            
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();

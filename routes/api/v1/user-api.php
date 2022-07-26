@@ -30,6 +30,7 @@ use App\Http\Controllers\User\TodosController;
 use App\Http\Controllers\User\MeetingMinuteController;
 use App\Http\Controllers\User\ParticipantController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TagsController;
 use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
 use App\Http\Controllers\V2\StudentActivitiesController as V2StudentActivitiesController;
@@ -215,9 +216,19 @@ Route::middleware(['auth:api', 'scope:admin,mentor,editor', 'cors'])->group(func
 
     Route::prefix('create')->group(function() {
         Route::post('schedule', [UserScheduleController::class, 'store']);
+        Route::post('tag', [TagsController::class, 'store']);
+    });
+
+    Route::prefix('update')->group(function() {
+        Route::put('tag/{tag_id}', [TagsController::class, 'update']);
+    });
+
+    Route::prefix('list')->group(function() {
+        Route::get('tag', [TagsController::class, 'index']);
     });
 
     Route::prefix('delete')->group(function() {
         Route::delete('schedule/{schedule_id}', [UserScheduleController::class, 'delete']);
+        Route::delete('tag/{tag_id}', [TagsController::class, 'delete']);
     });
 });

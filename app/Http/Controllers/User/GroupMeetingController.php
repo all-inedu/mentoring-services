@@ -92,6 +92,7 @@ class GroupMeetingController extends Controller
             $query->where('status', 'in progress');
         })->where('status', 0)->recent($recent, $this->MENTOR_MEETING_VIEW_PER_PAGE)->makeHidden(['student_attendances', 'user_attendances']);
 
+
         foreach ($meetings as $meeting) {
             
             $meeting['attendance_info'] = array(
