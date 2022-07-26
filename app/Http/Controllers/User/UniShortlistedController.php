@@ -27,7 +27,7 @@ class UniShortlistedController extends Controller
     {
         $rules = [
             'uni_sh_id' => 'required|exists:uni_shortlisteds,id',
-            'status'   => 'nullable|string|in:waitlist,accept,apply,reject'
+            'status'   => 'nullable|string|in:shortlist,waitlist,accept,apply,reject'
         ];
 
         $custom_message = [
@@ -137,7 +137,7 @@ class UniShortlistedController extends Controller
             $shortlisted->imported_id = $request->univ_id;
             $shortlisted->uni_name = $university_name;
             $shortlisted->uni_major = $request->major;
-            $shortlisted->status = 0;
+            $shortlisted->status = 99;
             $shortlisted->save();
             
             DB::commit();
