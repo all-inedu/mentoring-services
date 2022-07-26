@@ -82,6 +82,8 @@ Route::prefix('v2')->group(__DIR__ . '/api/v2/user-api.php');
 // api route for global such as (mentee and user)
 Route::prefix('v1')->group(function(){
     Route::middleware(['auth:api,student-api', 'scope:student,admin,mentor,editor'])->group(function() {
+
+        Route::post('account/new-password', [UserController::class, 'store_new_password']);
         
         Route::get('{user}/schedule/{user_sch_id}', [UserScheduleController::class, 'find']); //user = mentor, alumni, editor
         Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);

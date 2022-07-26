@@ -18,6 +18,7 @@ use App\Http\Controllers\MailLogController;
 use App\Http\Controllers\UserAccessController;
 use App\Models\UserRoles;
 use App\Providers\RouteServiceProvider;
+use Illuminate\Support\Facades\Crypt;
 
 class UserController extends Controller
 {
@@ -192,7 +193,11 @@ class UserController extends Controller
         //do this
         $check = User::where('email', $request->email)->where('password', NULL)->first();
         if ($check) {
-            return response()->json(['success' => true, 'message' => 'You need to set a password', 'data' => $check]);
+            $token = Crypt::encrypt(array(
+                'user_id' => $check->id,
+                'email' => $check->email,
+            ));
+            return response()->json(['success' => true, 'message' => 'You need to set a password', 'token' => $token]);
         }
 
         // authenticate function below
@@ -262,7 +267,7 @@ class UserController extends Controller
             'success' => true,
             'message' => 'Login Successfully',
             'data' => array(
-                'student' => $currentUser,
+                'user' => $currentUser, //! info ke hafidz kalau disini berubah
                 'access_token' => $token
             )
         ]);
@@ -390,5 +395,40 @@ class UserController extends Controller
             'message' => 'Successfuly Registered'
         ], 200);
         
+    }
+
+    public function store_new_password(Request $request)
+    {
+        $data = Crypt::decrypt($request->token);
+        $user_id = $data['user_id'];
+        $email = $data['email'];
+
+        if (!$user = User::where('id', $user_id)->where('email', $email)->where('password', NULL)->first()) {
+            return response()->json(['success' => false, 'error' => 'Token is not valid']);
+        }
+
+        $rules = [
+            'token' => 'required',
+            'password' => 'required|string|min:6|confirmed',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 401);
+        }
+
+        DB::beginTransaction();
+        try {
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Store new password : ['.$email.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to store new password'], 400);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Password has been updated']);
     }
 }
