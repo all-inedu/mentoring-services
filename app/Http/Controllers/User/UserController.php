@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailLogController;
+use App\Http\Controllers\Student\AuthController;
 use App\Http\Controllers\UserAccessController;
 use App\Models\UserRoles;
 use App\Providers\RouteServiceProvider;
@@ -209,7 +210,7 @@ class UserController extends Controller
         ];
 
         $rules = [
-            'email' => 'required|email|exists:users',
+            'email' => 'required|email|exists:users,email',
             'password' => 'required|min:6',
         ];
 
@@ -398,8 +399,13 @@ class UserController extends Controller
         
     }
 
-    public function store_new_password(Request $request)
+    public function store_new_password($user_type, Request $request)
     {
+        if ($user_type == "student") {
+            $student_auth = new AuthController;
+            return $student_auth->store_new_password($request);
+        }
+
         $data = Crypt::decrypt($request->token);
         $user_id = $data['user_id'];
         $email = $data['email'];
@@ -431,5 +437,6 @@ class UserController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Password has been updated']);
+        
     }
 }

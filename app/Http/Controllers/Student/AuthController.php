@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Carbon;
 use App\Http\Controllers\MailLogController;
+use Illuminate\Support\Facades\Crypt;
 
 class AuthController extends Controller
 {
@@ -25,6 +26,41 @@ class AuthController extends Controller
     public function __construct()
     {
         $this->system_name = RouteServiceProvider::SYSTEM_NAME;
+    }
+
+    public function store_new_password($request)
+    {
+        $data = Crypt::decrypt($request->token);
+        $student_id = $data['student_id'];
+        $email = $data['email'];
+
+        if (!$student = Students::where('id', $student_id)->where('email', $email)->where('password', NULL)->first()) {
+            return response()->json(['success' => false, 'error' => 'Token is not valid']);
+        }
+
+        $rules = [
+            'token' => 'required',
+            'password' => 'required|string|min:6|confirmed',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 401);
+        }
+
+        DB::beginTransaction();
+        try {
+            $student->password = Hash::make($request->password);
+            $student->save();
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Store student new password : ['.$email.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to store new password'], 400);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Password has been updated']);
     }
 
     public function check()
@@ -53,6 +89,19 @@ class AuthController extends Controller
 
     public function authenticate(Request $request)
     {
+        //if student hasn't setup the password
+        //or never login before
+        //do this
+        $check = Students::where('email', $request->email)->where('password', NULL)->first();
+        if ($check) {
+            $token = Crypt::encrypt(array(
+                'student_id' => $check->id,
+                'email' => $check->email,
+            ));
+            return response()->json(['success' => true, 'code' => true, 'message' => 'You need to set a password', 'token' => $token]);
+        }
+
+        // authenticate function below
         $credentials = $request->only('email', 'password');
 
         //Error messages
@@ -92,6 +141,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
+            'code' => false,
             'message' => 'Login Successfully',
             'data' => array(
                 'student' => $currentStudent,
