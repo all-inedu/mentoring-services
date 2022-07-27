@@ -98,10 +98,14 @@ class UniShortlistedController extends Controller
         return response()->json(['success' => true, 'message' => 'The university has been changed to '.$message]);
     }
 
-    public function select($student_id)
+    public function select($student_id, $all = null)
     {
         if (!$uni_shortlisted = UniShortlisted::where('student_id', $student_id)->orderBy('imported_id', 'asc')->get()){
             return response()->json(['success' => false, 'error' => 'He/she doesn\'t have Uni Shortlisted']);
+        }
+
+        if ($all) {
+            return response()->json(['success' => true, 'data' => $uni_shortlisted]);
         }
 
         $data['shortlisted'] = $uni_shortlisted->where('status', 99)->unique('id')->values();
