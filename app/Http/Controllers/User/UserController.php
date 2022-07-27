@@ -197,7 +197,7 @@ class UserController extends Controller
                 'user_id' => $check->id,
                 'email' => $check->email,
             ));
-            return response()->json(['success' => true, 'message' => 'You need to set a password', 'token' => $token]);
+            return response()->json(['success' => true, 'code' => true, 'message' => 'You need to set a password', 'token' => $token]);
         }
 
         // authenticate function below
@@ -265,6 +265,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
+            'code' => false,
             'message' => 'Login Successfully',
             'data' => array(
                 'user' => $currentUser, //! info ke hafidz kalau disini berubah
