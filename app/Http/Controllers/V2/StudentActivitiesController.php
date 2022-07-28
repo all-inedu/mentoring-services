@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\HelperController;
 use App\Models\GroupMeeting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -312,6 +313,8 @@ class StudentActivitiesController extends Controller
         if ($programme == "webinar") {
             array_push($with,"programme_details", "watch_detail");
         }
+
+        $helper = new HelperController;
         
         $activities = StudentActivities::with($with)->whereHas('programmes', function($query) use ($programme) {
                 $query->where('prog_name', $programme);
@@ -356,8 +359,8 @@ class StudentActivitiesController extends Controller
             // })
             ->orderBy('call_status', 'desc')
             ->orderBy('call_date', 'desc');
-        })->recent($recent, $this->STUDENT_MEETING_VIEW_PER_PAGE);
+        })->get();
 
-        return response()->json(['success' => true, 'data' => $activities]);
+        return response()->json(['success' => true, 'data' => $helper->paginate($activities)->appends(array('student' => $student_id))]);
     }
 }

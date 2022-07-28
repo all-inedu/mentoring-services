@@ -2,7 +2,8 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
+// use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class MeetingTransactionTest extends TestCase
 {
@@ -18,7 +19,7 @@ class MeetingTransactionTest extends TestCase
             'password' => '12345678',
         ];
 
-        $this->json(env('APP_URL') . 'api/v1/auth/u/login', $data, ['Accept' => 'application/json'])
+        $this->post(env('APP_URL') . 'api/v1/auth/u/login', $data)
                 ->assertStatus(200)
                 ->assertJson($data);
     }
