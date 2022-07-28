@@ -106,9 +106,11 @@ class StudentController extends Controller
             $students = Students::whereHas('users', function($query) use ($user_id) {
                 $query->where('user_id', $user_id);
             })->when($is_searching, function ($query) use ($keyword) {
-                $query->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
+                $query->where(function($query1) use ($keyword){
+                    $query1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
                     orWhere('email', 'like', '%'.$keyword.'%')->
                     orWhere('school_name', 'like', '%'.$keyword.'%');
+                });
             })->orderBy('created_at', 'desc')->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
             
         } catch (Exception $e) {
