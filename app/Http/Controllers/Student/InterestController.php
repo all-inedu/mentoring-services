@@ -61,8 +61,8 @@ class InterestController extends Controller
 
         $rules = [
             'exists' => 'boolean',
-            'career_major_name' => 'required_if:exists,==,true|nullable|regex:/^[\pL\s\-]+$/u|unique:interests,career_major_name|exists:mysql_internship.tb_specialization,spec_name,'.$interest_id.',spec_status,1',
-            'career_major_other' => 'required_if:exists,==,false|nullable|regex:/^[\pL\s\-]+$/u|unique:interests,career_major_name,'.$interest_id
+            'career_major_name' => 'required_if:exists,==,true|nullable|unique:interests,career_major_name|exists:mysql_internship.tb_specialization,spec_name,'.$interest_id.',spec_status,1',
+            'career_major_other' => 'required_if:exists,==,false|nullable|unique:interests,career_major_name,'.$interest_id
         ];
 
         $custom_messages = [

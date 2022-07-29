@@ -23,7 +23,7 @@ class TodosController extends Controller
     public function __construct()
     {
         $this->user = Auth::guard('api')->check() ? Auth::guard('api')->user() : NULL;
-        $this->user_id = $this->user->id;
+        $this->user_id = $this->user ? $this->user->id : NULL;
     }
 
     public function delete($todos_id)

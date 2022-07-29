@@ -98,6 +98,10 @@ class AcademicController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        if ($request->max_score < $request->score) {
+            return response()->json(['success' => false, 'error' => 'Max score must be higher than the score']);
+        }
+
         DB::beginTransaction();
         try {
             $academic = new AcademicRecords;

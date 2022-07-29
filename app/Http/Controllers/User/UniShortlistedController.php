@@ -48,7 +48,7 @@ class UniShortlistedController extends Controller
         }
         
         // check if uni shortlisted id adalah uni yg dimiliki oleh student yg dihandle oleh mentor
-        if ($shortlist = UniShortlisted::find($request->uni_sh_id)->whereNotIn('student_id', $all_student_id)->first()) {
+        if (!$shortlist = UniShortlisted::find($request->uni_sh_id)->whereIn('student_id', $all_student_id)->first()) {
             return response()->json(['success' => false, 'error' => 'You don\'t have permission to change his/her status of uni shortlisted']);
         }
 
