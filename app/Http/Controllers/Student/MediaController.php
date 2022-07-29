@@ -154,7 +154,7 @@ class MediaController extends Controller
                 Rule::exists(Medias::class, 'id')->where(function ($query) {
                     $query->where('student_id', $this->student_id);
                 })],
-            'name' => 'required|regex:/^[A-Za-z0-9 ]+$/|max:255',
+            'name' => 'required|max:255',
             'uni_id' => ['nullable', Rule::exists(UniShortlisted::class, 'imported_id')->where(function ($query) {
                 $query->where('student_id', $this->student_id);
             })],
