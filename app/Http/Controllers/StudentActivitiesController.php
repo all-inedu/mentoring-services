@@ -480,22 +480,22 @@ class StudentActivitiesController extends Controller
 
             switch ($request->person) {
                 case "student":
-                    if ($status == "cancel") {
+                    // if ($status == "cancel") {
                         $person_info = [
                             'name' => $activities->users->first_name.' '.$activities->users->last_name,
                             'email' => $activities->users->email,
                         ];       
-                    }
+                    // }
                     $activities->std_act_status = $status;
                     break;
 
                 case "mentor":
-                    if ($status == "cancel") {
+                    // if ($status == "cancel") {
                         $person_info = [
                             'name' => $activities->students->first_name.' '.$activities->students->last_name,
                             'email' => $activities->students->email,
                         ];
-                    }
+                    // }
                     $activities->mt_confirm_status = $status;
                     break;
             }
