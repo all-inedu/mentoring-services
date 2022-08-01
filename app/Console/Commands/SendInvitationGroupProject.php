@@ -50,7 +50,7 @@ class SendInvitationGroupProject extends Command
                 'subject' => 'You\'ve been invited to join Group Project',
             ];
 
-            JobsSendInvitationGroupProject::dispatch($details)->delay(now()->addSeconds(2));
+            JobsSendInvitationGroupProject::dispatch($details)->delay(now()->addSeconds(60));
 
             Log::channel('groupinvitationlog')->info("Group invitation has been sent");
         } catch (Exception $e) {

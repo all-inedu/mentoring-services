@@ -45,9 +45,15 @@ class ParticipantController extends Controller
 
                 //* check if student has already joined into another group project
                 if ($detail = $group->group_participant->where('id', $student->id)->first()) {
-                    //* input the student that already joined into another group projects to array failed participant. Needed for show on error message
-                    $error_joined .= ($i > 0 ? ", " : "") . $detail->first_name.' '.$detail->last_name;
-                    continue;
+                    if (($detail->pivot->status == 0) || ($detail->pivot->status == 1)) {
+                        //* input the student that already joined into another group projects to array failed participant. Needed for show on error message
+                        $error_joined .= ($i > 0 ? ", " : "") . $detail->first_name.' '.$detail->last_name;
+                        continue;
+                    }
+                    
+                    // when pivot status = 2
+                    // delete the participant
+                    $group->group_participant()->detach($student->id);
                 }
 
                 $participant = new Participant;
