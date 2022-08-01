@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 
 class TodosController extends Controller
 {
@@ -49,7 +50,9 @@ class TodosController extends Controller
         if (!$student = Students::find($student_id))
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the student/mentee']);
 
-        $data['waiting'] = $student->todos()->where('plan_to_do_lists.status', 0)->orWhere('plan_to_do_lists.status', 2)->get();
+        $data['waiting'] = $student->todos()->where(function(Builder $query) {
+            $query->where('plan_to_do_lists.status', 0)->orWhere('plan_to_do_lists.status', 2);
+        })->get();
         $data['confirmation_need'] = $student->todos()->where('plan_to_do_lists.status', 1)->get();
         $data['completed'] = $student->todos()->where('plan_to_do_lists.status', 3)->get();
 
