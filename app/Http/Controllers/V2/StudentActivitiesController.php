@@ -241,9 +241,10 @@ class StudentActivitiesController extends Controller
         //! tambahin status tidak include yg cancel
         // group meeting
         // new request
+        // group_m upcoming tidak nge select yang status membernya decline
         $data['group_m']['upcoming'] = GroupMeeting::whereHas('group_project', function($query) {
             $query->whereHas('group_participant', function($query1) {
-                $query1->where('student_id', $this->student_id);
+                $query1->where('participants.status', '!=', 2)->where('student_id', $this->student_id);
             });
         })->where('group_meetings.status', 0)->count();
         $data['group_m']['history'] = GroupMeeting::whereHas('group_project', function($query) {
