@@ -264,10 +264,14 @@ class UniversityController extends Controller
             'name' => 'required|max:255',
             'file_category' => 'required|in:essay,letter_of_recommendation,transcript',
             // 'subject' => 'required|string|max:255',
-            'uploaded_file' => 'required|mimes:doc,docx,pdf,jpg,jpeg,png|max:2048'
+            'uploaded_file' => 'required|mimes:doc,docx,pdf,jpg,jpeg,png,webp|max:2048'
         ];
 
-        $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules);
+        $custom_msg = [
+            'uploaded_file.max' => 'The file need to be less equal than 2Mb'
+        ];
+
+        $validator = Validator::make($request->all() + array('student_id' => $this->student_id), $rules, $custom_msg);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
