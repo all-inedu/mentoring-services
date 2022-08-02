@@ -131,7 +131,7 @@ class TodosController extends Controller
 
     public function index()
     {
-        $student = Students::select('id', 'first_name', 'last_name')->withCount([
+        $students = Students::select('id', 'first_name', 'last_name')->with('users:first_name,last_name')->withCount([
             'todos as waiting' => function ($query) {
                 $query->where(function($query2) {
                     $query2->where('plan_to_do_lists.status', 0)->orWhere('plan_to_do_lists.status', 2);
@@ -144,6 +144,27 @@ class TodosController extends Controller
                 $query->where('plan_to_do_lists.status', 3);
             }
         ])->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')->get();
-        return response()->json(['success' => true, 'data' => $student]);
+            
+        foreach ($students as $student) {
+            $student_collection = array(
+                'id' => $student->id,
+                'first_name' => $student->first_name,
+                'last_name' => $student->last_name,
+                'waiting' => $student->waiting,
+                'need_confirmation' => $student->need_confirmation,
+                'finished' => $student->finished
+            );
+
+            for ($i = 0; $i < count($student->users); $i++) {
+                $mentor_collection = array(
+                    'mentor_name' => $student->users[$i]->first_name.' '.$student->users[$i]->last_name,
+                );
+
+                $collection[] = collect($student_collection)->merge($mentor_collection);
+                
+            }            
+        }
+
+        return response()->json(['success' => true, 'data' => $collection]);
     }
 }
