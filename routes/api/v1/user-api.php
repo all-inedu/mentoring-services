@@ -30,6 +30,7 @@ use App\Http\Controllers\User\TodosController;
 use App\Http\Controllers\User\MeetingMinuteController;
 use App\Http\Controllers\User\ParticipantController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GroupProjectController as AdminGroupProjectController;
 use App\Http\Controllers\TagsController;
 use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
@@ -88,6 +89,7 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         Route::get('student/files', [MediaController::class, 'index']);
 
         Route::get('todos', [TodosController::class, 'index']);
+        Route::get('group-project', [AdminGroupProjectController::class, 'index']);
     });
 
     Route::prefix('select')->group(function() {
