@@ -85,8 +85,9 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
         Route::get('transaction/{status}/{recent?}', [TransactionController::class, 'index']);
         Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
-
         Route::get('student/files', [MediaController::class, 'index']);
+
+        Route::get('todos', [TodosController::class, 'index']);
     });
 
     Route::prefix('select')->group(function() {

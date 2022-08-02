@@ -128,4 +128,22 @@ class TodosController extends Controller
 
         return response()->json(['success' => true, 'message' => 'New todos for '.$student->first_name.' '.$student->last_name.' has been added']);
     }
+
+    public function index()
+    {
+        $student = Students::select('id', 'first_name', 'last_name')->withCount([
+            'todos as waiting' => function ($query) {
+                $query->where(function($query2) {
+                    $query2->where('plan_to_do_lists.status', 0)->orWhere('plan_to_do_lists.status', 2);
+                });
+            }, 
+            'todos as need_confirmation' => function ($query) {
+                $query->where('plan_to_do_lists.status', 1);
+            },
+            'todos as finished' => function ($query) {
+                $query->where('plan_to_do_lists.status', 3);
+            }
+        ])->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')->get();
+        return response()->json(['success' => true, 'data' => $student]);
+    }
 }

@@ -162,4 +162,9 @@ class Students extends Authenticatable
     {
         return $this->belongsToMany(GroupMeeting::class, 'student_attendances', 'student_id', 'group_meet_id');
     }
+
+    public function scopeWithAndWhereHas($query, $relation, $constraint){
+        return $query->whereHas($relation, $constraint)
+                     ->with([$relation => $constraint]);
+    }
 }

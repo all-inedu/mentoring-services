@@ -484,7 +484,7 @@ class StudentActivitiesController extends Controller
                         $person_info = [
                             'name' => $activities->users->first_name.' '.$activities->users->last_name,
                             'email' => $activities->users->email,
-                        ];       
+                        ];
                     // }
                     $activities->std_act_status = $status;
                     break;
