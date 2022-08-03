@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\Students;
 
 class ProgrammeDetailController extends Controller
 {
@@ -191,7 +192,7 @@ class ProgrammeDetailController extends Controller
             $prog_details->save();
 
             $data['prog_detail'] = $prog_details;
-
+            
         } catch (Exception $e) {
 
             DB::rollBack();
@@ -221,5 +222,22 @@ class ProgrammeDetailController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to delete the programme detail. Please try again.'], 400);
         }
         return response()->json(['success' => true, 'message' => 'You\'ve successfully deleted programme detail']);
+    }
+
+    public function viewer($webinar_id)
+    {
+        $viewer = Students::select(['id', 'first_name', 'last_name'])->withAndWhereHas('student_activities', function($query) use ($webinar_id) {
+            return $query->where('prog_id', 3)->where('prog_dtl_id', $webinar_id)->select(['student_id', 'id', 'created_at']);
+        })->get();
+
+        foreach ($viewer as $activities) {
+            $activities['watch_date'] = $activities->student_activities[0]->created_at;
+        }
+
+        $viewer->transform(function ($item) {
+            return $item->only(['id', 'first_name', 'last_name', 'watch_date']);
+        });
+
+        return response()->json(['success' => true, 'data' => $viewer]);
     }
 }

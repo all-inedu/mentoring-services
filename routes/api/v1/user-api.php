@@ -31,6 +31,7 @@ use App\Http\Controllers\User\MeetingMinuteController;
 use App\Http\Controllers\User\ParticipantController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GroupProjectController as AdminGroupProjectController;
+use App\Http\Controllers\ProgrammeDetailController as AdminProgrammeDetailController;
 use App\Http\Controllers\TagsController;
 use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
@@ -64,6 +65,7 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         Route::get('education/{edu_id}', [EducationController::class, 'find']);
         Route::get('user/{role_name}/{id?}', [UserController::class, 'find']); //find user by id & keyword
         Route::get('student', [StudentController::class, 'find']);
+        Route::get('view/webinar/{webinar_id}', [AdminProgrammeDetailController::class, 'viewer']);
     });
 
     Route::prefix('switch')->group(function() {

@@ -10,6 +10,7 @@ class ProgrammeDetails extends Model
 {
     use HasFactory;
 
+    protected $table = 'programme_details';
     /**
      * The attributes that are mass assignable.
      *

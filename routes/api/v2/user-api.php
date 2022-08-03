@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\V2\ProgrammeDetailController as V2ProgrammeDetailController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\V2\DashboardController as V2DashboardController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
@@ -18,6 +19,7 @@ Route::middleware(['auth:api', 'scopes:admin'])->group(function() {
 
     Route::prefix('update')->group(function() {
         Route::put('programme/{prog_id}', [V2ProgrammeController::class, 'update']);
+        Route::put('programme/detail/{prog_dtl_id}', [V2ProgrammeDetailController::class, 'update']);
     });
 });
 

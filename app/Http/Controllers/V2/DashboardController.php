@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
 use App\Models\GroupMeeting;
+use App\Models\StudentActivities;
 use Illuminate\Http\Request;
 use App\Models\Students;
 use App\Models\User;
@@ -27,6 +28,17 @@ class DashboardController extends Controller
                 $data['editor'] = User::whereHas('roles', function($query) {
                     $query->where('role_name', 'editor');
                 })->count();
+
+                // meeting overview
+                $data['meeting']['upcoming'] = StudentActivities::where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')->count();
+                $data['meeting']['canceled'] = StudentActivities::where('call_status', 'canceled')->count();
+                $data['meeting']['rejected'] = StudentActivities::where('call_status', 'rejected')->count();
+                $data['meeting']['completed'] = StudentActivities::where('call_status', 'finished')->count();
+
+                // group meeting overview
+                $data['group']['ongoing'] = GroupMeeting::where('status', 0)->count();
+                $data['group']['completed'] = GroupMeeting::where('status', 1)->count();
+                
                 break;
 
             case "mentor":
