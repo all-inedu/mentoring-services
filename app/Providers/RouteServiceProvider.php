@@ -36,6 +36,7 @@ class RouteServiceProvider extends ServiceProvider
     public const ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = 10;
     public const ADMIN_LIST_PROMOTION_VIEW_PER_PAGE = 10;
     public const ADMIN_LIST_TRANSACTION_VIEW_PER_PAGE = 10;
+    public const ADMIN_LIST_GROUP_PROJECT_ALL_PER_PAGE = 10;
     
     // public const USER_PUBLIC_ASSETS_PATH = 'storage/media';
     public const USER_PUBLIC_ASSETS_PAYMENT_PROOF_PATH = 'public/media/payment-proof';
