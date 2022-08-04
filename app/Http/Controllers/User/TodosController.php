@@ -184,7 +184,11 @@ class TodosController extends Controller
         }
 
         $helper = new HelperController;
+        $response = $helper->paginate($collection);
+        if ($keyword != NULL) {
+            $response = $helper->paginate($collection)->appends(array('keyword' => $keyword));
+        }
 
-        return response()->json(['success' => true, 'data' => $helper->paginate($collection)]);
+        return response()->json(['success' => true, 'data' => $response]);
     }
 }
