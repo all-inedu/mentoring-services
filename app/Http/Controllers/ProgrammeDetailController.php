@@ -92,7 +92,7 @@ class ProgrammeDetailController extends Controller
             'dtl_desc'       => 'required',
             'dtl_price'      => 'required|integer|min:0',
             'dtl_video_link' => 'nullable',
-            'dtl_date'       => 'required|date|after:today|date_format:Y-m-d H:i',
+            'dtl_date'       => 'nullable|date|after:today|date_format:Y-m-d H:i',
             'status'         => 'required|in:active,inactive'
         ];
 
