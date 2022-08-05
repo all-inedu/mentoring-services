@@ -91,7 +91,7 @@ class ProgrammeDetailController extends Controller
             'dtl_name'       => 'required|max:255',
             'dtl_desc'       => 'required',
             'dtl_price'      => 'required|integer|min:0',
-            'dtl_video_link' => 'nullable',
+            'dtl_video_link' => 'nullable|required_if:prog_id,3', //prog_id 3 is webinar
             'dtl_date'       => 'nullable|date|after:today|date_format:Y-m-d H:i',
             'status'         => 'required|in:active,inactive'
         ];
@@ -157,7 +157,8 @@ class ProgrammeDetailController extends Controller
             'dtl_name'       => 'required|max:255',
             'dtl_desc'       => 'required',
             'dtl_price'      => 'required|integer|min:0',
-            'dtl_video_link' => 'nullable',
+            'dtl_video_link' => 'nullable|required_if:prog_id,3', //prog_id 3 is webinar
+            'dtl_date'       => 'nullable|date|after:today|date_format:Y-m-d H:i',
             'status'         => 'required|in:active,inactive'
         ];
 
