@@ -63,7 +63,9 @@ class MailLogController extends Controller
                 });
             });
         })->orderBy('date_sent', 'desc')->paginate(10);
-        return response()->json(['succes' => true, 'data' => $mailLog]);
+
+        $response = $use_keyword ? $mailLog->appends(array('keyword' => $keyword)) : $mailLog;
+        return response()->json(['succes' => true, 'data' => $response]);
     }
 
     public function saveLogMail($log)

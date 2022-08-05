@@ -106,7 +106,7 @@ class ProgrammeController extends Controller
 
         switch ($type) {
             case null:
-                $programme = Programmes::orderBy('created_at', 'desc')->get($this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+                $programme = Programmes::orderBy('created_at', 'desc')->get();
                 break;
             case ("webinar" OR "event"):
                 $programme = ProgrammeDetails::withCount('student_activities')->whereHas('programmes', function($query) use ($type) {
@@ -121,7 +121,8 @@ class ProgrammeController extends Controller
         }
 
         $helper = new HelperController;
-        return response()->json(['succes' => true, 'data' => $helper->paginate($programme)]);
+        $response = $use_keyword ? $helper->paginate($programme, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE)->appends(array('keyword' => $keyword)) : $helper->paginate($programme);
+        return response()->json(['succes' => true, 'data' => $response]);
     }
 
     public function paginate($items, $perPage = 10, $page = null, $options = [])

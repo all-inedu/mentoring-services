@@ -5,12 +5,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\V2\DashboardController as V2DashboardController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
 use App\Http\Controllers\V2\StudentActivitiesController as V2StudentActivitiesController;
+use App\Http\Controllers\V2\StudentController as V2StudentController;
 
 //! Admin Scopes v2
 Route::middleware(['auth:api', 'scopes:admin'])->group(function() {
 
     Route::prefix('list')->group(function() {
         Route::get('programme/{type}', [V2ProgrammeController::class, 'index']);
+        Route::get('students', [V2StudentController::class, 'index']);
     });
 
     Route::prefix('create')->group(function() {

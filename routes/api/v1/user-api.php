@@ -111,7 +111,7 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         Route::post('programme/module', [ProgrammeModuleController::class, 'store']);
         // Route::post('programme', [ProgrammeController::class, 'store']); //? di hide karena ada version 2 yang include di file ini (do not delete)
         Route::post('programme/schedule', [ProgrammeScheduleController::class, 'store']);
-        Route::post('programme/detail', [ProgrammeDetailController::class, 'store']);
+        Route::post('programme/detail', [AdminProgrammeDetailController::class, 'store']);
         Route::post('speaker', [SpeakerController::class, 'store']);
         Route::post('partner', [PartnershipController::class, 'store']);
         Route::post('promotion', [PromotionController::class, 'store']);
@@ -138,7 +138,7 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
     Route::prefix('delete')->group(function() {
         Route::delete('programme/module/{prog_mod_id}', [ProgrammeModuleController::class, 'delete']);
         Route::delete('programme/{prog_id}', [ProgrammeController::class, 'delete']);
-        Route::delete('programme/detail/{prog_dtl_id}', [ProgrammeDetailController::class, 'delete']);
+        Route::delete('programme/detail/{prog_dtl_id}', [AdminProgrammeDetailController::class, 'delete']);
         Route::delete('programme/schedule/{prog_sch_id}', [ProgrammeScheduleController::class, 'delete']);
         Route::get('promotion/{promo_id}', [PromotionController::class, 'delete']);
         Route::delete('role/assignment/{user_role_id}', [UserRolesController::class, 'delete']);

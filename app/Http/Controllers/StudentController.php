@@ -111,7 +111,7 @@ class StudentController extends Controller
                     orWhere('email', 'like', '%'.$keyword.'%')->
                     orWhere('school_name', 'like', '%'.$keyword.'%');
                 });
-            })->orderBy('created_at', 'desc')->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
+            })->orderBy('created_at', 'desc')->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE, $keyword);
             
         } catch (Exception $e) {
             Log::error('Select Student Use User Id  Issue : ['.$user_id.'] '.$e->getMessage());
@@ -128,11 +128,13 @@ class StudentController extends Controller
             $students = Students::where(function($query) use ($keyword) {
                 $query->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->orWhere('email', 'like', '%'.$keyword.'%');
             })->paginate($this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
+
+            $response = $keyword != NULL ? $students->appends(array('keyword' => $keyword)) : $students;
         } catch (Exception $e) {
             Log::error('Find Student by Keyword Issue : ['.$keyword.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to find student by Keyword. Please try again.']);
         }
-        return response()->json(['success' => true, 'data' => $students]);
+        return response()->json(['success' => true, 'data' => $response]);
     }
     
     public function index($student_id = NULL, Request $request)
