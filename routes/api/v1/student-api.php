@@ -33,7 +33,7 @@ Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
 Route::get('test/sync', [ClientController::class, 'import_student']);
 Route::get('payment-checker', [TransactionController::class, 'payment_checker']);
 Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
-Route::get('student/group/project/meeting/{encrypted_data}', [GroupController::class, 'attended'])->name('attend');
+Route::get('student/group/project/meeting/{person}/{encrypted_data}', [GroupController::class, 'attended'])->name('attend');
 
 // authentication register & log-in
 Route::prefix('auth/s')->group(function() {
@@ -45,6 +45,7 @@ Route::get('verification/{verification_code}', [StudentVerificationController::c
 Route::post('send/verification-code', [StudentVerificationController::class, 'resendVerificationCode'])->middleware(['auth:student-api']);
 Route::post('reset-password', [StudentForgotPasswordController::class, 'sendResetPasswordLink']);
 Route::post('reset-password/{token}', [StudentForgotPasswordController::class, 'ResetPassword']);
+Route::post('group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
 
 Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scopes:student'] ], function(){
 
@@ -90,7 +91,7 @@ Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scop
     Route::put('academic/{aca_id}', [AcademicController::class, 'update']);
     Route::put('group/project/{group_id}', [GroupController::class, 'update']);
     Route::put('group/project/participant/{group_id}', [GroupController::class, 'update_participant_role_contribution']);
-    Route::post('group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
+    // Route::post('group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
     Route::put('document/requirement/{med_id}', [UniversityController::class, 'update_document_requirement']);
     Route::post('media/pair', [MediaController::class, 'pair']);
     Route::post('media/update', [MediaController::class, 'update']);

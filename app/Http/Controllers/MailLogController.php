@@ -16,10 +16,12 @@ class MailLogController extends Controller
 {
 
     protected $tech_mail;
+    protected $day_range_error_report;
 
     public function __construct()
     {
         $this->tech_mail = RouteServiceProvider::TECH_MAIL_1;
+        $this->day_range_error_report = RouteServiceProvider::DAY_RANGE_ERROR_REPORT;
     }
 
     public function index($param, Request $request) //error & success
@@ -83,6 +85,8 @@ class MailLogController extends Controller
     //** function to send email to IT email if there are errors when sending mail */
     public function mail_to_tech()
     {
+        $today = date('Y-m-d');
+        $next_day = date('Y-m-d', strtotime("+ ".$this->day_range_error_report." days"));
 
         $mailLog = MailLog::where('error_status', NULL)->orderBy('date_sent', 'desc')->get();
 

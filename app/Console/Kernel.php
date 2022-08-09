@@ -46,7 +46,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('automated:cancel_personal_meeting')->daily()->timezone('Asia/Jakarta');
         $schedule->command('automated:finish_personal_meeting')->daily()->timezone('Asia/Jakarta');
         $schedule->command('automated:finish_group_meeting')->daily()->timezone('Asia/Jakarta');
-        $schedule->command('send_invitation_group_project')->cron('* * * * *');
+        $schedule->command('automated:send_invitation_group_project')->cron('* * * * *');
     }
 
     /**

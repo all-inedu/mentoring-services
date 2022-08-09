@@ -174,7 +174,9 @@ class UserController extends Controller
                 'subject'   => $subject,
                 'message'   => NULL,
                 'date_sent' => Carbon::now(),
-                'status'    => count(Mail::failures() == 0) ? "delivered" : "not delivered"
+                'status'    => count(Mail::failures() == 0) ? "delivered" : "not delivered",
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             );
     
             $save_log = new MailLogController;
@@ -377,7 +379,9 @@ class UserController extends Controller
                 'subject'   => $subject,
                 'message'   => NULL,
                 'date_sent' => Carbon::now(),
-                'status'    => count(Mail::failures()) == 0 ? "delivered" : "not delivered"
+                'status'    => count(Mail::failures()) == 0 ? "delivered" : "not delivered",
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             );
     
             $save_log = new MailLogController;

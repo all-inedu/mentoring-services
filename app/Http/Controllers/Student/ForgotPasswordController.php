@@ -108,7 +108,9 @@ class ForgotPasswordController extends Controller
                 'subject'   => $subject,
                 'message'   => NULL,
                 'date_sent' => Carbon::now(),
-                'status'    => Mail::failures() ? "delivered" : "not delivered"
+                'status'    => Mail::failures() ? "delivered" : "not delivered",
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
             );
     
             $save_log = new MailLogController;

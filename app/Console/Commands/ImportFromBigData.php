@@ -44,17 +44,17 @@ class ImportFromBigData extends Command
         DB::beginTransaction();
         try {
             //* import mentor
-            $sync = new ClientController;
-            $import_mentor = $sync->synchronize('mentor', 'import', true);
+            $client = new ClientController;
+            $import_mentor = $client->synchronize('mentor', 'import', true);
 
             //* import editor
-            $import_editor = $sync->synchronize('editor', 'import', true);
+            $import_editor = $client->synchronize('editor', 'import', true);
 
             //* import alumni
-            $import_alumni = $sync->synchronize('alumni', 'import', true);
+            $import_alumni = $client->synchronize('alumni', 'import', true);
 
             //* import student
-            $import_student = $sync->synchronize('student', 'import', true);
+            $import_student = $client->synchronize('student', 'import', true);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();

@@ -165,6 +165,10 @@ class GroupController extends Controller
             // select all of mentor that handle this student 
             if ($student = Students::with('users:id')->where('id', $this->student_id)->first()) {
                 $student_mentor = $student->users;
+                if (count($student_mentor) == 0) {
+                    throw new Exception("There are no mentor that handle student : ".$student->first_name.' '.$student->last_name);
+                }
+                
                 foreach ($student_mentor as $mentor_detail) {
                     $data[] = array(
                         'group_id' => $group_projects->id,
@@ -361,6 +365,7 @@ class GroupController extends Controller
     public function confirmation_invitee ($status = NULL, Request $request)
     {
         if ($status != NULL) {
+            $from_mail = false;
             // when confirmation from dashboard
             $rules = [
                 'group_id' => 'required|exists:group_projects,id',
@@ -376,6 +381,7 @@ class GroupController extends Controller
             $participant = Participant::where('group_id', $request->group_id)->where('student_id', $this->student_id)->first();
             $invitee_id = $participant->id;
         } else {
+            $from_mail = true;
             // when confirmation from email
             $rules = [
                 'key' => 'required|exists:participants,id',
@@ -411,7 +417,8 @@ class GroupController extends Controller
                 break;
         }
 
-        return response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
+        $response = $from_mail ? $message : response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
+        return $response;
     }
 
     public function update_participant_role_contribution ($group_id, Request $request)

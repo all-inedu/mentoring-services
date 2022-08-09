@@ -60,7 +60,9 @@ class FinishPersonalMeeting extends Command
             Log::channel('finish_meeting')->error('Finish Personal Meeting Issue : '.$e->getMessage());
         }
 
-        Log::channel('finish_meeting')->info('There are '.count($meeting).' personal meeting finished');
+        if (count($meeting) > 0)
+            Log::channel('finish_meeting')->info('There are '.count($meeting).' personal meeting finished');
+            
         return count($meeting) > 0 ? 1 : 0;
     }
 }

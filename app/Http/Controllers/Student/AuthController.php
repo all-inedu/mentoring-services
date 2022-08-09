@@ -231,7 +231,9 @@ class AuthController extends Controller
             'subject'   => $subject,
             'message'   => NULL,
             'date_sent' => Carbon::now(),
-            'status'    => 'not delivered' /*Mail::failures() ? "delivered" : "not delivered"*/
+            'status'    => 'not delivered', /*Mail::failures() ? "delivered" : "not delivered"*/
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
         );
 
         $mail_log = new MailLogController;
@@ -251,7 +253,6 @@ class AuthController extends Controller
 
         } catch (Exception $e) {
             $mail_log->record_error_message($email, $e->getMessage());
-            // $mail_log->mail_to_tech($subject, $email, $e->getMessage());
         }
 
         if ($is_error === true) {

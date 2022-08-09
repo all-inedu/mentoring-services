@@ -191,10 +191,11 @@
                     </tr>
                     <tr align="center">
                         <td bgcolor="#FFFFFF" style="padding: 10px 10px 30px 10px;">
-                            <form action="{{ route('invitee-confirmation') }}" method="POST">
+                            <form action="{{ route('invitee-confirmation') }}" method="POST" target="_blank">
+                                @csrf
                                 <input type="hidden" name="key" value="{{ $group_info['student_detail']['participant_id'] }}">
-                                <button type="button" name="action" value="accept">Accept</button>
-                                <button type="button" name="action" value="decline">Decline</button>
+                                <button type="submit" name="action" value="accept">Accept</button>
+                                <button type="submit" name="action" value="decline">Decline</button>
                             </form>
                         </td>
                     </tr>

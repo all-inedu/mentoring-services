@@ -10,6 +10,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Carbon;
+use App\Http\Controllers\MailLogController;
 
 class SendAnnouncementCancelGroupMeeting implements ShouldQueue
 {
@@ -47,10 +49,27 @@ class SendAnnouncementCancelGroupMeeting implements ShouldQueue
                 }); 
             
             if (count(Mail::failures()) > 0) { 
+                // save to log mail admin
+                // save only if failure to sent
+                $log = array(
+                    'sender'    => 'system',
+                    'recipient' => $email,
+                    'subject'   => 'Sending reminder to join group meeting',
+                    'message'   => json_encode($meeting_detail),
+                    'date_sent' => Carbon::now(),
+                    'status'    => "not delivered",
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                );
+                $save_log = new MailLogController;
+                $save_log->saveLogMail($log);
+
                 foreach (Mail::failures() as $email_address) {
                     Log::channel('group_meeting_reminder_log')->error("Sending reminder mail failures to ". $email_address);
                 }
             }
         }
+
+        Log::channel('group_meeting_reminder_log')->info('Sending announcement that there is group meeting were canceled');
     }
 }

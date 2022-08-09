@@ -1,45 +1,49 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Console\Commands;
 
-use App\Models\GroupMeeting;
-use App\Models\GroupProject;
-use App\Models\Participant;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Console\Command;
 use Exception;
 use App\Models\StudentAttendances;
-use App\Models\UserAttendances;
-use Illuminate\Support\Facades\DB;
+use App\Models\GroupProject;
+use App\Models\GroupMeeting;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Carbon;
+use App\Models\UserAttendances;
 use App\Http\Controllers\MailLogController;
 
-class ReminderNextGroupMeeting implements ShouldQueue
+class TestReminderNextGroupMeeting extends Command
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    public $timeout = 7200; // 2 hours
     /**
-     * Create a new job instance.
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'test:reminder_group_meeting';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Command description';
+
+    /**
+     * Create a new command instance.
      *
      * @return void
      */
     public function __construct()
     {
-        
+        parent::__construct();
     }
 
     /**
-     * Execute the job.
+     * Execute the console command.
      *
-     * @return void
+     * @return int
      */
     public function handle()
     {
@@ -50,9 +54,8 @@ class ReminderNextGroupMeeting implements ShouldQueue
 
             $group_info = GroupProject::find($group_id);
 
-            $participants = $meeting_detail->student_attendances->where('mail_sent', 0);
-            echo json_encode($participants);exit;
-            $mentors = $meeting_detail->user_attendances;
+            $participants = $meeting_detail->student_attendances()->where('mail_sent', 0)->where('attend_status', 0)->get();
+            $mentors = $meeting_detail->user_attendances()->where('mail_sent', 0)->where('attend_status', 0)->get();
 
             //*email to participant
             foreach ($participants as $k => $v) {
@@ -83,7 +86,7 @@ class ReminderNextGroupMeeting implements ShouldQueue
                     $log = array(
                         'sender'    => 'system',
                         'recipient' => $email,
-                        'subject'   => 'Sending reminder to join group meeting',
+                        'subject'   => 'Sending reminder to join group meeting to Student',
                         'message'   => json_encode($meeting_detail),
                         'date_sent' => Carbon::now(),
                         'status'    => "not delivered",
@@ -111,7 +114,7 @@ class ReminderNextGroupMeeting implements ShouldQueue
                     // DB::rollBack();
                     Log::channel('group_meeting_reminder_log')->error('Update Student Attendances Mail Sent Issue : [ Attend_id '.$v->pivot->id.' ] '.$e->getMessage());
                 }
-            }exit;
+            }
 
             //* email to mentor
             foreach ($mentors as $k => $v) {
@@ -140,7 +143,7 @@ class ReminderNextGroupMeeting implements ShouldQueue
                     $log = array(
                         'sender'    => 'system',
                         'recipient' => $email,
-                        'subject'   => 'Sending reminder to join group meeting',
+                        'subject'   => 'Sending reminder to join group meeting to Mentor',
                         'message'   => json_encode($meeting_detail),
                         'date_sent' => Carbon::now(),
                         'status'    => "not delivered",
@@ -166,13 +169,10 @@ class ReminderNextGroupMeeting implements ShouldQueue
                     // DB::commit();
                 } catch (Exception $e) {
                     // DB::rollBack();
-                    Log::channel('group_meeting_reminder_log')->error('Update Student Attendances Mail Sent Issue : [ Attend_id '.$v->pivot->id.' ] '.$e->getMessage());
+                    Log::channel('group_meeting_reminder_log')->error('Update User Attendances Mail Sent Issue : [ Attend_id '.$v->pivot->id.' ] '.$e->getMessage());
                 }
             }
-            Log::channel('group_meeting_reminder_log')->info('Reminder for scheduled group meeting has been sent to students and mentors');
-
-            $meeting_detail->mail_sent = 1;
-            $meeting_detail->save();
         }
+        return 1;
     }
 }
