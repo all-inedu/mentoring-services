@@ -45,7 +45,7 @@ Route::get('verification/{verification_code}', [StudentVerificationController::c
 Route::post('send/verification-code', [StudentVerificationController::class, 'resendVerificationCode'])->middleware(['auth:student-api']);
 Route::post('reset-password', [StudentForgotPasswordController::class, 'sendResetPasswordLink']);
 Route::post('reset-password/{token}', [StudentForgotPasswordController::class, 'ResetPassword']);
-Route::post('group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
+Route::post('student/group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
 
 Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scopes:student'] ], function(){
 
