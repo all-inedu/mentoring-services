@@ -95,7 +95,7 @@ class TodosController extends Controller
             'student_id' => 'required|exists:students,id',
             'task_name' => 'required',
             'description' => 'required',
-            'due_date' => 'required|date',
+            'due_date' => ['required', 'date', 'after_or_equal:'.date('Y-m-d')],
         ];
 
         $validator = Validator::make($request->all(), $rules);

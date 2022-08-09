@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UniShortlistedController extends Controller
 {
@@ -121,7 +122,7 @@ class UniShortlistedController extends Controller
     {
         $rules = [
             'student_id' => 'required|exists:students,id',
-            'univ_id' => 'required|unique:uni_shortlisteds,imported_id|exists:mysql_crm.tbl_univ,univ_id',
+            'univ_id' => ['required', 'exists:mysql_crm.tbl_univ,univ_id', Rule::exists(UniShortlisted::class, 'imported_id')->where('uni_major', $request->major) ],
             'major' => 'required|string'
         ];
 
