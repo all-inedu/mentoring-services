@@ -70,7 +70,7 @@ class TestReminderNextGroupMeeting extends Command
                 $name = $v->first_name.' '.$v->last_name;
                 $subject = "You've a new group meeting";
 
-                Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'group_info' => $group_info, 'meeting_detail' => $meeting_detail, 'token' => $token],
+                Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'person' => 'student', 'group_info' => $group_info, 'meeting_detail' => $meeting_detail, 'token' => $token],
                     function($mail) use ($email, $name, $subject) {
                         $mail->from(getenv('FROM_EMAIL_ADDRESS'), "no-reply@all-inedu.com");
                         $mail->to($email, $name);
@@ -129,7 +129,7 @@ class TestReminderNextGroupMeeting extends Command
                 $name = $v->first_name.' '.$v->last_name;
                 $subject = "Your student set a new group meeting";
 
-                Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'group_info' => $group_info, 'meeting_detail' => $meeting_detail, 'token' => $token],
+                Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'person' => 'mentor', 'group_info' => $group_info, 'meeting_detail' => $meeting_detail, 'token' => $token],
                     function($mail) use ($email, $name, $subject) {
                         $mail->from(getenv('FROM_EMAIL_ADDRESS'), "no-reply@all-inedu.com");
                         $mail->to($email, $name);
