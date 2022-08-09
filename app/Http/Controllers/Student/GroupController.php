@@ -468,7 +468,7 @@ class GroupController extends Controller
             'group_id' => ['required', Rule::exists('group_projects', 'id')->where(function($query) {
                 $query->where('student_id', $this->student_id);
             })],
-            'meeting_date' => ['required', 'date_format:Y-m-d H:i', Rule::unique('group_meetings')->where(function ($query) use ($request) {
+            'meeting_date' => ['required', 'date_format:Y-m-d H:i', 'after_or_equal:'.date('Y-m-d', strtotime("+1 days")), Rule::unique('group_meetings')->where(function ($query) use ($request) {
                 return $query->where('group_id', $request->group_id)->where('status', 0);
             })],
             'meeting_link' => 'required|string|URL',

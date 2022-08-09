@@ -109,7 +109,7 @@ class GroupMeetingController extends Controller
 
         $rules = [
             'group_id' => ['required', new IsJoinGroupChecker($this->user_id)],
-            'meeting_date' => ['required', 'date_format:Y-m-d H:i', Rule::unique('group_meetings')->where(function ($query) use ($request) {
+            'meeting_date' => ['required', 'date_format:Y-m-d H:i', 'after_or_equal:'.date('Y-m-d', strtotime("+1 days")), Rule::unique('group_meetings')->where(function ($query) use ($request) {
                 return $query->where('group_id', $request->group_id);
             })],
             'meeting_link' => 'required|string|URL',
