@@ -546,21 +546,43 @@ class GroupController extends Controller
         ]);
     }
 
-    public function attended ($encrypted_data)
+    public function attended ($person, $encrypted_data)
     {
+        $rules = [ 
+            'person' => 'in:mentor,student'
+        ];
+
+        $validator = Validator::make(['person' => $person], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
         $decrypted_data = Crypt::decrypt($encrypted_data);
 
         // validate
-        if (!GroupMeeting::where('group_meetings.id', $decrypted_data['group_meet_id'])->whereHas('student_attendances', function($query) use ($decrypted_data) {
-            $query->where('student_attendances.id', $decrypted_data['attend_id']);
-        })->where('status', 0)->first()) {
-            return response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting or you are not joined in the group project']);
+        switch ($person) {
+            case "mentor":
+                if (!GroupMeeting::where('group_meetings.id', $decrypted_data['group_meet_id'])->whereHas('user_attendances', function($query) use ($decrypted_data) {
+                    $query->where('user_attendances.id', $decrypted_data['attend_id']);
+                })->where('status', 0)->first()) {
+                    return response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting or you are not joined in the group project']);
+                }
+                break;
+
+            case "student":
+                if (!GroupMeeting::where('group_meetings.id', $decrypted_data['group_meet_id'])->whereHas('student_attendances', function($query) use ($decrypted_data) {
+                    $query->where('student_attendances.id', $decrypted_data['attend_id']);
+                })->where('status', 0)->first()) {
+                    return response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting or you are not joined in the group project']);
+                }
+                break;
         }
+        
 
         // validate attendee
         DB::beginTransaction();
         try {
-            $attendance = StudentAttendances::find($decrypted_data['attend_id']);
+            $attendance = $person == "mentor" ? UserAttendances::find($decrypted_data['attend_id']) : StudentAttendances::find($decrypted_data['attend_id']);
             $attendance->attend_status = 1;
             $attendance->save();
             DB::commit();
