@@ -19,6 +19,15 @@ use Illuminate\Validation\Rule;
 class SocialMediaController extends Controller
 {
 
+    protected $student_id;
+    protected $user_id;
+
+    public function __construct()
+    {
+        $this->student_id = Auth::guard('student-api')->check() ? Auth::guard('student-api')->user()->id : NULL;
+        $this->user_id = Auth::guard('api')->check() ? Auth::guard('api')->user()->id : NULL;
+    }
+
     public function index ($person, $id)
     {
         $rules = [
@@ -51,14 +60,14 @@ class SocialMediaController extends Controller
     
     public function store(Request $request)
     {   
-        $id = $request->person == "student" ? Auth::guard('student-api')->user()->id : Auth::guard('api')->user()->id;
+        $id = $request->person == "student" ? $this->student_id : $this->user_id;
 
         $rules = [
             'person' => 'required|in:user,student',
-            'id' => [
-                'required',
-                new PersonChecking($request->person)
-            ],
+            // 'id' => [
+            //     'required',
+            //     new PersonChecking($request->person)
+            // ],
             'data.*.instance' => ['nullable', 'in:linkedin,facebook,instagram', 
                         // Rule::unique('social_media', 'social_media_name')->where(function ($query) use ($request, $id) {
                         //     return $query->when($request->person == "student", function($query1) use ($id) {
@@ -69,6 +78,7 @@ class SocialMediaController extends Controller
                         // })
                     ],
             'data.*.hyperlink' => 'nullable|url',
+            'data.*.username' => 'nullable',
             'data.*.status' => 'nullable'
         ];
 
@@ -93,6 +103,7 @@ class SocialMediaController extends Controller
                     $user->social_media()->where('id', $result->id)->update(array(
                         'social_media_name' => $request->data[$i]['instance'],
                         'hyperlink' => $request->data[$i]['hyperlink'],
+                        'username' => $request->data[$i]['username'],
                         'status' => isset($request->data[$i]['status']) ? $request->data[$i]['status'] : 1,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
@@ -104,6 +115,7 @@ class SocialMediaController extends Controller
                 $request_data[$i] = array(
                     'social_media_name' => $request->data[$i]['instance'],
                     'hyperlink' => $request->data[$i]['hyperlink'],
+                    'username' => $request->data[$i]['username'],
                     'status' => isset($request->data[$i]['status']) ? $request->data[$i]['status'] : 1,
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now()

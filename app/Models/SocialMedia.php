@@ -17,6 +17,7 @@ class SocialMedia extends Model
     protected $fillable = [
         'social_media_name',
         'hyperlink',
+        'username',
         'status'
     ];
 
