@@ -20,7 +20,8 @@ class GroupProject extends Model
         'project_desc',
         'progress_status',
         'status',
-        'owner_type'
+        'owner_type',
+        'picture',
     ];
 
     public function users()

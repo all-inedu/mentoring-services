@@ -208,7 +208,8 @@ class GroupController extends Controller
             'project_desc'    => 'required',
             'progress_status' => 'nullable|in:on track,behind,ahead',
             'status'          => 'required|in:in progress,completed',
-            'owner_type'      => 'nullable|in:student,mentor'
+            'owner_type'      => 'nullable|in:student,mentor',
+            'picture'         => 'nullable|mimes:jpg,png|max:2048'
         ];
 
         $input = $request->all() + array('group_id' => $group_id);
@@ -407,16 +408,25 @@ class GroupController extends Controller
             case 'accept':
                 $message = "You've accept to join project : ".$group->project_name;
                 $participant = Participant::find($invitee_id);
-                $participant->status = 1;
-                $participant->save();
+                $status = 1;
                 break;
             
             case 'decline':
                 $message = "You've decline to join project : ".$group->project_name;
                 $participant = Participant::find($invitee_id);
-                $participant->status = 2;
-                $participant->save();
+                $status = 2;
                 break;
+        }
+
+        DB::beginTransaction();
+        try {
+            $participant->status = $status;
+            $participant->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Confirmation Invitee Issue : [ Invitee Id : '.$invitee_id.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to confirm invitee. Please try again.']);
         }
 
         $response = $from_mail ? $message : response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
