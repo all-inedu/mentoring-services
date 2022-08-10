@@ -17,13 +17,16 @@ use App\Models\Programmes;
 use App\Models\Students;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\User\MeetingMinuteController;
+use App\Http\Traits\StudentsGroupProjectSummaryTrait as TraitsStudentsGroupProjectSummaryTrait;
+use App\Http\Traits\StudentsMeetingSummaryTrait as TraitsStudentsMeetingSummaryTrait;
 use App\Models\MeetingMinutes;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
 class StudentActivitiesController extends Controller
 {
-
+    use TraitsStudentsMeetingSummaryTrait;
+    use TraitsStudentsGroupProjectSummaryTrait;
     protected $student_id;
     protected $STUDENT_MEETING_VIEW_PER_PAGE;
 
@@ -33,6 +36,16 @@ class StudentActivitiesController extends Controller
         $this->user_id = Auth::guard('api')->check() ? Auth::guard('api')->user()->id : NULL;
         $this->STUDENT_MEETING_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_MEETING_VIEW_PER_PAGE;
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
+    }
+
+    public function students_group_project_summary()
+    {
+        return $this->group_project_summary($this->student_id);
+    }
+
+    public function students_meeting_summary()
+    {
+        return $this->call_summary($this->student_id);
     }
 
     public function store(Request $request)
@@ -207,36 +220,7 @@ class StudentActivitiesController extends Controller
 
     public function index_student_count()
     {
-        // 1-on-1 call
-        // new request
-        $data['personal']['request'] = StudentActivities::whereHas('programmes', function($query) {
-            $query->where('prog_name', '1-on-1-call');
-        })->whereHas('students', function($query) {
-            $query->where('id', $this->student_id);
-        })->where('std_act_status', 'waiting')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')->count();
-
-        // pending
-        $data['personal']['pending'] = StudentActivities::whereHas('programmes', function($query) {
-            $query->where('prog_name', '1-on-1-call');
-        })->whereHas('students', function($query) {
-            $query->where('id', $this->student_id);
-        })->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'waiting')->where('call_status', 'waiting')->count();
-
-        // upcoming
-        $data['personal']['upcoming'] = StudentActivities::whereHas('programmes', function($query) {
-            $query->where('prog_name', '1-on-1-call');
-        })->whereHas('students', function($query) {
-            $query->where('id', $this->student_id);
-        })->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')->count();
-
-        // history (finished, canceled, rejected)
-        $data['personal']['history'] = StudentActivities::whereHas('programmes', function($query) {
-            $query->where('prog_name', '1-on-1-call');
-        })->whereHas('students', function($query) {
-            $query->where('id', $this->student_id);
-        })->where(function ($query) {
-            $query->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
-        })->count();
+        $data['personal'] = $this->call_summary($this->student_id);
 
         //! tambahin status tidak include yg cancel
         // group meeting
@@ -255,22 +239,7 @@ class StudentActivitiesController extends Controller
             $query->where('group_meetings.status', 1)->orWhere('group_meetings.status', 2);
         })->count();
 
-        // group project
-        // new request
-        $data['group']['request'] = GroupProject::whereHas('group_participant', function ($query) {
-            $query->where('student_id', $this->student_id)->where('participants.status', 0);
-        })->count();
-
-        // in progress
-        $data['group']['upcoming'] = GroupProject::whereHas('group_participant', function ($query) {
-            $query->where('student_id', $this->student_id)->where('participants.status', 1);
-        })->where('status', 'in progress')->count();
-
-        // history
-        $data['group']['history'] = GroupProject::whereHas('group_participant', function ($query) {
-            $query->where('student_id', $this->student_id)->where('participants.status', 1);
-        })->where('status', 'completed')->count();
-
+        $data['group'] = $this->group_project_summary($this->student_id);
 
         return response()->json([
             'success' => true,

@@ -51,6 +51,8 @@ Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scop
 
     // list
     Route::get('dashboard/summarize', [V2StudentActivitiesController::class, 'index_student_count']);
+    Route::get('meetings/summary', [V2StudentActivitiesController::class, 'students_meeting_summary']);
+    Route::get('group-projects/summary', [V2StudentActivitiesController::class, 'students_group_project_summary']);
     Route::get('mentor/list', [StudentMentorController::class, 'list']);
     Route::get('media/list', [MediaController::class, 'index_by_student']);
     Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_student']);
