@@ -381,7 +381,7 @@ class GroupController extends Controller
                 return response()->json(['success' => false, 'error' => $validator->errors()], 400);
             }
     
-            $participant = Participant::where('group_id', $request->group_id)->where('student_id', $this->student_id)->first();
+            $participant = Participant::where('group_id', $request->group_id)->where('student_id', $this->student_id)->where('status', 0)->first();
             $invitee_id = $participant->id;
         } else {
             $from_mail = true;
@@ -422,6 +422,7 @@ class GroupController extends Controller
         try {
             $participant->status = $status;
             $participant->save();
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
