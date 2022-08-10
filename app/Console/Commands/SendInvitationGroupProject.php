@@ -113,7 +113,7 @@ class SendInvitationGroupProject extends Command
                         }
 
                         // changed sent mail status to 1 if mail delivered
-                        $updated_participant = Participant::where('group_id', $group_info->id)->where('student_id', $student->id)->first();
+                        $updated_participant = Participant::where('group_id', $group_info->id)->where('student_id', $student->id)->where('mail_sent_status', 0)->first();
                         $updated_participant->mail_sent_status = 1;
                         if (!$updated_participant->save()) {
                             Log::channel('groupinvitationlog_detail')->error("Changed mail sent status participant issue with mail id : ".$updated_participant->id);
