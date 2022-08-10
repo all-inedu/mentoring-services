@@ -152,7 +152,7 @@ class ClientController extends Controller
                 $alumni->imported_from = $alumni_data['imported_from'];
                 $alumni->save();
 
-                if ($alumni_data['educations'] != null) {
+                if (($alumni_data['educations'] != null) && ($alumni_data['educations'] != "")) {
                     Education::insert(
                         ['user_id' => $alumni->id] + $alumni_data['educations']
                     );
@@ -251,7 +251,7 @@ class ClientController extends Controller
 
                 $editors = $editor;
 
-                if ($editor_data['educations'] != null) {
+                if (($editor_data['educations'] != null) && ($editor_data['educations'] != "")) {
                     Education::insert(
                         ['user_id' => $editor->id] + $editor_data['educations']
                     );
@@ -351,7 +351,7 @@ class ClientController extends Controller
                 $mentor->imported_from = $mentor_data['imported_from'];
                 $mentor->save();
 
-                if ($mentor_data['educations'] != null) {
+                if (($mentor_data['educations'] != null) && ($mentor_data['educations'] != "")) {
                     Education::insert(
                         ['user_id' => $mentor->id] + $mentor_data['educations']
                     );
