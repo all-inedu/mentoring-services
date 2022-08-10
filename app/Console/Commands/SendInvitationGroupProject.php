@@ -72,7 +72,7 @@ class SendInvitationGroupProject extends Command
                 $today = date('Y-m-d');
                 // get participant by todays date only
                 // find where system hasn't sending the email ( 0 not delivered, 1 delivered )
-                if ($participants = $group_info->group_participant()->wherePivot('mail_sent_status', 0)->get()) {
+                if ($participants = $group_info->group_participant()->wherePivot('mail_sent_status', 0)->wherePivot('status', 0)->get()) {
                     foreach ($participants as $student) {
                         $mail_data['student_detail'] = array(
                             'participant_id' => $student->pivot->id,

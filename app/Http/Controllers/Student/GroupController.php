@@ -90,7 +90,7 @@ class GroupController extends Controller
         return response()->json(['success' => true, 'data' => $group_projects]);
     }
 
-    public function find ($person, $group_id, $student_id = NULL)
+    public function find ($person, $group_id, $student_id_from_url = NULL)
     {
         $rules = [
             'person'    => 'required|in:mentor,student',
@@ -98,16 +98,19 @@ class GroupController extends Controller
             // 'student_id' => 'nullable|required_if:person,student|exists:students,id'
         ];
 
-        $validator = Validator::make(['person' => $person, 'student_id' => $student_id], $rules);
+        $validator = Validator::make(['person' => $person, 'student_id' => $student_id_from_url], $rules);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        if (!$group = GroupProject::without(['students'])->find($group_id)) {
+        $student_id = ($person == "mentor") ? $student_id_from_url : $this->student_id;
+        if (!$group = GroupProject::whereHas('group_participant', function($query) use ($student_id) {
+            $query->where('participants.student_id', $student_id)->where(function($query2) {
+                $query2->where('participants.status', 0)->orWhere('participants.status', 1);
+            });
+        })->find($group_id)) {
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the group']);
         }
-
-        $student_id = ($person == "mentor") ? $student_id : $this->student_id;
         $owner_id = $group->student_id;
 
         $group_member = $group->group_participant()->select('students.id', 'students.first_name', 'students.last_name', 'participants.status', 'contribution_role', 'contribution_description')->where('participants.status', '!=', 2)->orderBy('participants.created_at', 'asc')->get();
