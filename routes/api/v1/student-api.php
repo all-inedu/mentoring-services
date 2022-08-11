@@ -21,6 +21,7 @@ use App\Http\Controllers\Student\ProfileController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CRM\ClientController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Student\DashboardController;
 
 //* Authentication using Media Social
 Route::get('login/{provider}', [AuthController::class, 'redirect']);
@@ -50,9 +51,10 @@ Route::post('student/group/project/confirmation/{status?}', [GroupController::cl
 Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scopes:student'] ], function(){
 
     // list
-    Route::get('dashboard/summarize', [V2StudentActivitiesController::class, 'index_student_count']);
+    Route::get('dashboard/summarize', [DashboardController::class, 'index']);
     Route::get('meetings/summary', [V2StudentActivitiesController::class, 'students_meeting_summary']);
     Route::get('group-projects/summary', [V2StudentActivitiesController::class, 'students_group_project_summary']);
+    Route::get('uni-shortlisted/summary', [UniversityController::class, 'summary']);
     Route::get('mentor/list', [StudentMentorController::class, 'list']);
     Route::get('media/list', [MediaController::class, 'index_by_student']);
     Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index_by_student']);

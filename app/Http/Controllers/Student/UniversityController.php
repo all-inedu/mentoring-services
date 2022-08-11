@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\HelperController;
+use App\Http\Traits\GetDataUniversityShortlistedTrait;
 use App\Models\AcademicRequirement;
 use App\Models\Medias;
 use App\Models\UniRequirementMedia;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Auth;
 class UniversityController extends Controller
 {
     use UploadMediaTrait;
+    use GetDataUniversityShortlistedTrait;
     protected $student_id;
     protected $STUDENT_UNIVERSITY_SHORTLISTED_VIEW_PER_PAGE;
 
@@ -33,6 +35,19 @@ class UniversityController extends Controller
     {
         $this->student_id = Auth::guard('student-api')->check() ? auth()->guard('student-api')->user()->id : null;
         $this->STUDENT_UNIVERSITY_SHORTLISTED_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_UNIVERSITY_SHORTLISTED_VIEW_PER_PAGE;
+    }
+
+    public function summary()
+    {
+        $data = array(
+            'shortlisted' => $this->get($this->student_id, 99)->count(),
+            'applied' => $this->get($this->student_id, 2)->count(),
+            'accepted' => $this->get($this->student_id, 1)->count(),
+            'rejected' => $this->get($this->student_id, 3)->count(),
+            'waitlisted' => $this->get($this->student_id, 0)->count(),
+        );
+
+        return response()->json(['success' => true, 'data' => $data]);
     }
     
     public function index ($status, $student_id = NULL)
@@ -48,21 +63,9 @@ class UniversityController extends Controller
 
         $id = ($student_id != NULL) ? $student_id : $this->student_id;
         $status = strtolower($status);
-        $uni_shortlisted = UniShortlisted::when($status == 'waitlisted', function($query) {
-                                    $query->where('status', 0);
-                                })->when($status == 'accepted', function($query) {
-                                    $query->where('status', 1);
-                                })->when($status == 'applied', function($query) {
-                                    $query->where('status', 2);
-                                })->when($status == 'rejected', function($query) {
-                                    $query->where('status', 3);
-                                })->when($status == 'shortlisted', function($query) {
-                                    $query->where('status', 99);
-                                })->when($status == 'all', function($query) {
-                                    $query->where('status', '!=', 100);
-                                })->where('student_id', $id)->orderBy('uni_name', 'asc')->orderBy('uni_major', 'asc')->get();
+        $response = $this->get($id, $status);
 
-        return response()->json(['success' => true, 'data' => $uni_shortlisted]);
+        return response()->json(['success' => true, 'data' => $response]);
     }
 
     public function index_requirement($category, $show_item = null)
