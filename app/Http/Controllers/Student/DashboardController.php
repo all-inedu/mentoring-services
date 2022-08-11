@@ -7,11 +7,18 @@ use Illuminate\Http\Request;
 use App\Models\GroupMeeting;
 use App\Http\Traits\StudentsGroupProjectSummaryTrait as TraitsStudentsGroupProjectSummaryTrait;
 use App\Http\Traits\StudentsMeetingSummaryTrait as TraitsStudentsMeetingSummaryTrait;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     use TraitsStudentsMeetingSummaryTrait;
     use TraitsStudentsGroupProjectSummaryTrait;
+    protected $student_id;
+
+    public function __construct()
+    {
+        $this->student_id = Auth::guard('student-api')->check() ? auth()->guard('student-api')->user()->id : NULL;
+    }
     
     public function index()
     {
