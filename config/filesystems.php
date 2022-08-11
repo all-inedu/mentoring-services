@@ -42,6 +42,11 @@ return [
             'visibility' => 'public',
         ],
 
+        'group_project_files' => [
+            'driver' => 'local',
+            'root' => public_path('media/group')
+        ],
+
         'student_files' => [
             'driver' => 'local',
             'root' => public_path('media')

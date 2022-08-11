@@ -91,7 +91,7 @@ Route::group( ['prefix' => 'student', 'middleware' => ['auth:student-api', 'scop
     Route::put('interest/{interest_id}', [InterestController::class, 'update']);
     Route::put('competition/{comp_id}', [CompetitionController::class, 'update']);
     Route::put('academic/{aca_id}', [AcademicController::class, 'update']);
-    Route::put('group/project/{group_id}', [GroupController::class, 'update']);
+    Route::post('group/project/{group_id}', [GroupController::class, 'update']);
     Route::put('group/project/participant/{group_id}', [GroupController::class, 'update_participant_role_contribution']);
     // Route::post('group/project/confirmation/{status?}', [GroupController::class, 'confirmation_invitee'])->name('invitee-confirmation');
     Route::put('document/requirement/{med_id}', [UniversityController::class, 'update_document_requirement']);

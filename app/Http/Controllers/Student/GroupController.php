@@ -25,6 +25,7 @@ use PHPUnit\TextUI\XmlConfiguration\Group;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\File;
 
 class GroupController extends Controller
 {
@@ -143,7 +144,8 @@ class GroupController extends Controller
             'project_desc'    => 'required',
             'progress_status' => 'nullable|in:on track,behind,ahead',
             'status'          => 'required|in:in progress,completed',
-            'owner_type'      => 'required|in:student'
+            'owner_type'      => 'required|in:student',
+            'picture'         => 'nullable|mimes:jpg,png|max:2048'
         ];
 
         $input = $request->all();
@@ -164,6 +166,34 @@ class GroupController extends Controller
             $group_projects->status = $request->status;
             $group_projects->owner_type = $request->owner_type;
             $group_projects->save();
+
+            $directory_name = $group_projects->id;
+            $encrypted_directory_name = Crypt::encrypt($directory_name);
+
+            if ($request->hasFile('picture')) {
+                $old_image_path = $group_projects->picture;
+                if ($old_image_path != NULL) {
+                    $file_path = substr($old_image_path, 7);
+                    // check the old profile picture
+                    // if exist do delete;
+                    
+                    $isExists = File::exists(public_path($file_path));
+                    // dd($isExists);
+                    if ($isExists) {
+                        File::delete(public_path($file_path));
+                    } else {
+                        throw new Exception("Cannot find the file or the file does not exists");
+                    }
+                }
+
+                $med_file_name = date('Ymd_His').'_group-thumbnail';
+                $med_file_format = $request->file('picture')->getClientOriginalExtension();
+                $med_file_path = $request->file('picture')->storeAs($directory_name, $med_file_name.'.'.$med_file_format, ['disk' => 'group_project_files']);
+
+                $group_projects->picture = 'public/media/group/'.$med_file_path;
+                $group_projects->save();
+            }
+            
 
             // select all of mentor that handle this student 
             if ($student = Students::with('users:id')->where('id', $this->student_id)->first()) {
@@ -226,7 +256,7 @@ class GroupController extends Controller
         DB::beginTransaction();
         try {
 
-            $group_project = GroupProject::find($group_id);
+            $group_project = GroupProject::where('student_id', $this->student_id)->where('id', $group_id)->first();
             //* validate only owner (student) of the group able to update 
             $owner = $group_project->owner_type == "student" ? $group_project->student_id : null; //* validate student (change null with user_id if the controller being called from admin)
             if ($owner != $this->student_id) {
@@ -241,6 +271,29 @@ class GroupController extends Controller
             }
             if ($request->owner_type != NULL) { //! will be deleted soon
                 $group_project->owner_type = $request->owner_type;
+            }
+            
+            if ($request->hasFile('picture')) {
+                $old_image_path = $group_project->picture;
+                if ($old_image_path != NULL) {
+                    $file_path = substr($old_image_path, 7);
+                    // check the old profile picture
+                    // if exist do delete;
+                    
+                    $isExists = File::exists(public_path($file_path));
+                    // dd($isExists);
+                    if ($isExists) {
+                        File::delete(public_path($file_path));
+                    } else {
+                        throw new Exception("Cannot find the file or the file does not exists");
+                    }
+                }
+
+                $med_file_name = date('Ymd_His').'_group-thumbnail';
+                $med_file_format = $request->file('picture')->getClientOriginalExtension();
+                $med_file_path = $request->file('picture')->storeAs($group_id, $med_file_name.'.'.$med_file_format, ['disk' => 'group_project_files']);
+    
+                $group_project->picture = 'public/media/group/'.$med_file_path;
             }
             $group_project->save();
 
