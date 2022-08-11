@@ -105,9 +105,11 @@ class GroupController extends Controller
         }
 
         $student_id = ($person == "mentor") ? $student_id_from_url : $this->student_id;
-        if (!$group = GroupProject::whereHas('group_participant', function($query) use ($student_id) {
-            $query->where('participants.student_id', $student_id)->where(function($query2) {
-                $query2->where('participants.status', 0)->orWhere('participants.status', 1);
+        if (!$group = GroupProject::when($person == "student", function($query) use ($student_id) {
+            $query->whereHas('group_participant', function($query1) use ($student_id) {
+                $query1->where('participants.student_id', $student_id)->where(function($query2) {
+                    $query2->where('participants.status', 0)->orWhere('participants.status', 1);
+                });
             });
         })->find($group_id)) {
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the group']);
