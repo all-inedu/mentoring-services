@@ -121,9 +121,7 @@ class StudentController extends Controller
             // get data mentees
             $students = Students::whereHas('users', function($query) use ($user_id) {
                 $query->where('user_id', $user_id);
-            });
-            
-            $filter = $students->when($is_searching, function ($query) use ($keyword) {
+            })->when($is_searching, function ($query) use ($keyword) {
                 $query->where(function($query1) use ($keyword){
                     $query1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
                     orWhere('email', 'like', '%'.$keyword.'%')->
@@ -134,14 +132,19 @@ class StudentController extends Controller
             })->when($use_progress_status, function ($query) use ($progress_status) {
                 $query->where('progress_status', 'like', $progress_status);
             })->orderBy('created_at', 'desc');
+            $response = $students->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE, $options);
 
-            $response = $filter->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE, $options);
-            $column_status = $students->groupBy('progress_status')->select('progress_status')->get();
+            $all = Students::whereHas('users', function($query) use ($user_id) {
+                $query->where('user_id', $user_id);
+            });
+
+            $select_status = array();
+            $column_status = $all->groupBy('progress_status')->select('progress_status')->get();
             foreach ($column_status as $status) {
                 $select_status[] = $status->progress_status;
             }
             $select_tag = array();
-            $column_tag = $students->groupBy('tag')->select('tag')->get();
+            $column_tag = $all->groupBy('tag')->select('tag')->get();
             foreach ($column_tag as $tag) {
                 $raw_tag = $tag->tag;
                 for ($i = 0; $i < count($raw_tag); $i++) {
