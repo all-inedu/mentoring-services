@@ -150,10 +150,10 @@ class Students extends Authenticatable
             return $query->first();
     }
 
-    public function scopeCustomPaginate($query, $use_paginate, $paginate, $keyword = NULL)
+    public function scopeCustomPaginate($query, $use_paginate, $paginate, $options = [])
     {
         if ($use_paginate == "yes") {
-            $response = $keyword != NULL ? $query->paginate($paginate)->appends(array('keyword' => $keyword)) : $query->paginate($paginate);
+            $response = $query->paginate($paginate)->appends($options);
             return $response;
         } else {
             return $query->get();

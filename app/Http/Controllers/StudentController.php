@@ -98,26 +98,65 @@ class StudentController extends Controller
 
     public function select_by_auth (Request $request)
     {
+        $options = [];
+        $user_id = auth()->guard('api')->user()->id;
         $paginate = !$request->get('paginate') ? "yes" : $request->get('paginate');
         $is_searching = $request->get('keyword') ? true : false;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
-        $user_id = auth()->guard('api')->user()->id;
+        $use_tag = $request->get('tag') ? true : false;
+        $tag = $request->get('tag') != NULL ? $request->get('tag') : null;
+        $use_progress_status = $request->get('status') ? true : false;
+        $progress_status = $request->get('status') != NULL ? $request->get('status') : NULL;
+
+        if ($is_searching) 
+            $options['keyword'] = $keyword;
+        
+        if ($use_tag)
+            $options['tag'] = $tag;
+
+        if ($use_progress_status)
+            $options['status'] = $progress_status;
+
         try {
+            // get data mentees
             $students = Students::whereHas('users', function($query) use ($user_id) {
                 $query->where('user_id', $user_id);
-            })->when($is_searching, function ($query) use ($keyword) {
+            });
+            
+            $filter = $students->when($is_searching, function ($query) use ($keyword) {
                 $query->where(function($query1) use ($keyword){
                     $query1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
                     orWhere('email', 'like', '%'.$keyword.'%')->
                     orWhere('school_name', 'like', '%'.$keyword.'%');
                 });
-            })->orderBy('created_at', 'desc')->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE, $keyword);
+            })->when($use_tag, function ($query) use ($tag) {
+                $query->where('tag', 'like', '%'.$tag.'%');
+            })->when($use_progress_status, function ($query) use ($progress_status) {
+                $query->where('progress_status', 'like', $progress_status);
+            })->orderBy('created_at', 'desc');
+
+            $response = $filter->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE, $options);
+            $column_status = $students->groupBy('progress_status')->select('progress_status')->get();
+            foreach ($column_status as $status) {
+                $select_status[] = $status->progress_status;
+            }
+            $select_tag = array();
+            $column_tag = $students->groupBy('tag')->select('tag')->get();
+            foreach ($column_tag as $tag) {
+                $raw_tag = $tag->tag;
+                for ($i = 0; $i < count($raw_tag); $i++) {
+                    if (!in_array($raw_tag[$i], $select_tag))
+                        array_push($select_tag, $raw_tag[$i]);
+                }
+            }
             
         } catch (Exception $e) {
             Log::error('Select Student Use User Id  Issue : ['.$user_id.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to select student use User Id. Please try again.']);
         }
-        return response()->json(['success' => true, 'data' => $students]);
+        sort($select_tag);
+
+        return response()->json(['success' => true, 'option_filter' => array('status' => $select_status, 'tag' => $select_tag), 'data' => $response]);
     }
 
     public function find(Request $request)
