@@ -199,6 +199,8 @@ Route::middleware(['auth:api', 'scope:admin,mentor'])->group(function() {
         Route::delete('todos/{todos_id}', [TodosController::class, 'delete']);
         Route::delete('shortlisted/{uni_shortlisted_id}', [UniShortlistedController::class, 'delete']);
     });
+
+    Route::get('mentor/meeting/summary', [V2StudentActivitiesController::class, 'mentors_meeting_summary']);
 });    
 
 //! Editor Scopes

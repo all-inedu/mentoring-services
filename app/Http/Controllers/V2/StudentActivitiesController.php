@@ -23,6 +23,7 @@ use App\Models\MeetingMinutes;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Http\Controllers\MailLogController;
+use App\Http\Traits\MentorsMeetingSummaryTrait;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Carbon;
 
@@ -30,6 +31,7 @@ class StudentActivitiesController extends Controller
 {
     use TraitsStudentsMeetingSummaryTrait;
     use TraitsStudentsGroupProjectSummaryTrait;
+    use MentorsMeetingSummaryTrait;
     protected $student_id;
     protected $STUDENT_MEETING_VIEW_PER_PAGE;
     protected $TO_MENTEES_1ON1CALL_SUBJECT;
@@ -43,6 +45,17 @@ class StudentActivitiesController extends Controller
         $this->TO_MENTEES_1ON1CALL_SUBJECT = RouteServiceProvider::TO_MENTEES_1ON1CALL_SUBJECT;
     }
 
+    public function mentors_meeting_summary()
+    {
+        try {
+            $response = $this->mentor_call_summary($this->user_id);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+        }
+        
+        return response()->json(['success' => true, 'data' => $response]);
+    }
+
     public function students_group_project_summary()
     {
         return $this->group_project_summary($this->student_id);
@@ -50,7 +63,7 @@ class StudentActivitiesController extends Controller
 
     public function students_meeting_summary()
     {
-        return $this->call_summary($this->student_id);
+        return $this->student_call_summary($this->student_id);
     }
 
     public function store(Request $request)
@@ -199,7 +212,6 @@ class StudentActivitiesController extends Controller
         } else {
             $data = $this->get_index($programme, $status, $recent, $meeting_minutes);
         }
-        
 
         return response()->json(['success' => true, 'data' => $data]);
     }

@@ -40,11 +40,11 @@ class UniversityController extends Controller
     public function summary()
     {
         $data = array(
-            'shortlisted' => $this->get($this->student_id, 99)->count(),
-            'applied' => $this->get($this->student_id, 2)->count(),
-            'accepted' => $this->get($this->student_id, 1)->count(),
-            'rejected' => $this->get($this->student_id, 3)->count(),
-            'waitlisted' => $this->get($this->student_id, 0)->count(),
+            'shortlisted' => $this->get($this->student_id, 'shortlisted')->count(),
+            'applied' => $this->get($this->student_id, 'applied')->count(),
+            'accepted' => $this->get($this->student_id, 'accepted')->count(),
+            'rejected' => $this->get($this->student_id, 'rejected')->count(),
+            'waitlisted' => $this->get($this->student_id, 'waitlisted')->count(),
         );
 
         return response()->json(['success' => true, 'data' => $data]);
