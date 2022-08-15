@@ -201,6 +201,7 @@ Route::middleware(['auth:api', 'scope:admin,mentor'])->group(function() {
     });
 
     Route::get('mentor/meeting/summary', [V2StudentActivitiesController::class, 'mentors_meeting_summary']);
+    Route::get('mentor/group-projects/summary', [V2StudentActivitiesController::class, 'mentors_group_project_summary']);
 });    
 
 //! Editor Scopes

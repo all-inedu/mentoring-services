@@ -17,21 +17,17 @@ use App\Models\Programmes;
 use App\Models\Students;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\User\MeetingMinuteController;
-use App\Http\Traits\StudentsGroupProjectSummaryTrait as TraitsStudentsGroupProjectSummaryTrait;
-use App\Http\Traits\StudentsMeetingSummaryTrait as TraitsStudentsMeetingSummaryTrait;
 use App\Models\MeetingMinutes;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use App\Http\Controllers\MailLogController;
-use App\Http\Traits\MentorsMeetingSummaryTrait;
+use App\Http\Traits\GetDataMeeting_GroupProject_SummaryTrait;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Carbon;
 
 class StudentActivitiesController extends Controller
 {
-    use TraitsStudentsMeetingSummaryTrait;
-    use TraitsStudentsGroupProjectSummaryTrait;
-    use MentorsMeetingSummaryTrait;
+    use GetDataMeeting_GroupProject_SummaryTrait;
     protected $student_id;
     protected $STUDENT_MEETING_VIEW_PER_PAGE;
     protected $TO_MENTEES_1ON1CALL_SUBJECT;
@@ -45,12 +41,25 @@ class StudentActivitiesController extends Controller
         $this->TO_MENTEES_1ON1CALL_SUBJECT = RouteServiceProvider::TO_MENTEES_1ON1CALL_SUBJECT;
     }
 
+    public function mentors_group_project_summary()
+    {
+        try {
+            $response = $this->mentor_group_project_summary($this->user_id);
+        } catch (Exception $e) {
+            Log::error('Get Mentor Group Project Summary Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Couldn\'t get summary. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'data' => $response]);
+    }
+
     public function mentors_meeting_summary()
     {
         try {
             $response = $this->mentor_call_summary($this->user_id);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+            Log::error('Get Mentor Meeting Summary Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Couldn\'t get summary. Please try again.']);
         }
         
         return response()->json(['success' => true, 'data' => $response]);
@@ -58,12 +67,26 @@ class StudentActivitiesController extends Controller
 
     public function students_group_project_summary()
     {
-        return $this->group_project_summary($this->student_id);
+        try {
+            $response = $this->student_group_project_summary($this->student_id);
+        } catch (Exception $e) {
+            Log::error('Get Student Group Project Summary Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Couldn\'t get summary. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'data' => $response]);
     }
 
     public function students_meeting_summary()
     {
-        return $this->student_call_summary($this->student_id);
+        try {
+            $response = $this->student_call_summary($this->student_id);
+        } catch (Exception $e) {
+            Log::error('Get Student Meeting Summary Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Couldn\'t get summary. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'data' => $response]);
     }
 
     public function store(Request $request)

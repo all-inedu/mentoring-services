@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\GetDataMeeting_GroupProject_SummaryTrait;
 use Illuminate\Http\Request;
 use App\Models\GroupMeeting;
-use App\Http\Traits\StudentsGroupProjectSummaryTrait as TraitsStudentsGroupProjectSummaryTrait;
-use App\Http\Traits\StudentsMeetingSummaryTrait as TraitsStudentsMeetingSummaryTrait;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    use TraitsStudentsMeetingSummaryTrait;
-    use TraitsStudentsGroupProjectSummaryTrait;
+    use GetDataMeeting_GroupProject_SummaryTrait;
     protected $student_id;
 
     public function __construct()
@@ -22,7 +20,7 @@ class DashboardController extends Controller
     
     public function index()
     {
-        $data['personal'] = $this->call_summary($this->student_id);
+        $data['personal'] = $this->student_call_summary($this->student_id);
 
         //! tambahin status tidak include yg cancel
         $group_m_upcoming_raw = GroupMeeting::whereHas('group_project', function($query) {
@@ -50,7 +48,7 @@ class DashboardController extends Controller
             )
         );
 
-        $data['group'] = $this->group_project_summary($this->student_id);
+        $data['group'] = $this->student_group_project_summary($this->student_id);
 
         return response()->json([
             'success' => true,
