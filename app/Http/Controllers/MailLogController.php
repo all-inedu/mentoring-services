@@ -71,8 +71,16 @@ class MailLogController extends Controller
     }
 
     public function saveLogMail($log)
-    {  
-        return MailLog::create($log);
+    {
+        $new_log = new MailLog;
+        $new_log->recipient = $log['recipient'];
+        $new_log->sender = $log['sender'];
+        $new_log->subject = $log['subject'];
+        $new_log->message = $log['message'];
+        $new_log->date_sent = $log['date_sent'];
+        $new_log->status = $log['status'];
+        $new_log->error_message = $log['error_message'] ? $log['error_message'] : NULL;
+        return $new_log->save();
     }
 
     public function record_error_message($email, $error_message)

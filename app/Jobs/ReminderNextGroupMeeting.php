@@ -50,7 +50,7 @@ class ReminderNextGroupMeeting implements ShouldQueue
 
             $group_info = GroupProject::find($group_id);
 
-            $participants = $meeting_detail->student_attendances()->where('mail_sent', 0)->where('attend_status', 0)->get();
+            $participants = $meeting_detail->student_attendances()->where('mail_sent', 0)->where('attend_status', 1)->get();
             $mentors = $meeting_detail->user_attendances()->where('mail_sent', 0)->where('attend_status', 0)->get();
 
             //*email to participant

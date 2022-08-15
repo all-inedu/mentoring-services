@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\File;
+use App\Http\Controllers\MailLogController;
+use App\Models\MailLog;
 
 class GroupController extends Controller
 {
@@ -33,6 +35,8 @@ class GroupController extends Controller
     protected $user_id;
     protected $STUDENT_GROUP_PROJECT_VIEW_PER_PAGE;
     protected $MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
+    protected $ONGOING_PROJECT_DETAIL_HYPERLINK;
+    protected $TO_MENTORS_GROUP_PROJECT_CREATED;
 
     public function __construct()
     {
@@ -40,6 +44,8 @@ class GroupController extends Controller
         $this->user_id = Auth::guard('api')->check() ? Auth::guard('api')->user()->id : NULL;
         $this->STUDENT_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_GROUP_PROJECT_VIEW_PER_PAGE;
         $this->MENTOR_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
+        $this->ONGOING_PROJECT_DETAIL_HYPERLINK = RouteServiceProvider::ONGOING_PROJECT_DETAIL_HYPERLINK;
+        $this->TO_MENTORS_GROUP_PROJECT_CREATED = RouteServiceProvider::TO_MENTORS_GROUP_PROJECT_CREATED;
     }
 
     //* group project main function start
@@ -158,6 +164,10 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        if (!$student = Students::with('users:id,email,first_name,last_name')->where('id', $this->student_id)->first()) {
+            return response()->json(['success' => false, 'error' => 'You have not a mentor yet. Call the administrator to use this feature']);
+        }
+
         DB::beginTransaction();
         try {
             $group_projects = new GroupProject;
@@ -198,24 +208,59 @@ class GroupController extends Controller
             
 
             // select all of mentor that handle this student 
-            if ($student = Students::with('users:id')->where('id', $this->student_id)->first()) {
-                $student_mentor = $student->users;
-                if (count($student_mentor) == 0) {
-                    throw new Exception("There are no mentor that handle student : ".$student->first_name.' '.$student->last_name);
-                }
-                
-                foreach ($student_mentor as $mentor_detail) {
-                    $data[] = array(
-                        'group_id' => $group_projects->id,
-                        'user_id' => $mentor_detail->id,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    );
-                }
-                
-                $group_projects->assigned_mentor()->attach($data);
+            
+            $student_mentor = $student->users;
+            if (count($student_mentor) == 0) {
+                throw new Exception("There are no mentor that handle student : ".$student->first_name.' '.$student->last_name);
             }
             
+            foreach ($student_mentor as $mentor_detail) {
+                $data[] = array(
+                    'group_id' => $group_projects->id,
+                    'user_id' => $mentor_detail->id,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                );
+
+                $mail_data['hyperlink'] = $this->ONGOING_PROJECT_DETAIL_HYPERLINK;
+                $mail_data['group_detail'] = array(
+                    'project_id' => $group_projects->id,
+                    'project_name' => $group_projects->project_name,
+                    'project_type' => $group_projects->project_type,
+                    'project_desc' => $group_projects->project_desc,
+                    'project_owner' => $group_projects->student_id != NULL ? $group_projects->students->first_name.' '.$group_projects->students->first_name : $group_projects->users->first_name.' '.$group_projects->users->last_name,
+                ); 
+
+                // mail to mentor
+                try {
+
+                    Mail::send('templates.mail.to-mentors.invitation-group-project', ['group_info' => $mail_data], function($mail) use ($mentor_detail)  {
+                        $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                        $mail->to($mentor_detail->email, $mentor_detail->first_name.' '.$mentor_detail->last_name);
+                        $mail->subject($this->TO_MENTORS_GROUP_PROJECT_CREATED);
+                    });
+                } catch (Exception $e) {
+                    // save to log mail admin
+                    // save only if failure to sent
+                    $log = array(
+                        'sender'    => 'student',
+                        'recipient' => $mentor_detail->email ? $mentor_detail->email : "Cannot fetch mentor email",
+                        'subject'   => 'Sending notification to mentor that mentee has created group project',
+                        'message'   => json_encode($mail_data),
+                        'date_sent' => Carbon::now(),
+                        'status'    => "not delivered",
+                        'error_message' => $e->getMessage()
+                    );
+                    $save_log = new MailLogController;
+                    $save_log->saveLogMail($log);
+                    DB::commit();
+                    throw new Exception($e);
+                }
+
+            }
+            
+            
+            $group_projects->assigned_mentor()->attach($data);
             $group_projects->group_participant()->attach($this->student_id, [
                 'status' => 1,
                 'mail_sent_status' => 1,
@@ -226,6 +271,7 @@ class GroupController extends Controller
             DB::commit();
 
         } catch (Exception $e) {
+            
             DB::rollBack();
             Log::error('Create Group Project Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to create group project. Please try again.']);
@@ -602,7 +648,8 @@ class GroupController extends Controller
             }
 
             //* send email to mentor and the other member
-            ReminderNextGroupMeeting::dispatch()->delay(now()->addSeconds(2));
+            // ReminderNextGroupMeeting::dispatch()->delay(now()->addSeconds(2));
+            ReminderNextGroupMeeting::dispatch();
 
             DB::commit();
         } catch (Exception $e) {

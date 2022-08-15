@@ -19,15 +19,22 @@ use App\Rules\PersonalMeetingChecker;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Traits\CreateActivitiesTrait;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Carbon;
 
 class StudentActivitiesController extends Controller
 {
     use CreateActivitiesTrait;
     protected $ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
+    protected $TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT;
+    protected $TO_MENTEES_CANCEL_1ON1CALL_SUBJECT;
+    protected $TO_MENTORS_MENTEE_HAS_REJECT_1ON1CALL_SUBJECT;
 
     public function __construct()
     {
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
+        $this->TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT = RouteServiceProvider::TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT;
+        $this->TO_MENTEES_CANCEL_1ON1CALL_SUBJECT = RouteServiceProvider::TO_MENTEES_CANCEL_1ON1CALL_SUBJECT;
+        $this->TO_MENTORS_MENTEE_HAS_REJECT_1ON1CALL_SUBJECT = RouteServiceProvider::TO_MENTORS_MENTEE_HAS_REJECT_1ON1CALL_SUBJECT;
     }
 
     public function watch_time($std_act_id, Request $request)
@@ -424,7 +431,54 @@ class StudentActivitiesController extends Controller
 
             switch ($request->person) {
                 case "student":
+                    if ($activities->std_act_status == "confirmed") {
+                        return response()->json(['success' => false, 'error' => 'Your confirmation has been noted.']);
+                    }
+
                     $activities->std_act_status = 'confirmed';
+
+                    // send mail notification to mentees
+                    $mentor_info = [
+                        'name' => $activities->users->first_name.' '.$activities->users->last_name,
+                        'email' => $activities->users->email,
+                    ];
+                    
+                    $data_mail = [
+                        'name' => $activities->users->first_name.' '.$activities->users->last_name,
+                        'mentee_name' => $activities->students->first_name.' '.$activities->students->last_name,
+                        'module' => $activities->module,
+                        'call_date' => $activities->call_date,
+                        'location_link' => $activities->location_link,
+                        'location_pw' => $activities->location_pw 
+                    ];
+
+                    Mail::send('templates.mail.to-mentors.mentees-confirmed-announcement', $data_mail, function($mail) use ($mentor_info, $data_mail)  {
+                        $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                        $mail->to($mentor_info['email'], $mentor_info['name']);
+                        $mail->subject(ucwords($data_mail['mentee_name']).' '.$this->TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT);
+                    });
+
+                    if (count(Mail::failures()) > 0) { 
+
+                        // save to log mail admin
+                        // save only if failure to sent
+                        $log = array(
+                            'sender'    => 'student',
+                            'recipient' => $mentor_info['email'],
+                            'subject'   => ucwords($data_mail['mentee_name']).' '.$this->TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT,
+                            'message'   => 'Sending notification that mentee has confirmed the invitation ['.json_encode($data_mail).']',
+                            'date_sent' => Carbon::now(),
+                            'status'    => "not delivered",
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        );
+                        $save_log = new MailLogController;
+                        $save_log->saveLogMail($log);
+                        
+                        foreach (Mail::failures() as $email_address) {
+                            Log::error('Send Notification to Mentor, Mentee Confirm Invitation Issue  : ['.$email_address.']');
+                        }
+                    } 
                     break;
 
                 case "mentor":
@@ -448,7 +502,7 @@ class StudentActivitiesController extends Controller
         $rules = [
             'person' => 'required|in:student,mentor',
             'status' => 'in:cancel,reject',
-            'std_act_id' => [new PersonalMeetingChecker($person)]
+            // 'std_act_id' => [new PersonalMeetingChecker($person)]
         ];
 
         $validator = Validator::make($request->all() + ['person' => strtolower($person), 'status' => $status, 'std_act_id' => $std_act_id], $rules);
@@ -480,10 +534,15 @@ class StudentActivitiesController extends Controller
 
             switch ($request->person) {
                 case "student":
+                    if ($activities->std_act_status == "confirmed") {
+                        return response()->json(['success' => false, 'error' => 'You\'re already confirmed. Please contact your mentor if you can\'t attend the meeting.']);
+                    }
+
                     // if ($status == "cancel") {
                         $person_info = [
                             'name' => $activities->users->first_name.' '.$activities->users->last_name,
                             'email' => $activities->users->email,
+                            'mentee_name' => $activities->students->first_name.' '.$activities->students->last_name
                         ];
                     // }
                     $activities->std_act_status = $status;
@@ -507,6 +566,9 @@ class StudentActivitiesController extends Controller
                 'location_link' => $activities->location_link,
                 'location_pw' => $activities->location_pw 
             ];
+            if ($request->person == "student") 
+                $data_mail['mentee_name'] = $person_info['mentee_name'];
+
             $this->send_mail_cancel($person, $status, $data_mail, $person_info);
 
             $activities->call_status = ($status == "cancel") ? "canceled" : "rejected";
@@ -526,15 +588,72 @@ class StudentActivitiesController extends Controller
 
     public function send_mail_cancel($person, $status, $data_mail, $person_info)
     {
-        try {
+        switch ($status) {
+            case "cancel":
+                if ($person == "mentor") {
+                    
+                    Mail::send('templates.mail.cancel-meeting-announcement', $data_mail, function($mail) use ($person_info)  {
+                        $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                        $mail->to($person_info['email'], $person_info['name']);
+                        $mail->subject($this->TO_MENTEES_CANCEL_1ON1CALL_SUBJECT);
+                    });
 
-            Mail::send('templates.mail.cancel-meeting-announcement', $data_mail, function($mail) use ($person_info)  {
-                $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
-                $mail->to($person_info['email'], $person_info['name']);
-                $mail->subject('The meeting has been canceled');
-            });
-        } catch (Exception $e) {
-            Log::error('Send Email '.$status.' ['.ucfirst($person).'] Meeting Issue : '.$e->getMessage());
+                    if (count(Mail::failures()) > 0) { 
+
+                        // save to log mail admin
+                        // save only if failure to sent
+                        $log = array(
+                            'sender'    => 'mentor',
+                            'recipient' => $person_info['email'],
+                            'subject'   => $this->TO_MENTEES_CANCEL_1ON1CALL_SUBJECT,
+                            'message'   => 'Sending notification that mentor has invite the Student to do 1 on 1 call ['.json_encode($data_mail).']',
+                            'date_sent' => Carbon::now(),
+                            'status'    => "not delivered",
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        );
+                        $save_log = new MailLogController;
+                        $save_log->saveLogMail($log);
+                        
+                        foreach (Mail::failures() as $email_address) {
+                            Log::error('Send Notification to Mentee, Mentor Created 1 on 1 Call Issue  : ['.$email_address.']');
+                        }
+                    } 
+                }
+
+                break;
+            
+            case "reject":
+                if ($person == "student") {
+                    Mail::send('templates.mail.to-mentors.mentees-reject-meeting-announcement', $data_mail, function($mail) use ($person_info)  {
+                        $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                        $mail->to($person_info['email'], $person_info['name']);
+                        $mail->subject(ucwords($person_info['mentee_name']).' '.$this->TO_MENTORS_MENTEE_HAS_REJECT_1ON1CALL_SUBJECT);
+                    });
+
+                    if (count(Mail::failures()) > 0) { 
+
+                        // save to log mail admin
+                        // save only if failure to sent
+                        $log = array(
+                            'sender'    => 'student',
+                            'recipient' => $person_info['email'],
+                            'subject'   => $this->TO_MENTORS_MENTEE_HAS_REJECT_1ON1CALL_SUBJECT,
+                            'message'   => 'Sending notification that mentee has reject to attend the meeting ['.json_encode($data_mail).']',
+                            'date_sent' => Carbon::now(),
+                            'status'    => "not delivered",
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now()
+                        );
+                        $save_log = new MailLogController;
+                        $save_log->saveLogMail($log);
+                        
+                        foreach (Mail::failures() as $email_address) {
+                            Log::error('Send Notification to Mentee, Mentor Created 1 on 1 Call Issue  : ['.$email_address.']');
+                        }
+                    } 
+                }
+                break;
         }
     }
 }

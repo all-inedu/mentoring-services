@@ -22,6 +22,9 @@ use App\Http\Traits\StudentsMeetingSummaryTrait as TraitsStudentsMeetingSummaryT
 use App\Models\MeetingMinutes;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use App\Http\Controllers\MailLogController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Carbon;
 
 class StudentActivitiesController extends Controller
 {
@@ -29,6 +32,7 @@ class StudentActivitiesController extends Controller
     use TraitsStudentsGroupProjectSummaryTrait;
     protected $student_id;
     protected $STUDENT_MEETING_VIEW_PER_PAGE;
+    protected $TO_MENTEES_1ON1CALL_SUBJECT;
 
     public function __construct()
     {
@@ -36,6 +40,7 @@ class StudentActivitiesController extends Controller
         $this->user_id = Auth::guard('api')->check() ? Auth::guard('api')->user()->id : NULL;
         $this->STUDENT_MEETING_VIEW_PER_PAGE = RouteServiceProvider::STUDENT_MEETING_VIEW_PER_PAGE;
         $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
+        $this->TO_MENTEES_1ON1CALL_SUBJECT = RouteServiceProvider::TO_MENTEES_1ON1CALL_SUBJECT;
     }
 
     public function students_group_project_summary()
@@ -75,39 +80,13 @@ class StudentActivitiesController extends Controller
         if ($validator->fails()) {
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
-
-        // $request_date = $request->call_date;
-        // $hour_before = date('Y-m-d H:i', strtotime("-1 hour", strtotime($request_date)));
-        // $hour_after = date('Y-m-d H:i', strtotime("+1 hour", strtotime($request_date)));
-
-        // if ($activity = StudentActivities::where(function($query) use ($student_id){
-        //     $query->where('student_id', $student_id)->orWhere('user_id', $this->user_id);
-        // })
-        // ->where('prog_id', $programme_id)->where('call_status', 'waiting')
-        // ->where(function($query) use ($hour_before, $hour_after, $request_date) {
-        //     $query->whereBetween('call_date', [$hour_before, $request_date])
-        //     ->orWhereBetween('call_date', [$request_date, $hour_after]);
-        // })->first()){
-
-        //     // validate if request call_date not clash with the other schedule
-        //     // will check 1 hour before and 1 hour after
-        //     if (date('Y-m-d H:i', strtotime("+1 hour", strtotime($activity->call_date))) > $request->call_date) {
-        //         $custom_msg = ($activity->user_id == $this->user_id) ? " with you" : "";
-        //         return response()->json([
-        //             'success' => false, 
-        //             'error' => $activity->mt_confirm_status == "confirmed" ?  
-        //                 'You already make an appoinment at '.date('l, d M Y H:i', strtotime($activity->call_date)) :
-        //                 'Your student/mentee already has schedule'.$custom_msg.' at '.date('l, d M Y H:i', strtotime($request->call_date))
-        //         ]);
-        //     }
-        // }
         
         DB::beginTransaction();
         try {
 
             $request_data = [
                 'prog_id' => $programme_id, 
-                'student_id' => $request->student_id,
+                'student_id' => $student_id,
                 'user_id' => $this->user_id,
                 'std_act_status' => 'waiting',
                 'mt_confirm_status' => 'confirmed',
@@ -127,7 +106,7 @@ class StudentActivitiesController extends Controller
             $prog_price = $programmes->prog_price; //price that will be inserted into transaction
 
             // check if the student is the internal student or external
-            $student = Students::find($request->student_id);
+            $student = Students::find($student_id);
             $total_amount = ($student->imported_id != NULL) ? 0 : $prog_price; //set to 0 if student is internal student
 
             $activities = StudentActivities::create($request_data);
@@ -151,6 +130,50 @@ class StudentActivitiesController extends Controller
             Log::error('Create Student Activities from Mentor Issue : ['.json_encode($request->all()).'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to create 1 on 1 call. Please try again.']);
         }
+
+        // send mail notification to mentees
+        $mentees_info = [
+            'name' => $student->first_name.' '.$student->last_name,
+            'email' => $student->email,
+        ];
+        
+        $data_mail = [
+            'meeting_id' => $activities->id, 
+            'name' => $student->first_name.' '.$student->last_name,
+            'mentor_name' => $activities->users->first_name.' '.$activities->users->last_name,
+            'module' => $activities->module,
+            'call_date' => $activities->call_date,
+            'location_link' => $activities->location_link,
+            'location_pw' => $activities->location_pw 
+        ];
+
+        Mail::send('templates.mail.to-mentees.next-meeting-announcement', $data_mail, function($mail) use ($mentees_info)  {
+            $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+            $mail->to($mentees_info['email'], $mentees_info['name']);
+            $mail->subject($this->TO_MENTEES_1ON1CALL_SUBJECT);
+        });
+
+        if (count(Mail::failures()) > 0) { 
+
+            // save to log mail admin
+            // save only if failure to sent
+            $log = array(
+                'sender'    => 'mentor',
+                'recipient' => $mentees_info['email'],
+                'subject'   => $this->TO_MENTEES_1ON1CALL_SUBJECT,
+                'message'   => 'Sending notification that mentor has invite the Student to do 1 on 1 call ['.json_encode($data_mail).']',
+                'date_sent' => Carbon::now(),
+                'status'    => "not delivered",
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            );
+            $save_log = new MailLogController;
+            $save_log->saveLogMail($log);
+            
+            foreach (Mail::failures() as $email_address) {
+                Log::error('Send Notification to Mentee, Mentor Created 1 on 1 Call Issue  : ['.$email_address.']');
+            }
+        } 
 
         return response()->json(['success' => true, 'message' => '1 on 1 Call has been made', 'data' => $response['activities']]);
     }

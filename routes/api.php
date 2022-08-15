@@ -8,6 +8,7 @@ use App\Http\Controllers\CRM\ClientController;
 use App\Http\Controllers\CRM\UniversityController as CRMUniversityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
+use App\Http\Controllers\EmailHandlerController;
 use App\Http\Controllers\EssayController;
 use App\Http\Controllers\EventCategoryController;
 use App\Http\Controllers\Google\GoogleCalendarController;
@@ -81,6 +82,9 @@ Route::prefix('v2')->group(__DIR__ . '/api/v2/user-api.php');
 
 // api route for global such as (mentee and user)
 Route::prefix('v1')->group(function(){
+
+    // email handler
+    Route::post('mail/handler/confirm-meeting', [EmailHandlerController::class, 'mentee_confirm_meeting'])->name('confirm_meeting_from_email');
     
     Route::post('account/{user_type}/new-password', [UserController::class, 'store_new_password']);
     Route::middleware(['auth:api,student-api', 'scope:student,admin,mentor,editor'])->group(function() {
@@ -88,7 +92,7 @@ Route::prefix('v1')->group(function(){
         Route::get('{user}/schedule/{user_sch_id}', [UserScheduleController::class, 'find']); //user = mentor, alumni, editor
         Route::get('programme/{prog_id}', [ProgrammeController::class, 'find']);
         Route::get('ap/list', [APController::class, 'index']);
-        
+
         // change
         Route::put('{person}/confirmation/activities/{std_act_id}', [StudentActivitiesController::class, 'confirmation_personal_meeting']);
         Route::put('{person}/{status}/activities/{std_act_id}', [StudentActivitiesController::class, 'cancel_reject_personal_meeting']);

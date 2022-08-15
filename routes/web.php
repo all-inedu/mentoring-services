@@ -4,6 +4,8 @@ use App\Http\Controllers\TransactionController;
 use App\Models\Medias;
 use App\Models\StudentActivities;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmailHandlerController;
+use App\Providers\RouteServiceProvider;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,8 +54,27 @@ Route::get('mail/test/add/meeting', function() {
         'call_with' => 'mentor',
         'module' => 'life skills',
         'call_date' => '2022-06-10 10:20',
-        'call_status' => 'waiting'
+        'call_status' => 'waiting',
+        'name' => 'Eric',
+        'mentor' => array(
+            'name' => 'Hedon'
+        )
     ];
 
-    return view('templates.mail.next-meeting-announcement', $data);
+    return view('templates.mail.to-mentees.next-meeting-announcement', $data);
+});
+
+Route::get('mail/review', function() {
+    $data['group_info'] = [
+        'hyperlink' => RouteServiceProvider::ONGOING_PROJECT_DETAIL_HYPERLINK,
+        'group_detail' => array(
+            'project_id' => 53,
+            'project_name' => 'Project Review',
+            'project_type' => 'Group Project',
+            'project_desc' => 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum',
+            'project_owner' => 'Eric'
+        )
+        ];
+
+    return view('templates.mail.to-mentors.invitation-group-project', $data);
 });

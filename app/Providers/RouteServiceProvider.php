@@ -45,6 +45,29 @@ class RouteServiceProvider extends ServiceProvider
     public const USER_STORE_PROFILE_PATH = 'profile/mentor';
     public const STUDENT_STORE_MEDIA_PATH = 'public';
 
+    //* mail info
+    // 1 on 1 call 
+    // reminder notification to mentees
+    public const TO_MENTEES_1ON1CALL_SUBJECT = 'New Call Invitation';
+
+    // 1 on 1 call
+    // when mentee confirm invitee from mentor to join 
+    public const TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT = 'has confirmed the 1 on 1 Call';
+
+    // 1 on 1 call
+    // when mentee cancel meeting
+    public const TO_MENTEES_CANCEL_1ON1CALL_SUBJECT = 'The meeting has been canceled';
+
+    // 1 on 1 call
+    // when mentee reject meeting
+    public const TO_MENTORS_MENTEE_HAS_REJECT_1ON1CALL_SUBJECT = 'has unable to attend the meeting';
+
+    // group project
+    // when mentee create group project
+    public const TO_MENTORS_GROUP_PROJECT_CREATED = 'New Group Project Has Been Made';
+
+    public const ONGOING_PROJECT_DETAIL_HYPERLINK = 'https://mentoring.all-inedu.com/mentor/activity/group/in-progress/';
+
     /**
      * The controller namespace for the application.
      *
