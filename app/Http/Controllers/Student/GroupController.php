@@ -167,7 +167,7 @@ class GroupController extends Controller
         }
 
         if (!$student = Students::with('users:id,email,first_name,last_name')->where('id', $this->student_id)->first()) {
-            return response()->json(['success' => false, 'error' => 'You have not a mentor yet. Call the administrator to use this feature']);
+            return response()->json(['success' => false, 'error' => 'You have no mentor yet. Call the administrator to use this feature']);
         }
 
         DB::beginTransaction();

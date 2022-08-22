@@ -147,14 +147,17 @@ class StudentController extends Controller
             $column_tag = $all->groupBy('tag')->select('tag')->get();
             foreach ($column_tag as $tag) {
                 $raw_tag = $tag->tag;
-                for ($i = 0; $i < count($raw_tag); $i++) {
-                    if (!in_array($raw_tag[$i], $select_tag))
-                        array_push($select_tag, $raw_tag[$i]);
+                if ($raw_tag) {
+                    $count_raw_tag = count($raw_tag);
+                    for ($i = 0; $i < $count_raw_tag; $i++) {
+                        if (!in_array($raw_tag[$i], $select_tag))
+                            array_push($select_tag, $raw_tag[$i]);
+                    }
                 }
             }
             
         } catch (Exception $e) {
-            Log::error('Select Student Use User Id  Issue : ['.$user_id.'] '.$e->getMessage());
+            Log::error('Select Student Use User Id Issue : ['.$user_id.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to select student use User Id. Please try again.']);
         }
         sort($select_tag);
