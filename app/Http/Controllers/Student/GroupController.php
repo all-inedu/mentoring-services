@@ -37,6 +37,7 @@ class GroupController extends Controller
     protected $MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
     protected $ONGOING_PROJECT_DETAIL_HYPERLINK;
     protected $TO_MENTORS_GROUP_PROJECT_CREATED;
+    protected $NOTIFICATION_HANDLER;
 
     public function __construct()
     {
@@ -46,6 +47,7 @@ class GroupController extends Controller
         $this->MENTOR_GROUP_PROJECT_VIEW_PER_PAGE = RouteServiceProvider::MENTOR_GROUP_PROJECT_VIEW_PER_PAGE;
         $this->ONGOING_PROJECT_DETAIL_HYPERLINK = RouteServiceProvider::ONGOING_PROJECT_DETAIL_HYPERLINK;
         $this->TO_MENTORS_GROUP_PROJECT_CREATED = RouteServiceProvider::TO_MENTORS_GROUP_PROJECT_CREATED;
+        $this->NOTIFICATION_HANDLER = RouteServiceProvider::NOTIFICATION_HANDLER;
     }
 
     //* group project main function start
@@ -534,7 +536,7 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to confirm invitee. Please try again.']);
         }
 
-        $response = $from_mail ? $message : response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
+        $response = $from_mail ? redirect()->away($this->NOTIFICATION_HANDLER.$message) : response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
         return $response;
     }
 

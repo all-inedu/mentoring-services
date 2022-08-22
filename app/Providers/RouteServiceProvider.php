@@ -68,6 +68,8 @@ class RouteServiceProvider extends ServiceProvider
 
     public const ONGOING_PROJECT_DETAIL_HYPERLINK = 'https://mentoring.all-inedu.com/mentor/activity/group/in-progress/';
 
+    public const NOTIFICATION_HANDLER = 'https://mentoring.all-inedu.com/notification/';
+
     /**
      * The controller namespace for the application.
      *
