@@ -38,6 +38,7 @@ use App\Http\Controllers\Student\UniversityController;
 use App\Http\Controllers\Student\VerificationController as StudentVerificationController;
 use App\Http\Controllers\StudentActivitiesController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentPairingController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\User\GroupMeetingController;
 use App\Http\Controllers\User\GroupProjectController;
@@ -82,6 +83,8 @@ Route::prefix('v2')->group(__DIR__ . '/api/v2/user-api.php');
 
 // api route for global such as (mentee and user)
 Route::prefix('v1')->group(function(){
+
+    Route::post('mentees/pairing', [StudentPairingController::class, 'pair_student']);
 
     // email handler
     Route::post('mail/handler/confirm-meeting', [EmailHandlerController::class, 'mentee_confirm_meeting'])->name('confirm_meeting_from_email');
