@@ -9,6 +9,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Http\Middleware\BaseMiddleware;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
+use Illuminate\Support\Facades\Log;
 
 class RoleAuthorization extends BaseMiddleware
 {
@@ -30,7 +31,7 @@ class RoleAuthorization extends BaseMiddleware
             //Try authenticating user
             $user = $token->authenticate();
         } catch (TokenExpiredException $e) {
-
+            Log::error($e->getMessage());
             //Thrown if token has expired
             return $this->unauthorized('Your token has expired.');
         } catch (TokenInvalidException $e) {

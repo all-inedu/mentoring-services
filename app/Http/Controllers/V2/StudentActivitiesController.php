@@ -108,7 +108,7 @@ class StudentActivitiesController extends Controller
             'location_pw' => 'nullable',
             'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
             'module' => 'required_if:activities,1-on-1-call|in:life skills,career exploration,university admission,life at university',
-            'call_date' => ['required_if:activities,1-on-1-call', 'date', 'after_or_equal:'. date('Y-m-d', strtotime("+1 days"))/*, new CheckAvailabilityUserSchedule($request->user_id)*/],
+            'call_date' => ['required_if:activities,1-on-1-call', 'date', 'after_or_equal:'. date('Y-m-d')/*, new CheckAvailabilityUserSchedule($request->user_id)*/],
             'created_by' => 'required|in:mentor,editor,alumni'
         ];
 
