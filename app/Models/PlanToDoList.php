@@ -22,6 +22,11 @@ class PlanToDoList extends Model
         'status'
     ];
 
+    public function getDescriptionAttribute($value)
+    {   
+        return strip_tags($value);
+    }
+
     public function student_mentors()
     {
         return $this->belongsTo(StudentMentors::class, 'student_mentors_id', 'id');
