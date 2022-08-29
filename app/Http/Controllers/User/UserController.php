@@ -33,6 +33,13 @@ class UserController extends Controller
         $this->ADMIN_LIST_USER_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_USER_VIEW_PER_PAGE;
     }
 
+    public function check_token()
+    {
+        $user = Auth::guard('api')->check();
+        if ($user)
+            return Auth::guard('api')->user();
+    }
+
     public function find($role_name, $id = null, $detail = null, Request $request)
     {
         $rules = [

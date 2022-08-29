@@ -38,6 +38,7 @@ use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
 use App\Http\Controllers\V2\StudentActivitiesController as V2StudentActivitiesController;
 
 Route::prefix('auth/u')->group(function() {
+    Route::get('check/token', [UserController::class, 'check_token'])->middleware(['auth:api', 'scopes:mentor']);
     Route::post('register', [UserController::class, 'store']);
     Route::get('verification/{verification_code}', [UserController::class, 'verifying']);
     Route::post('send/verification-code', [UserController::class, 'resendVerificationCode'])->middleware(['auth:api']);
