@@ -31,15 +31,12 @@ class RoleAuthorization extends BaseMiddleware
             //Try authenticating user
             $user = $token->authenticate();
         } catch (TokenExpiredException $e) {
-            Log::error($e->getMessage());
             //Thrown if token has expired
             return $this->unauthorized('Your token has expired.');
         } catch (TokenInvalidException $e) {
-            Log::error($e->getMessage());
             //Thrown if token invalid
             return $this->unauthorized('Your token is invalid.');
         } catch (JWTException $e) {
-            Log::error($e->getMessage());
             //Thrown if token was not found in the request.
             return $this->unauthorized('Authorization Token not found');
         }

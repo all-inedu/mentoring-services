@@ -35,9 +35,9 @@ class UserController extends Controller
 
     public function check_token()
     {
-        $user = Auth::guard('api')->check();
-        if ($user)
-            return Auth::guard('api')->user();
+        if (!Auth::guard('api')->check()) {
+            return response()->json(['success' => false, 'error' => 'You have to log in first']);
+        }
     }
 
     public function find($role_name, $id = null, $detail = null, Request $request)
