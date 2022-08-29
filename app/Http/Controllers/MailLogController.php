@@ -79,7 +79,7 @@ class MailLogController extends Controller
         $new_log->message = $log['message'];
         $new_log->date_sent = $log['date_sent'];
         $new_log->status = $log['status'];
-        $new_log->error_message = $log['error_message'] ? $log['error_message'] : NULL;
+        $new_log->error_message = array_key_exists('error_message', $log) ? $log['error_message'] : NULL;
         return $new_log->save();
     }
 
