@@ -201,4 +201,10 @@ class StudentController extends Controller
         // })->paginateChecker($is_detail, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
         // return response()->json(['success' => true, 'data' => $students]);
     }
+
+    public function _all()
+    {
+        $students = Students::orderBy('first_name', 'asc')->where('status', 1)->select(['id', 'first_name', 'last_name', 'email'])->get();
+        return response()->json(['success' => true, 'data' => $students]);
+    }
 }

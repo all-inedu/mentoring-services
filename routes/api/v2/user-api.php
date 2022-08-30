@@ -28,6 +28,10 @@ Route::middleware(['auth:api', 'scopes:admin'])->group(function() {
 //! Mentor Scopes
 Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
 
+    Route::prefix('update')->group(function() {
+        Route::put('status/1-on-1-call', [V2StudentActivitiesController::class, 'finish_meeting']);
+    });
+
     Route::prefix('list')->group(function() {
         Route::get('activities/{programme}/{status}/{recent?}', [V2StudentActivitiesController::class, 'index']);
     });

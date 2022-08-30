@@ -41,6 +41,31 @@ class StudentActivitiesController extends Controller
         $this->TO_MENTEES_1ON1CALL_SUBJECT = RouteServiceProvider::TO_MENTEES_1ON1CALL_SUBJECT;
     }
 
+    public function finish_meeting($meeting_id)
+    {
+        if (!$meeting = StudentActivities::where('id', $meeting_id)->where('user_id', $this->user_id)->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->first()) {
+            return response()->json(['success' => false, 'error' => 'Couldn\'t find the meeting']);
+        }
+
+        $call_status = $meeting->call_status;
+        if (($call_status == "finished") || ($call_status == "rejected") || ($call_status == "canceled")) {
+            return response()->json(['success' => false, 'error' => 'The status meeting cannot be changed']);
+        }
+
+        DB::beginTransaction();
+        try {
+            $meeting->call_status = "finished";
+            $meeting->save();
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Manually finish personal meeting Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Couldn\'t update meeting status. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => 'The meeting has been updated']);
+    }
+
     public function mentors_group_project_summary()
     {
         try {

@@ -166,6 +166,7 @@ Route::middleware(['auth:api', 'scope:admin,mentor'])->group(function() {
         Route::get('requirement/{category}/{student_id}/{univ_id?}', [UniRequirementController::class, 'index']);
         Route::get('mentor/group/project/{status}', [GroupProjectController::class, 'index']);
         Route::get('group/meeting/{status}/{recent?}', [GroupMeetingController::class, 'index']);
+        Route::get('student', [StudentController::class, '_all']);
     });
 
     Route::prefix('find')->group(function() {
@@ -194,6 +195,7 @@ Route::middleware(['auth:api', 'scope:admin,mentor'])->group(function() {
         Route::put('{field}/group/project/{group_id}', [GroupProjectController::class, 'update_field']);
         Route::put('progress/status/group/project/{group_id}/{progress}', [GroupProjectController::class, 'update_progress']);
         Route::put('group/meeting/attendance/{group_meet_id}', [GroupMeetingController::class, 'attended']);
+        Route::put('status/1-on-1-call/{meeting_id}', [V2StudentActivitiesController::class, 'finish_meeting']);
     });
 
     Route::prefix('delete')->group(function() {
