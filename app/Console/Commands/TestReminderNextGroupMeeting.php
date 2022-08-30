@@ -172,6 +172,11 @@ class TestReminderNextGroupMeeting extends Command
                     Log::channel('group_meeting_reminder_log')->error('Update User Attendances Mail Sent Issue : [ Attend_id '.$v->pivot->id.' ] '.$e->getMessage());
                 }
             }
+
+            Log::channel('group_meeting_reminder_log')->info('Reminder for scheduled group meeting has been sent to students and mentors');
+
+            $meeting_detail->mail_sent = 1;
+            $meeting_detail->save();
         }
         return 1;
     }

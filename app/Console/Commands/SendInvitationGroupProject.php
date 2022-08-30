@@ -67,12 +67,13 @@ class SendInvitationGroupProject extends Command
                     'project_type' => $group_info->project_type,
                     'project_desc' => $group_info->project_desc,
                     'project_owner' => $group_info->student_id != NULL ? $group_info->students->first_name.' '.$group_info->students->first_name : $group_info->users->first_name.' '.$group_info->users->last_name,
-                ); 
+                );
                 
                 $today = date('Y-m-d');
                 // get participant by todays date only
                 // find where system hasn't sending the email ( 0 not delivered, 1 delivered )
                 if ($participants = $group_info->group_participant()->wherePivot('mail_sent_status', 0)->wherePivot('status', 0)->get()) {
+                    echo json_encode($participants);exit;
                     foreach ($participants as $student) {
                         $mail_data['student_detail'] = array(
                             'participant_id' => $student->pivot->id,

@@ -24,10 +24,10 @@ class GroupProject extends Model
         'picture',
     ];
 
-    public function getProjectDescAttribute($value)
-    {
-        return strip_tags($value);
-    }
+    // public function getProjectDescAttribute($value)
+    // {
+    //     return strip_tags($value);
+    // }
 
     public function users()
     {

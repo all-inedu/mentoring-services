@@ -172,7 +172,7 @@ class GroupMeetingController extends Controller
             }
 
             //* send email to mentor and the other member
-            ReminderNextGroupMeeting::dispatch()->delay(now()->addSeconds(2));
+            // ReminderNextGroupMeeting::dispatch()->delay(now()->addSeconds(2));
 
             DB::commit();
         } catch (Exception $e) {

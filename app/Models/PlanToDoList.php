@@ -22,10 +22,10 @@ class PlanToDoList extends Model
         'status'
     ];
 
-    public function getDescriptionAttribute($value)
-    {   
-        return strip_tags($value);
-    }
+    // public function getDescriptionAttribute($value)
+    // {   
+    //     return strip_tags($value);
+    // }
 
     public function student_mentors()
     {

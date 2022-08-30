@@ -104,7 +104,7 @@ class StudentActivitiesController extends Controller
         $rules = [
             'student_id' => 'required|exists:students,id',
             'handled_by' => ['nullable', new RolesChecking('admin')],
-            'location_link' => 'nullable',
+            'location_link' => 'nullable|url',
             'location_pw' => 'nullable',
             'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
             'module' => 'required_if:activities,1-on-1-call|in:life skills,career exploration,university admission,life at university',

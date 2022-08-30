@@ -96,6 +96,8 @@ class InterestController extends Controller
 
     public function store(Request $request)
     {
+        // validasi unique nya per user
+
         $rules = [
             'exists' => 'boolean',
             'career_major_name' => 'required_if:exists,==,true|nullable|unique:interests,career_major_name|exists:mysql_internship.tb_specialization,spec_name,spec_status,1',
