@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class InterestController extends Controller
 {
@@ -19,7 +21,7 @@ class InterestController extends Controller
 
     public function __construct()
     {
-        $this->student_id = auth()->guard('student-api')->user()->id;        
+        $this->student_id = Auth::guard('student-api')->check() ? auth()->guard('student-api')->user()->id : NULL;        
     }
     
     public function index(Request $request)
@@ -59,10 +61,17 @@ class InterestController extends Controller
             return response()->json(['success' => false, 'error' => 'Id does not exist'], 400);
         }
 
+        $career_major_name = $request->career_major_name;
+        $career_major_other = $request->career_major_other;
+
         $rules = [
             'exists' => 'boolean',
-            'career_major_name' => 'required_if:exists,==,true|nullable|unique:interests,career_major_name|exists:mysql_internship.tb_specialization,spec_name,'.$interest_id.',spec_status,1',
-            'career_major_other' => 'required_if:exists,==,false|nullable|unique:interests,career_major_name,'.$interest_id
+            'career_major_name' => ['required_if:exists,==,true', 'nullable', Rule::unique('interests', 'career_major_name')->where(function ($query) use ($career_major_name) {
+                                        $query->where('student_id', $this->student_id);
+                                    })->ignore($interest_id), 'exists:mysql_internship.tb_specialization,spec_name,spec_status,1'],
+            'career_major_other' => ['required_if:exists,==,false', 'nullable', Rule::unique('interests', 'career_major_name')->where(function ($query) {
+                                        $query->where('student_id', $this->student_id);
+                                    })->ignore($interest_id)]
         ];
 
         $custom_messages = [
@@ -97,11 +106,16 @@ class InterestController extends Controller
     public function store(Request $request)
     {
         // validasi unique nya per user
+        $career_major_name = $request->career_major_name;
 
         $rules = [
             'exists' => 'boolean',
-            'career_major_name' => 'required_if:exists,==,true|nullable|unique:interests,career_major_name|exists:mysql_internship.tb_specialization,spec_name,spec_status,1',
-            'career_major_other' => 'required_if:exists,==,false|nullable|unique:interests,career_major_name'
+            'career_major_name' => ['required_if:exists,==,true', 'nullable', Rule::unique('interests', 'career_major_name')->where(function ($query) use ($career_major_name) {
+                                        $query->where('student_id', $this->student_id);
+                                    }), 'exists:mysql_internship.tb_specialization,spec_name,spec_status,1'],
+            'career_major_other' => ['required_if:exists,==,false', 'nullable', Rule::unique('interests', 'career_major_name')->where(function ($query) use ($career_major_name) {
+                                        $query->where('student_id', $this->student_id);
+                                    })]
         ];
 
         $custom_messages = [

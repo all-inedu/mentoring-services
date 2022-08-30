@@ -111,6 +111,7 @@ class ProfileController extends Controller
             'last_name'    => 'required|string|max:255',
             'birthday'     => 'nullable|date',
             'phone_number' => 'required|string|max:25',
+            'school_name'  => 'nullable',
             'grade'        => 'nullable|integer|min:7',
             'address'      => 'required'
         ];
@@ -128,7 +129,8 @@ class ProfileController extends Controller
             // $user->birthday = $request->birthday;
             $user->phone_number = $request->phone_number;
             $user->address = $request->address;
-            // $user->grade = $request->grade;
+            $user->grade = $request->grade;
+            $user->school_name = $request->school_name;
             $user->save();
 
             DB::commit();

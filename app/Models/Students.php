@@ -71,10 +71,10 @@ class Students extends Authenticatable
         return $grade <= 12 ? $grade : 'Not High School';
     }
 
-    public function getAddressAttribute($value)
-    {
-        return strip_tags($value);
-    }
+    // public function getAddressAttribute($value)
+    // {
+    //     return strip_tags($value);
+    // }
 
     public function getTagAttribute($value)
     {
