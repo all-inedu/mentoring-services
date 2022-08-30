@@ -73,6 +73,8 @@ class CompetitionController extends Controller
             $competition->comp_name = $request->comp_name;
             $competition->participation_level = $request->participation_level;
             $competition->accomplishments = $request->accomplishment;
+            $competition->month = $request->month;
+            $competition->year = $request->year;
             $competition->save();
 
             DB::commit();
@@ -90,7 +92,9 @@ class CompetitionController extends Controller
         $rules = [
             'comp_name' => 'required|max:255',
             'participation_level' => 'required',
-            'accomplishment' => 'required'
+            'accomplishment' => 'required',
+            'month' => 'nullable|string|max:2',
+            'year' => 'nullable|string|max:4'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -105,6 +109,8 @@ class CompetitionController extends Controller
             $competition->comp_name = $request->comp_name;
             $competition->participation_level = $request->participation_level;
             $competition->accomplishments = $request->accomplishment;
+            $competition->month = $request->month;
+            $competition->year = $request->year;
             $competition->save();
 
             DB::commit();

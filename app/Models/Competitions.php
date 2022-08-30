@@ -17,7 +17,9 @@ class Competitions extends Model
     protected $fillable = [
         'comp_name',
         'participation_level',
-        'accomplishments'
+        'accomplishments',
+        'month',
+        'year'
     ];
 
     /**
