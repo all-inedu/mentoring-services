@@ -43,7 +43,7 @@ class StudentActivitiesController extends Controller
 
     public function meeting_log($student_id)
     {
-        $meeting = StudentActivities::with('meeting_minutes')->where('student_id', $student_id)->where('call_status', 'finished')->orderBy('call_date', 'desc')->paginate(10);
+        $meeting = StudentActivities::with(['students', 'meeting_minutes'])->where('student_id', $student_id)->where('call_status', 'finished')->orderBy('call_date', 'desc')->paginate(10);
         return response()->json(['success' => true, 'data' => $meeting]);
     }
 
