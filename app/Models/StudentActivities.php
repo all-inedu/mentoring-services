@@ -62,7 +62,7 @@ class StudentActivities extends Model
 
     public function meeting_minutes()
     {
-        return $this->hasMany(MeetingMinutes::class, 'st_act_id', 'id');
+        return $this->hasOne(MeetingMinutes::class, 'st_act_id', 'id');
     }
 
     public function watch_detail()

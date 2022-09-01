@@ -41,6 +41,12 @@ class StudentActivitiesController extends Controller
         $this->TO_MENTEES_1ON1CALL_SUBJECT = RouteServiceProvider::TO_MENTEES_1ON1CALL_SUBJECT;
     }
 
+    public function meeting_log()
+    {
+        $meeting = StudentActivities::with('meeting_minutes')->where('call_status', 'finished')->orderBy('call_date', 'desc')->paginate(10);
+        return response()->json(['success' => true, 'data' => $meeting]);
+    }
+
     public function finish_meeting($meeting_id)
     {
         if (!$meeting = StudentActivities::where('id', $meeting_id)->where('user_id', $this->user_id)->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->first()) {

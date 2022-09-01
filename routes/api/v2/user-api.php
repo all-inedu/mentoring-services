@@ -34,6 +34,7 @@ Route::middleware(['auth:api', 'scopes:mentor'])->group(function() {
 
     Route::prefix('list')->group(function() {
         Route::get('activities/{programme}/{status}/{recent?}', [V2StudentActivitiesController::class, 'index']);
+        Route::get('meeting-log', [V2StudentActivitiesController::class, 'meeting_log']);
     });
 
     Route::prefix('create')->group(function() {
