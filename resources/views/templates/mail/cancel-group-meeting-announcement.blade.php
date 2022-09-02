@@ -180,12 +180,12 @@
                                             <tr>
                                                 <td>Next Meeting</td>
                                                 <td>:</td>
-                                                <td>{{ date('d F Y', strtotime($meeting_detail->meeting_date)) }}</td>
+                                                <td>{{ date('d F Y', strtotime($meeting_detail->start_meeting_date)) }}</td>
                                             </tr>
                                             <tr>
                                                 <td align="right">Time</td>
                                                 <td>:</td>
-                                                <td>{{ date('H:i T', strtotime($meeting_detail->meeting_date)) }}</td>
+                                                <td>{{ date('H:i T', strtotime($meeting_detail->start_meeting_date)) }}</td>
                                             </tr>
                                             <tr>
                                                 <td align="right">Location</td>

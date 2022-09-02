@@ -42,7 +42,7 @@ class FinishGroupMeeting extends Command
     public function handle()
     {
         $today = date('Y-m-d');
-        $meetings = GroupMeeting::where('status', 0)->where('meeting_date', '<', $today)->whereHas('group_project', function($query) {
+        $meetings = GroupMeeting::where('status', 0)->where('start_meeting_date', '<', $today)->whereHas('group_project', function($query) {
             $query->where('status', 'in progress');
         })->get();
 

@@ -43,7 +43,7 @@ class DashboardController extends Controller
             'upcoming' => $group_m_upcoming_raw->count(),
             'history' => $group_m_history_raw->count(),
             'detail' => array(
-                'upcoming' => $group_m_upcoming_raw->select(['group_id', 'meeting_date', 'meeting_link', 'meeting_subject'])->get()->makeHidden(['student_attendances', 'user_attendances']),
+                'upcoming' => $group_m_upcoming_raw->select(['group_id', 'start_meeting_date', 'end_meeting_date', 'meeting_link', 'meeting_subject'])->get()->makeHidden(['student_attendances', 'user_attendances']),
                 'history' => $group_m_history_raw->get()
             )
         );

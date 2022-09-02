@@ -97,7 +97,7 @@ class TestReminderNextGroupMeeting extends Command
                     $save_log->saveLogMail($log);
                     
                     foreach (Mail::failures() as $email_address) {
-                        Log::channel('group_meeting_reminder_log')->error("Sending reminder mail failures to ". $email_address.' from GM : '.$group_info->project_name.' with id '.$group_info->id.', scheduled at '.$meeting_detail->meeting_date);
+                        Log::channel('group_meeting_reminder_log')->error("Sending reminder mail failures to ". $email_address.' from GM : '.$group_info->project_name.' with id '.$group_info->id.', scheduled at '.$meeting_detail->start_meeting_date);
                     }
                     continue;
                 } 
@@ -154,7 +154,7 @@ class TestReminderNextGroupMeeting extends Command
                     $save_log->saveLogMail($log);
 
                     foreach (Mail::failures() as $email_address) {
-                        Log::channel('group_meeting_reminder_log')->error("Sending reminder mail failures to ". $email_address.' from GM : '.$group_info->project_name.' with id '.$group_info->id.', scheduled at '.$meeting_detail->meeting_date);
+                        Log::channel('group_meeting_reminder_log')->error("Sending reminder mail failures to ". $email_address.' from GM : '.$group_info->project_name.' with id '.$group_info->id.', scheduled at '.$meeting_detail->start_meeting_date);
                     }
                     continue;
                 } 

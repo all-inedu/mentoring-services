@@ -41,7 +41,7 @@ class GroupMeetingController extends Controller
         try {
             $pivot = $group_meeting->user_attendances->where('id', $this->user_id)->first()->pivot;
             if ($pivot->attend_status == 1) {
-                return response()->json(['success' => true, 'message' => 'You already confirmed to attend the group meeting is held at '.date('M d, Y H:i', strtotime($group_meeting->meeting_date))]);
+                return response()->json(['success' => true, 'message' => 'You already confirmed to attend the group meeting is held at '.date('M d, Y H:i', strtotime($group_meeting->start_meeting_date))]);
             }
             $pivot->attend_status = 1;
             $pivot->save();
@@ -53,7 +53,7 @@ class GroupMeetingController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to confirm mentor attendance. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'You\'ve confirmed to attend the group meeting that is held at '.date('M d, Y H:i', strtotime($group_meeting->meeting_date))]);
+        return response()->json(['success' => true, 'message' => 'You\'ve confirmed to attend the group meeting that is held at '.date('M d, Y H:i', strtotime($group_meeting->start_meeting_date))]);
     }
 
     public function index($status, $recent = NULL)
