@@ -142,7 +142,7 @@ class StudentActivitiesController extends Controller
             'location_link' => 'nullable|url',
             'location_pw' => 'nullable',
             'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
-            'module' => 'required_if:activities,1-on-1-call|in:life skills,career exploration,university admission,life at university',
+            'module.*' => 'required_if:activities,1-on-1-call|distinct|in:life skills,career exploration,university admission,life at university',
             'call_date' => ['required_if:activities,1-on-1-call', 'date', 'after_or_equal:'. date('Y-m-d')/*, new CheckAvailabilityUserSchedule($request->user_id)*/],
             'created_by' => 'required|in:mentor,editor,alumni'
         ];
@@ -155,6 +155,11 @@ class StudentActivitiesController extends Controller
         DB::beginTransaction();
         try {
 
+            $module = NULL;
+            for ($i = 0; $i < count($request->module) ; $i++) {
+                $module .= $module != NULL ? ', '.$request->module[$i] : $request->module[$i]; 
+            }
+
             $request_data = [
                 'prog_id' => $programme_id, 
                 'student_id' => $student_id,
@@ -166,7 +171,7 @@ class StudentActivitiesController extends Controller
                 'location_pw' => $request->location_pw,
                 'prog_dtl_id' => NULL,
                 'call_with' => $request->call_with,
-                'module' => $request->module,
+                'module' => $module,
                 'call_date' => $request->call_date,
                 'call_status' => 'waiting',
                 'created_by' => $request->created_by
