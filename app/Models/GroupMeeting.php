@@ -15,7 +15,8 @@ class GroupMeeting extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'meeting_date',
+        'start_meeting_date',
+        'end_meeting_date',
         'meeting_link',
         'meeting_subject',
         'mail_sent',
