@@ -447,7 +447,7 @@ class StudentActivitiesController extends Controller
                         'name' => $activities->users->first_name.' '.$activities->users->last_name,
                         'mentee_name' => $activities->students->first_name.' '.$activities->students->last_name,
                         'module' => $activities->module,
-                        'call_date' => $activities->call_date,
+                        'call_date' => $activities->start_call_date,
                         'location_link' => $activities->location_link,
                         'location_pw' => $activities->location_pw 
                     ];
@@ -562,7 +562,7 @@ class StudentActivitiesController extends Controller
             $data_mail = [
                 'name' => $person_info['name'],
                 'module' => $activities->module,
-                'call_date' => $activities->call_date,
+                'call_date' => $activities->start_call_date,
                 'location_link' => $activities->location_link,
                 'location_pw' => $activities->location_pw 
             ];

@@ -47,7 +47,7 @@ class FinishPersonalMeeting extends Command
             })->where(function($query) {
                 $query->where('std_act_status', 'confirmed')->orWhere('mt_confirm_status', 'confirmed');
             })->where('call_status', 'waiting')->
-            where('call_date', '<', $today)->get();
+            where('end_call_date', '<', $today)->get();
 
         DB::beginTransaction();
         try {

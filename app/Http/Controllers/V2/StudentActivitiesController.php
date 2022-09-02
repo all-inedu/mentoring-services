@@ -46,7 +46,7 @@ class StudentActivitiesController extends Controller
         $programme = '1-on-1-call';
         $meeting = StudentActivities::with(['students', 'users', 'meeting_minutes'])->whereHas('programmes', function($query) use ($programme) {
             $query->where('prog_name', $programme);
-        })->where('student_id', $student_id)->where('call_status', 'finished')->orderBy('call_date', 'desc')->paginate(10);
+        })->where('student_id', $student_id)->where('call_status', 'finished')->orderBy('start_call_date', 'desc')->paginate(10);
         
         return response()->json(['success' => true, 'data' => $meeting]);
     }
