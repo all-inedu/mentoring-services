@@ -109,9 +109,11 @@ class GroupMeetingController extends Controller
 
         $rules = [
             'group_id' => ['required', new IsJoinGroupChecker($this->user_id)],
-            'meeting_date' => ['required', 'date_format:Y-m-d H:i', 'after_or_equal:'.date('Y-m-d', strtotime("+1 days")), Rule::unique('group_meetings')->where(function ($query) use ($request) {
-                return $query->where('group_id', $request->group_id);
-            })],
+            'start_date' => 'required|date_format:Y-m-d H:i|after_or_equal:'.date('Y-m-d'),
+            'end_date' => 'required|date_format:Y-m-d H:i|after:start_date',
+            // 'meeting_date' => ['required', 'date_format:Y-m-d H:i', 'after_or_equal:'.date('Y-m-d', strtotime("+1 days")), Rule::unique('group_meetings')->where(function ($query) use ($request) {
+            //     return $query->where('group_id', $request->group_id);
+            // })],
             'meeting_link' => 'required|string|URL',
             'meeting_subject' => 'required|string|max:255'
         ];
@@ -121,28 +123,28 @@ class GroupMeetingController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        // $request_date = $request->meeting_date;
-        // $hour_before = date('Y-m-d H:i', strtotime("-1 hour", strtotime($request_date)));
-        // $hour_after = date('Y-m-d H:i', strtotime("+1 hour", strtotime($request_date)));
+        $from = $request->start_date;
+        $to = $request->end_date;
 
-        // if ($group_meeting = GroupMeeting::where(function($query) use ($request_date, $hour_before, $hour_after) {
-        //     $query->whereBetween('meeting_date', [$hour_before, $request_date])
-        //     ->orWhereBetween('meeting_date', [$request_date, $hour_after]);
-        // })->whereHas('user_attendances', function($query) {
-        //     // adakah student yang memiliki jadwal group meeting di range tgl tersebut
-        //     $query->where('user_id', $this->user_id)->where('attend_status', 1);
-        // })->where('group_meetings.status', 0)->count() > 0) {
-        //     return response()->json([
-        //         'success' => false, 
-        //         'error' => 'You already have group meeting around '.date('d M Y H:i', strtotime($request_date)).'. Please make sure you don\'t have any group meeting schedule before creating a new one.',
-        //     ]);
-        // }
+        if ($group_meeting = GroupMeeting::where(function($query) use ($from, $to) {
+            $query->whereBetween('start_meeting_date', [$from, $to])
+            ->orWhereBetween('end_meeting_date', [$from, $to]);
+        })->whereHas('user_attendances', function($query) {
+            // adakah student yang memiliki jadwal group meeting di range tgl tersebut
+            $query->where('user_id', $this->user_id)->where('attend_status', 1);
+        })->where('group_meetings.status', 0)->count() > 0) {
+            return response()->json([
+                'success' => false, 
+                'error' => 'You already have group meeting around '.date('d M Y H:i', strtotime($from)).'. Please make sure you don\'t have any group meeting schedule before creating a new one.',
+            ]);
+        }
 
         DB::beginTransaction();
         try {
             $meeting = new GroupMeeting;
             $meeting->group_id = $request->group_id;
-            $meeting->meeting_date = $request->meeting_date;
+            $meeting->start_meeting_date = $from;
+            $meeting->end_meeting_date = $to;
             $meeting->meeting_link = $request->meeting_link;
             $meeting->meeting_subject = $request->meeting_subject;
             $meeting->status = $request->status;
@@ -183,7 +185,7 @@ class GroupMeetingController extends Controller
 
         return response()->json([
             'success' => true, 'message' => 
-            'Your next meeting is on '.date('d F Y', strtotime($request->meeting_date)).' at '.date('H:i', strtotime($request->meeting_date))
+            'Your next meeting is on '.date('d F Y', strtotime($from)).' at '.date('H:i', strtotime($from))
         ]);
     }
 }
