@@ -502,6 +502,7 @@ class StudentActivitiesController extends Controller
         $rules = [
             'person' => 'required|in:student,mentor',
             'status' => 'in:cancel,reject',
+            'reason' => 'required'
             // 'std_act_id' => [new PersonalMeetingChecker($person)]
         ];
 
@@ -546,6 +547,7 @@ class StudentActivitiesController extends Controller
                         ];
                     // }
                     $activities->std_act_status = $status;
+                    $activities->std_reason = $request->reason;
                     break;
 
                 case "mentor":
@@ -556,6 +558,7 @@ class StudentActivitiesController extends Controller
                         ];
                     // }
                     $activities->mt_confirm_status = $status;
+                    $activities->mt_reason = $request->reason;
                     break;
             }
 
