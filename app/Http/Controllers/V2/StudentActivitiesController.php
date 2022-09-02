@@ -143,7 +143,8 @@ class StudentActivitiesController extends Controller
             'location_pw' => 'nullable',
             'call_with' => 'required_if:activities,1-on-1-call|in:mentor,alumni,editor',
             'module.*' => 'required_if:activities,1-on-1-call|distinct|in:life skills,career exploration,admissions mentoring,life at university',
-            'call_date' => ['required_if:activities,1-on-1-call', 'date', 'after_or_equal:'. date('Y-m-d')/*, new CheckAvailabilityUserSchedule($request->user_id)*/],
+            'start_date' => ['required_if:activities,1-on-1-call', 'date', 'after_or_equal:'. date('Y-m-d')/*, new CheckAvailabilityUserSchedule($request->user_id)*/],
+            'end_date' => ['required_if:activities,1-on-1-call', 'date', 'after:start_date'],
             'created_by' => 'required|in:mentor,editor,alumni'
         ];
 
@@ -154,6 +155,15 @@ class StudentActivitiesController extends Controller
         
         DB::beginTransaction();
         try {
+
+            $from = $request->start_date;
+            $to = $request->end_date;
+
+            if (StudentActivities::where('call_status', 'waiting')->where(function($query) use ($from, $to) {
+                $query->whereBetween('start_call_date', [$from, $to])->orWhereBetween('end_call_date', [$from, $to]);
+            })->where('user_id', $this->user_id)->count() > 0) {
+                return response()->json(['success' => false, 'error' => 'You already have a meeting around '.date('d M Y H:i', strtotime($from)).'. Please make sure you don\'t have any meeting schedule before creating a new one.']);
+            }
 
             $module = NULL;
             for ($i = 0; $i < count($request->module) ; $i++) {
@@ -172,7 +182,8 @@ class StudentActivitiesController extends Controller
                 'prog_dtl_id' => NULL,
                 'call_with' => $request->call_with,
                 'module' => $module,
-                'call_date' => $request->call_date,
+                'start_call_date' => $from,
+                'end_call_date' => $to,
                 'call_status' => 'waiting',
                 'created_by' => $request->created_by
             ];
