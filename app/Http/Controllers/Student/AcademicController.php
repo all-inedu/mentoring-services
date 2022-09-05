@@ -89,8 +89,8 @@ class AcademicController extends Controller
     {
         $rules = [
             'school_subject' => 'required|max:255',
-            'score' => 'required|integer',
-            'max_score' => 'required|integer'
+            'score' => 'required',
+            'max_score' => 'required'
         ];
 
         $validator = Validator::make($request->all(), $rules);
