@@ -287,7 +287,7 @@ class GroupController extends Controller
         $rules = [
             'group_id'        => 'required|exists:group_projects,id',
             'project_name'    => 'required|string|max:255',
-            'project_type'    => 'nullable|string|max:255|in:group mentoring,profile building mentoring',
+            // 'project_type'    => 'nullable|string|max:255|in:group mentoring,profile building mentoring',
             'project_desc'    => 'required',
             'progress_status' => 'nullable|in:on track,behind,ahead',
             'status'          => 'required|in:in progress,completed',
