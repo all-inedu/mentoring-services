@@ -272,6 +272,7 @@ class StudentActivitiesController extends Controller
         $rules = [
             'programme' => 'required|in:1-on-1-call,webinar,event',
             'status' => 'nullable|in:new,pending,upcoming,history',
+            'filter' => 'nullable|in:rejected,finished,canceled'
         ];
 
         $validator = Validator::make(['programme' => $programme, 'status' => $status], $rules);
@@ -279,18 +280,26 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
+        $filter_status = NULL;
+        if ($filter = $request->get('filter')) {
+            $exp = explode(',', $filter);
+            for ($i = 0 ; $i < count($exp) ; $i++) {
+                $filter_status[] = $exp[$i];
+            }
+        }
+
         // kondisi buat nampilin data khusus yg di dashboard mentor
         if (($recent != NULL) && ($status == "upcoming")) {
             $data['upcoming'] = $this->get_index($programme, $status, $recent, null);
             $data['latest_meeting'] = $this->get_index($programme, 'history', $recent, "yes")->where('meeting_minute', 0)->unique('id')->values();
         } else {
-            $data = $this->get_index($programme, $status, $recent, $meeting_minutes);
+            $data = $this->get_index($programme, $status, $recent, $meeting_minutes, $filter_status);
         }
 
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    public function get_index($programme, $status, $recent, $meeting_minutes)
+    public function get_index($programme, $status, $recent, $meeting_minutes, $filter_status=NULL)
     {
         $activities = StudentActivities::with(['students', 'users'])->withCount('meeting_minutes as meeting_minute')->where('user_id', $this->user_id)
         ->when($status == 'new', function($query) {
@@ -308,10 +317,14 @@ class StudentActivitiesController extends Controller
             ->orderBy('call_status', 'desc')
             ->orderBy('start_call_date', 'asc');
         })
-        ->when($status == 'history', function($query) use ($meeting_minutes) {
-            $query->when($meeting_minutes == NULL, function ($query1) {
-                $query1->where(function ($query2) {
-                    $query2->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
+        ->when($status == 'history', function($query) use ($meeting_minutes, $filter_status) {
+            $query->when($meeting_minutes == NULL, function ($query1) use ($filter_status) {
+                $query1->when($filter_status, function ($q2) use ($filter_status) {
+                    $q2->whereIn('call_status', $filter_status);
+                }, function($q2) {
+                    $q2->where(function($q1) { 
+                        $q1->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
+                    });
                 });
             }, function($query1) {
                 $query1->where('call_status', 'finished');
@@ -356,10 +369,10 @@ class StudentActivitiesController extends Controller
 
         // $using_status = $request->get('status') ? 1 : 0;
         // $status = $request->get('status') != NULL ? $request->get('status') : false;
-        $filter_status = NULL;
         $use_keyword = $request->get('keyword') ? 1 : 0;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
         
+        $filter_status = NULL;
         if ($filter = $request->get('filter')) {
             $exp = explode(',', $filter);
             for ($i = 0 ; $i < count($exp) ; $i++) {
