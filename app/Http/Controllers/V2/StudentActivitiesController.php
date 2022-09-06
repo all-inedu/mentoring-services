@@ -334,7 +334,7 @@ class StudentActivitiesController extends Controller
             'person' => 'required|in:mentor,student',
             'programme' => 'required|in:1-on-1-call,webinar,event',
             'status' => 'nullable|in:new,pending,upcoming,history',
-            'filter.*' => 'nullable|in:rejected,finished,canceled'
+            'filter' => 'nullable|in:rejected,finished,canceled'
         ];
         
         if ($programme == "webinar") {
@@ -415,6 +415,6 @@ class StudentActivitiesController extends Controller
             });
         })->get();
 
-        return response()->json(['success' => true, 'data' => $helper->paginate($activities)->appends(array('student' => $student_id))]);
+        return response()->json(['success' => true, 'data' => $helper->paginate($activities)->appends(array('student' => $student_id, 'filter' => $filter))]);
     }
 }
