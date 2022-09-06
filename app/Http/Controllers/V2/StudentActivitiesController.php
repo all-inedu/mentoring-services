@@ -359,11 +359,11 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => $validator->errors()], 400);
         }
 
-        if (($person == "mentor") && (!$request->get('student'))) {
-            return response()->json(['success' => false, 'error' => 'Couldn\'t find the students webinar history']);
-        } else if (($person == "student") && ($request->get('student'))) {
-            return response()->json(['success' => false, 'error' => 'No access']);
-        }
+        // if (($person == "mentor") && (!$request->get('student'))) {
+        //     return response()->json(['success' => false, 'error' => 'Couldn\'t find the students webinar history']);
+        // } else if (($person == "student") && ($request->get('student'))) {
+        //     return response()->json(['success' => false, 'error' => 'No access']);
+        // }
         
         $student_id = $request->get('student') ? $request->get('student') : $this->student_id;
 
