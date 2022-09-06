@@ -35,6 +35,7 @@ use App\Http\Controllers\ProgrammeDetailController as AdminProgrammeDetailContro
 use App\Http\Controllers\TagsController;
 use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
+use App\Http\Controllers\Student\GroupController;
 use App\Http\Controllers\V2\StudentActivitiesController as V2StudentActivitiesController;
 
 Route::prefix('auth/u')->group(function() {

@@ -133,9 +133,9 @@ class GroupProjectController extends Controller
             $group_project = GroupProject::find($group_id);
             //* validate only owner (mentor) of the group able to update 
             $owner = $group_project->owner_type == "mentor" ? $group_project->user_id : null; //* validate student (change null with user_id if the controller being called from admin)
-            if ($owner != $this->user_id) {
-                return response()->json(['success' => false, 'error' => 'You\'ve no permission to change the group info']);
-            }
+            // if ($owner != $this->user_id) {
+            //     return response()->json(['success' => false, 'error' => 'You\'ve no permission to change the group info']);
+            // }
             
             $group_project->project_name = $request->project_name;
             $group_project->project_type = $request->project_type;
