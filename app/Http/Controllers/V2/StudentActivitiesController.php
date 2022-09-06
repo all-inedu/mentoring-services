@@ -334,6 +334,7 @@ class StudentActivitiesController extends Controller
             'person' => 'required|in:mentor,student',
             'programme' => 'required|in:1-on-1-call,webinar,event',
             'status' => 'nullable|in:new,pending,upcoming,history',
+            'filter.*' => 'nullable|in:rejected,finished,canceled'
         ];
         
         if ($programme == "webinar") {
@@ -355,9 +356,16 @@ class StudentActivitiesController extends Controller
 
         // $using_status = $request->get('status') ? 1 : 0;
         // $status = $request->get('status') != NULL ? $request->get('status') : false;
-
+        $filter_status = NULL;
         $use_keyword = $request->get('keyword') ? 1 : 0;
         $keyword = $request->get('keyword') != NULL ? $request->get('keyword') : null;
+        
+        if ($filter = $request->get('filter')) {
+            $exp = explode(',', $filter);
+            for ($i = 0 ; $i < count($exp) ; $i++) {
+                $filter_status[] = $exp[$i];
+            }
+        }
 
         $with = ['students', 'users'];
         if ($programme == "webinar") {
@@ -396,19 +404,15 @@ class StudentActivitiesController extends Controller
             $q->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting')
             ->orderBy('call_status', 'desc')
             ->orderBy('start_call_date', 'asc');
-        })->when($status == "history", function ($q) {
-            $q->where(function($q1) { 
-                $q1->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
-            })
-            // where(function ($q1) { // history dari call status yg berhasil
-            //     $q1->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'finished');
-            // })->orWhere(function ($q1) { // history dari call status yg cancel 
-            //     $q1->where('std_act_status', 'cancel')->where('mt_confirm_status', 'confirmed')->where('call_status', 'canceled');
-            // })->orWhere(function ($q1) {
-            //     $q1->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'cancel')->where('call_status', 'canceled');
-            // })
-            // ->orderBy('call_status', 'desc')
-            ->orderBy('start_call_date', 'desc');
+        })->when($status == "history", function ($q) use ($filter_status) {
+            $q->when($filter_status, function ($q2) use ($filter_status) {
+                $q2->whereIn('call_status', $filter_status);
+            }, function($q2) {
+                $q2->where(function($q1) { 
+                    $q1->where('call_status', 'finished')->orWhere('call_status', 'canceled')->orWhere('call_status', 'rejected');
+                })
+                ->orderBy('start_call_date', 'desc');
+            });
         })->get();
 
         return response()->json(['success' => true, 'data' => $helper->paginate($activities)->appends(array('student' => $student_id))]);
