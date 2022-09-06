@@ -407,7 +407,7 @@ class StudentActivitiesController extends Controller
             // })->orWhere(function ($q1) {
             //     $q1->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'cancel')->where('call_status', 'canceled');
             // })
-            ->orderBy('call_status', 'desc')
+            // ->orderBy('call_status', 'desc')
             ->orderBy('start_call_date', 'desc');
         })->get();
 
