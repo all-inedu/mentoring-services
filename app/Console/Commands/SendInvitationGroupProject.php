@@ -60,8 +60,9 @@ class SendInvitationGroupProject extends Command
             $mail_data = array(
                 'subject' => 'You\'ve been invited to join Group Project',
             );
-
             foreach ($group_project as $group_info) {
+                $group_owner = $group_info->owner_type;
+
                 $mail_data['group_detail'] = array(
                     'project_name' => $group_info->project_name,
                     'project_type' => $group_info->project_type,
@@ -72,8 +73,8 @@ class SendInvitationGroupProject extends Command
                 $today = date('Y-m-d');
                 // get participant by todays date only
                 // find where system hasn't sending the email ( 0 not delivered, 1 delivered )
-                if ($participants = $group_info->group_participant()->wherePivot('mail_sent_status', 0)->wherePivot('status', 0)->get()) {
-                    echo json_encode($participants);exit;
+                if ($group_info->group_participant()->wherePivot('mail_sent_status', 0)->wherePivot('status', 0)->count() > 0) {
+                    $participants = $group_info->group_participant()->wherePivot('mail_sent_status', 0)->wherePivot('status', 0)->get();
                     foreach ($participants as $student) {
                         $mail_data['student_detail'] = array(
                             'participant_id' => $student->pivot->id,
@@ -81,12 +82,15 @@ class SendInvitationGroupProject extends Command
                             'email' => $student->email,
                         );
 
+                        $resource_view = $group_owner == "student" ? 'templates.mail.group-invitation' : 'templates.mail.to-mentees.mention-new-group-project';
+                        
                         // insert into variable so the mail data can be called inside mail function
-                        Mail::send('templates.mail.group-invitation', ['group_info' => $mail_data], function($mail) use ($mail_data) {
+                        Mail::send($resource_view, ['group_info' => $mail_data], function($mail) use ($mail_data) {
                             $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
                             $mail->to($mail_data['student_detail']['email'], $mail_data['student_detail']['full_name']);
                             $mail->subject($mail_data['subject']);
                         });
+                        
 
                         // check if the mail has been delivered or not
                         // if mail not delivered

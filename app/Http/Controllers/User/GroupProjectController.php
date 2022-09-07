@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
 
 class GroupProjectController extends Controller
 {
@@ -245,7 +246,8 @@ class GroupProjectController extends Controller
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ]);
-            
+
+            // $this->send_invitation_group_project_to_mentee($group_projects->id);    
 
             DB::commit();
 
@@ -256,5 +258,30 @@ class GroupProjectController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Group Project has been made.', 'data' => $group_projects]);
+    }
+
+    public function send_invitation_group_project_to_mentee($id)
+    {
+        $group_project = GroupProject::find($id);
+        # email to mentee
+        $mail_data['subject'] = 'Your are invited to join group project';
+        $mail_data['group_detail'] = array(
+            'project_name' => $group_project->project_name,
+            'project_type' => $group_project->project_type,
+            'project_desc' => $group_project->project_desc,
+            'project_owner' => $group_project->student_id != NULL ? $group_project->students->first_name.' '.$group_project->students->first_name : $group_project->users->first_name.' '.$group_project->users->last_name,
+        ); 
+
+        foreach ($group_project->group_participant as $student) {
+            $mail_data['student_detail']['email'] = $student->email;
+            $mail_data['student_detail']['full_name'] = $student->first_name.' '.$student->last_name;
+
+            Mail::send('templates.mail.group-invitation', ['group_info' => $mail_data], function($mail) use ($mail_data) {
+                $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                $mail->to($mail_data['student_detail']['email'], $mail_data['student_detail']['full_name']);
+                $mail->subject($mail_data['subject']);
+            });
+        }
+
     }
 }

@@ -231,7 +231,25 @@ class UniversityController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to add uni requirement. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Uni requirement has been added']);
+        switch($request->category) {
+            case "sat":
+                $category = 'SAT score';
+                break;
+            case "publication_link":
+                $category = 'Publication link';
+                break;
+            case "ielts":
+                $category = 'IELTS score';
+                break;
+            case "toefl":
+                $category = 'TOEFL score';
+                break;
+            case "ap_score":
+                $category = 'AP score';
+                break;
+        }
+
+        return response()->json(['success' => true, 'message' => $category.' has been added']);
     }
 
     public function delete_academic_requirement ($academic_id) 
