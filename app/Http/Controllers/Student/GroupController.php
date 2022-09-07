@@ -512,13 +512,13 @@ class GroupController extends Controller
 
         switch ($request->input('action')) {
             case 'accept':
-                $message = "You've accept to join project : ".$group->project_name;
+                $message = "You've accepted to join project : ".$group->project_name;
                 $participant = Participant::find($invitee_id);
                 $status = 1;
                 break;
             
             case 'decline':
-                $message = "You've decline to join project : ".$group->project_name;
+                $message = "You've declined to join the project : ".$group->project_name;
                 $participant = Participant::find($invitee_id);
                 $status = 2;
                 break;

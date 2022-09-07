@@ -85,7 +85,7 @@ class TodosController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to create to do list. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'Todos status has been changed']);
+        return response()->json(['success' => true, 'message' => 'Task status has been changed']);
     }
     
     public function store (Request $request)
