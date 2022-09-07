@@ -235,7 +235,7 @@ class UniversityController extends Controller
             case "sat":
                 $category = 'SAT score';
                 break;
-            case "publication_link":
+            case "publication_links":
                 $category = 'Publication link';
                 break;
             case "ielts":
@@ -247,6 +247,8 @@ class UniversityController extends Controller
             case "ap_score":
                 $category = 'AP score';
                 break;
+            default:
+                $category = 'Uni requirement';
         }
 
         return response()->json(['success' => true, 'message' => $category.' has been added']);
