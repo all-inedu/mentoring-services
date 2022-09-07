@@ -53,7 +53,10 @@ class GroupMeetingController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to confirm mentor attendance. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'You\'ve confirmed to attend the group meeting that is held at '.date('M d, Y H:i', strtotime($group_meeting->start_meeting_date))]);
+        return response()->json([
+            'success' => true, 
+            'message' => 'You\'ve confirmed to attend the group meeting on '.date('M d, Y H:i', strtotime($group_meeting->start_meeting_date))
+        ]);
     }
 
     public function index($status, $recent = NULL)
