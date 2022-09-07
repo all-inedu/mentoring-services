@@ -221,7 +221,6 @@ class UniversityController extends Controller
                 $academic_req->value = $request->value[$i];
                 $academic_req->save();
 
-
             }
 
             DB::commit();
@@ -271,7 +270,27 @@ class UniversityController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to delete academic report. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => 'The academic report ['.$academic->category.'] has deleted']);
+        switch($academic->category) {
+            case "sat":
+                $category = 'SAT score';
+                break;
+            case "publication_links":
+                $category = 'Publication link';
+                break;
+            case "ielts":
+                $category = 'IELTS score';
+                break;
+            case "toefl":
+                $category = 'TOEFL score';
+                break;
+            case "ap_score":
+                $category = 'AP score';
+                break;
+            default:
+                $category = 'Uni requirement';
+        }
+
+        return response()->json(['success' => true, 'message' => $category.' has been deleted']);
     }
 
     public function store_document_requirement (Request $request)
