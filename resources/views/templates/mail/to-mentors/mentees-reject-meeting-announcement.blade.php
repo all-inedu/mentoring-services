@@ -153,7 +153,8 @@
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
                             <p style="margin: 0;">Hi, {{ $name }}!</p>
-                            <p>{{ ucwords($mentee_name) }} has unable to attend the meeting that take place at/on</p>
+                            <p>{{ ucwords($mentee_name) }} has unable to attend the meeting that take place at/on </p>
+                            <p>Because of {{ $reason }}</p>
                         </td>
                     </tr>
                     <tr>

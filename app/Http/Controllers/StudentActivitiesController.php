@@ -532,7 +532,7 @@ class StudentActivitiesController extends Controller
 
         DB::beginTransaction();
         try {
-
+            $reason = $request->reason;
             switch ($request->person) {
                 case "student":
                     if ($activities->std_act_status == "confirmed") {
@@ -563,6 +563,7 @@ class StudentActivitiesController extends Controller
             }
 
             $data_mail = [
+                'reason' => $reason,
                 'name' => $person_info['name'],
                 'module' => $activities->module,
                 'call_date' => $activities->start_call_date,

@@ -741,7 +741,8 @@ class GroupController extends Controller
 
         //*email to participant
         foreach ($participants as $k => $v) {
-            array_push($mixed_data, array('email' => $v->email, 'name' => $v->first_name.' '.$v->last_name));
+            if (Participant::where('group_id', $meeting_detail->group_id)->where('student_id', $v->student_id)->where('status', 1)->count() > 0)
+                array_push($mixed_data, array('email' => $v->email, 'name' => $v->first_name.' '.$v->last_name));
         }
 
         //* email to mentor
