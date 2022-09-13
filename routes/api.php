@@ -39,6 +39,7 @@ use App\Http\Controllers\Student\VerificationController as StudentVerificationCo
 use App\Http\Controllers\StudentActivitiesController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentPairingController;
+use App\Http\Controllers\test;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\User\GroupMeetingController;
 use App\Http\Controllers\User\GroupProjectController;
@@ -69,6 +70,8 @@ use App\Http\Controllers\V2\DashboardController as V2DashboardController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::get('test/reminder_group_meeting', [test::class, 'index']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

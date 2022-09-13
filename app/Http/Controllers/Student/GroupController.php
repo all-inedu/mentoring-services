@@ -631,7 +631,8 @@ class GroupController extends Controller
             $group = GroupProject::find($request->group_id);
 
             //* add participant to attendance
-            $participant = $group->group_participant;
+            $participant = $group->group_participant()->where('status', 1)->get();
+
             foreach ($participant as $detail) {
                 
                 $meeting->student_attendances()->attach($meeting->id, [
@@ -741,8 +742,7 @@ class GroupController extends Controller
 
         //*email to participant
         foreach ($participants as $k => $v) {
-            if (Participant::where('group_id', $meeting_detail->group_id)->where('student_id', $v->student_id)->where('status', 1)->count() > 0)
-                array_push($mixed_data, array('email' => $v->email, 'name' => $v->first_name.' '.$v->last_name));
+            array_push($mixed_data, array('email' => $v->email, 'name' => $v->first_name.' '.$v->last_name));
         }
 
         //* email to mentor
