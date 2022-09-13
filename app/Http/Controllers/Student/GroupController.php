@@ -631,7 +631,7 @@ class GroupController extends Controller
             $group = GroupProject::find($request->group_id);
 
             //* add participant to attendance
-            $participant = $group->group_participant()->where('status', 1)->get();
+            $participant = $group->group_participant()->where('participants.status', 1)->get();
 
             foreach ($participant as $detail) {
                 
