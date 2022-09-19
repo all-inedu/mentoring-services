@@ -178,6 +178,7 @@ class StudentController extends Controller
 
     public function select_by_auth (Request $request)
     {
+
         $options = [];
         $user_id = auth()->guard('api')->user()->id;
         $paginate = !$request->get('paginate') ? "yes" : $request->get('paginate');
@@ -187,7 +188,7 @@ class StudentController extends Controller
         $tag = $request->get('tag') != NULL ? $request->get('tag') : null;
         $use_progress_status = $request->get('status') ? true : false;
         $progress_status = $request->get('status') != NULL ? $request->get('status') : NULL;
-        $query_status_mentoring = $request->get('mentoring') == "active" ? "active" : "inactive";
+        $status_mentoring = $request->get('mentoring');
 
         if ($is_searching) 
             $options['keyword'] = $keyword;
@@ -198,10 +199,10 @@ class StudentController extends Controller
         if ($use_progress_status)
             $options['status'] = $progress_status;
 
-        if ($query_status_mentoring) 
-            $options['mentoring'] = $query_status_mentoring;
-
-        $status_mentoring = $query_status_mentoring == "active" ? 1 : 0;
+        if ($status_mentoring) 
+            $options['mentoring'] = $status_mentoring;
+        
+        $param_status_mentoring = $status_mentoring == "active" ? 1 : 0;
 
         try {
             // get data mentees
@@ -212,8 +213,8 @@ class StudentController extends Controller
                         orWhere('email', 'like', '%'.$keyword.'%')->
                         orWhere('school_name', 'like', '%'.$keyword.'%');
                     });
-                })->when($status_mentoring, function ($query) use ($status_mentoring) {
-                    $query->where('student_mentors.status', $status_mentoring);
+                })->when($status_mentoring, function ($query) use ($param_status_mentoring) {
+                    $query->where('student_mentors.status', '=', $param_status_mentoring);
                 })->when($use_tag, function ($query) use ($tag) {
                     $query->where('tag', 'like', '%'.$tag.'%');
                 })->when($use_progress_status, function ($query) use ($progress_status) {
