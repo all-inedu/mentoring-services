@@ -153,8 +153,8 @@
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
                             <p style="margin: 0;">Hi {{ $name }}!</p>
-                            <p>You have a new group meeting</p>
-                            <p>The meeting will take place at/on</p>
+                            <p>You just invited to join a group meeting.</p>
+                            <p>Here is the details for the meeting:</p>
                         </td>
                     </tr>
                     <tr>

@@ -224,9 +224,9 @@ class GroupController extends Controller
                     'updated_at' => Carbon::now()
                 );
 
+                $mail_data['mentor_name'] = $mentor_detail->first_name.' '.$mentor_detail->last_name;
                 $mail_data['hyperlink'] = $this->ONGOING_PROJECT_DETAIL_HYPERLINK;
                 $mail_data['group_detail'] = array(
-                    'mentor_name' => $mentor_detail->first_name.' '.$mentor_detail->last_name,
                     'project_id' => $group_projects->id,
                     'project_name' => $group_projects->project_name,
                     'project_type' => $group_projects->project_type,

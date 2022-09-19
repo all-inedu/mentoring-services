@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
 {
@@ -31,7 +32,7 @@ class StudentController extends Controller
         }
 
         $rules = [
-            'student_info' => 'required|in:application-year,mentee-relationship,parent-relationship,last-update',
+            'student_info' => 'required|in:application-year,mentee-relationship,parent-relationship,last-update,additional-notes',
             'value' => 'required',
         ];
 
@@ -58,6 +59,10 @@ class StudentController extends Controller
     
                 case "last-update":
                     $student->last_update = $request->value;
+                    break;
+
+                case "additional-notes":
+                    $student->additional_notes = $request->value;
                     break;
             }
     
@@ -149,6 +154,28 @@ class StudentController extends Controller
         return response()->json(['success' => true, 'data' => $students]);
     }
 
+    //* new update status mentoring
+    public function update_status_mentoring ($student_id, Request $request)
+    {
+        if (!$student = Auth::guard('api')->user()->students()->where('students.id', $student_id)->first()) {
+            return response()->json(['success' => false, 'error' => 'Failed to find Student']);
+        }
+
+        try {
+
+            Auth::guard('api')->user()->students()->updateExistingPivot($student, ['status' => $request->value], true);
+        } catch (Exception $e) {
+            Log::error('Update Status Mentoring  Issue : ['.$student->first_name.' '.$student->last_name.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update status mentoring. Please try again.']);
+        }
+
+        $status_message = $request->value == 1 ? "activated" : "non-active";
+
+        return response()->json(['success' => true, 'message' => ucwords($student->first_name.' '.$student->last_name).' has been '.$status_message]);
+
+    }
+
+
     public function select_by_auth (Request $request)
     {
         $options = [];
@@ -160,6 +187,7 @@ class StudentController extends Controller
         $tag = $request->get('tag') != NULL ? $request->get('tag') : null;
         $use_progress_status = $request->get('status') ? true : false;
         $progress_status = $request->get('status') != NULL ? $request->get('status') : NULL;
+        $query_status_mentoring = $request->get('mentoring') == "active" ? "active" : "inactive";
 
         if ($is_searching) 
             $options['keyword'] = $keyword;
@@ -170,21 +198,45 @@ class StudentController extends Controller
         if ($use_progress_status)
             $options['status'] = $progress_status;
 
+        if ($query_status_mentoring) 
+            $options['mentoring'] = $query_status_mentoring;
+
+        $status_mentoring = $query_status_mentoring == "active" ? 1 : 0;
+
         try {
             // get data mentees
-            $students = Students::whereHas('users', function($query) use ($user_id) {
-                $query->where('user_id', $user_id);
-            })->when($is_searching, function ($query) use ($keyword) {
-                $query->where(function($query1) use ($keyword){
-                    $query1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
-                    orWhere('email', 'like', '%'.$keyword.'%')->
-                    orWhere('school_name', 'like', '%'.$keyword.'%');
-                });
-            })->when($use_tag, function ($query) use ($tag) {
-                $query->where('tag', 'like', '%'.$tag.'%');
-            })->when($use_progress_status, function ($query) use ($progress_status) {
-                $query->where('progress_status', 'like', $progress_status);
-            })->orderBy('created_at', 'desc');
+            $students = Auth::guard('api')->user()->students()->
+                when($is_searching, function ($query) use ($keyword) {
+                    $query->where(function($query1) use ($keyword){
+                        $query1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
+                        orWhere('email', 'like', '%'.$keyword.'%')->
+                        orWhere('school_name', 'like', '%'.$keyword.'%');
+                    });
+                })->when($status_mentoring, function ($query) use ($status_mentoring) {
+                    $query->where('student_mentors.status', $status_mentoring);
+                })->when($use_tag, function ($query) use ($tag) {
+                    $query->where('tag', 'like', '%'.$tag.'%');
+                })->when($use_progress_status, function ($query) use ($progress_status) {
+                    $query->where('progress_status', 'like', $progress_status);
+                })->select(['students.*', 
+                                'student_mentors.id as st_mt_id',
+                                'student_mentors.start_mentoring',
+                                'student_mentors.end_mentoring',
+                                'student_mentors.status as status_mentoring'])->orderBy('student_mentors.created_at', 'desc');
+            // return $students;
+            // $students = Students::whereHas('users', function($query) use ($user_id) {
+            //     $query->where('user_id', $user_id);
+            // })->when($is_searching, function ($query) use ($keyword) {
+            //     $query->where(function($query1) use ($keyword){
+            //         $query1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
+            //         orWhere('email', 'like', '%'.$keyword.'%')->
+            //         orWhere('school_name', 'like', '%'.$keyword.'%');
+            //     });
+            // })->when($use_tag, function ($query) use ($tag) {
+            //     $query->where('tag', 'like', '%'.$tag.'%');
+            // })->when($use_progress_status, function ($query) use ($progress_status) {
+            //     $query->where('progress_status', 'like', $progress_status);
+            // })->orderBy('created_at', 'desc');
             $response = $students->customPaginate($paginate, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE, $options);
 
             $all = Students::whereHas('users', function($query) use ($user_id) {

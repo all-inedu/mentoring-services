@@ -63,6 +63,7 @@ class SendInvitationGroupProject extends Command
             foreach ($group_project as $group_info) {
                 $group_owner = $group_info->owner_type;
 
+                $mail_data['student_owner_name'] = $group_info->students->first_name.' '.$group_info->students->last_name;                
                 $mail_data['group_detail'] = array(
                     'project_name' => $group_info->project_name,
                     'project_type' => $group_info->project_type,

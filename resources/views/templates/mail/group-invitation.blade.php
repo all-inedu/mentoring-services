@@ -152,13 +152,13 @@
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
-                            <p style="margin: 0;">Hi there!</p>
-                            <p>You are invited to join the Group Project</p>
+                            <p style="margin: 0;">Hi {{ ucwords($group_info['student_detail']['full_name']) }}!</p>
+                            <p>{{ ucwords($group_info['student_owner_name']) }} has invited you to join their group project!</p>
                         </td>
                     </tr>
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400;">
-                            <p style="margin: 0;">Here take a look the detail of the project</p>
+                            <p style="margin: 0;">Here are the details for the group project:</p>
                         </td>
                     </tr>
                     <tr>

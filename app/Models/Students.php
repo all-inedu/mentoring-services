@@ -44,6 +44,7 @@ class Students extends Authenticatable
         'mentee_relationship',
         'parent_relationship',
         'last_update',
+        'additional_notes',
     ];
 
     /**
