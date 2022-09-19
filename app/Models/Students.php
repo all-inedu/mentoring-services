@@ -40,6 +40,10 @@ class Students extends Authenticatable
         'competitiveness_level',
         'personal_brand_dev_progress',
         'progress_status',
+        'application_year',
+        'mentee_relationship',
+        'parent_relationship',
+        'last_update',
     ];
 
     /**

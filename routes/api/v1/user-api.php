@@ -197,6 +197,8 @@ Route::middleware(['auth:api', 'scope:admin,mentor'])->group(function() {
         Route::put('progress/status/group/project/{group_id}/{progress}', [GroupProjectController::class, 'update_progress']);
         Route::put('group/meeting/attendance/{group_meet_id}', [GroupMeetingController::class, 'attended']);
         Route::put('status/1-on-1-call/{meeting_id}', [V2StudentActivitiesController::class, 'finish_meeting']);
+
+        Route::put('{student_info}/{student_id}', [StudentController::class, 'update_students_info']);
     });
 
     Route::prefix('delete')->group(function() {

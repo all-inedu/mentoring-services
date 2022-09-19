@@ -153,7 +153,7 @@
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
                             <p style="margin: 0;">Hi, {{ $name }}!</p>
-                            <p>{{ ucwords($mentee_name) }} has unable to attend the meeting that take place at/on </p>
+                            <p>We are sorry to inform you that {{ ucwords($mentee_name) }} is <b>NOT</b> available to attend your meeting at/on:</p>
                             <p>Because of {{ $reason }}</p>
                         </td>
                     </tr>
@@ -201,6 +201,15 @@
                     </tr>
                     <tr>
                         <td bgcolor="#FFFFFF" style="height:10px;"></td>
+                    </tr>
+                    <tr>
+                        <td bgcolor="#FFFFFF" style="color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400;" align="center">
+                            <div style="border-top: 1px solid #ccc; margin:0 50px;"></div><br>
+                            <p style="margin: 5px 40px 50px 40px">
+                                Please follow up with your {{ ucwords($mentee_name) }} to reschedule the meeting!
+                            </p>
+                            
+                        </td>
                     </tr>
                 </table>
             </td>

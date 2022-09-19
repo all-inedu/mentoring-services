@@ -154,7 +154,7 @@
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
                             <p style="margin: 0;">Hi, {{ $name }}!</p>
                             {{-- <p>We want to announced that your meeting with the group project {{ $group_info->project_name }} has cancelled</p> --}}
-                            <p>The meeting that take place at/on</p>
+                            <p>{{ $mentor_name }} has <b>canceled</b> the meeting with the details</p>
                         </td>
                     </tr>
                     <tr>
@@ -200,20 +200,13 @@
                         </td>
                     </tr>
                     <tr>
-                        <td bgcolor="#ffffff" align="center" style="color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
-                            <p>has been canceled</p>
-                        </td>
-                    </tr>
-                    <tr>
                         <td bgcolor="#FFFFFF" style="height:10px;"></td>
                     </tr>
                     <tr>
                         <td bgcolor="#FFFFFF" style="color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400;" align="center">
                             <div style="border-top: 1px solid #ccc; margin:0 50px;"></div><br>
                             <p style="margin: 5px 40px 50px 40px">
-                                We're really sorry for the convenience.
-                                <br><br>
-                                Thank you for your time.
+                                Please follow up with your mentor to reschedule the meeting!
                             </p>
                             
                         </td>

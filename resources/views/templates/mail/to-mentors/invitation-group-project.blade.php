@@ -152,15 +152,15 @@
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
-                            <p style="margin: 0;">Hi there!</p>
-                            <p>Your mentee is creating a new project</p>
+                            <p style="margin: 0;">Hi {{ ucwords($group_info['mentor_name']) }}!</p>
+                            <p>Your mentee just created a new group project. Take a look at the details below!</p>
                         </td>
                     </tr>
-                    <tr>
+                    {{-- <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400;">
                             <p style="margin: 0;">Here take a look the detail of the project</p>
                         </td>
-                    </tr>
+                    </tr> --}}
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 400; line-height: 25px;">
                             <div style="border: 1px solid #ccc;border-radius: 10px">
@@ -189,11 +189,11 @@
                             </div>
                         </td>
                     </tr>
-                    <tr align="center">
+                    {{-- <tr align="center">
                         <td bgcolor="#FFFFFF" style="padding: 0px 30px 5px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 400; line-height: 25px;">
                             <p>Click <a target="_blank" href="{{ $group_info['hyperlink'].$group_info['group_detail']['project_id'] }}">here</a> for more detail</p>
                         </td>
-                    </tr>
+                    </tr> --}}
                     <tr>
                         <td bgcolor="#FFFFFF" style="height:10px;"></td>
                     </tr>

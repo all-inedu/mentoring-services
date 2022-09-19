@@ -22,6 +22,59 @@ class StudentController extends Controller
         $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE = RouteServiceProvider::ADMIN_LIST_STUDENT_VIEW_PER_PAGE;
     }
 
+    //* new
+    public function update_students_info(Request $request)
+    {
+        $student_id = $request->route('student_id');
+        if (!$student = Students::find($student_id)) {
+            return response()->json(['succes' => false, 'error' => 'Failed to find student.']);
+        }
+
+        $rules = [
+            'student_info' => 'required|in:application-year,mentee-relationship,parent-relationship,last-update',
+            'value' => 'required',
+        ];
+
+        $validator = Validator::make(['student_info' => $request->student_info, 'value' => $request->value], $rules);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+
+            switch ($request->student_info) {
+                case "application-year":
+                    $student->application_year = $request->value;
+                    break;
+    
+                case "mentee-relationship":
+                    $student->mentee_relationship = $request->value;
+                    break;
+    
+                case "parent-relationship":
+                    $student->parent_relationship = $request->value;
+                    break;
+    
+                case "last-update":
+                    $student->last_update = $request->value;
+                    break;
+            }
+    
+            $student->save();
+            DB::commit();
+        
+        } catch (Exception $e) {
+
+            DB::rollBack();
+            Log::error('Update Student Info '.ucwords(str_replace('-', ' ', $request->student_info)).' Issue : '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update '.str_replace('-', ' ', $request->student_info).'. Please try again.']);
+        }
+
+        return response()->json(['success' => true, 'message' => ucwords(str_replace('-', ' ', $request->student_info)).' has been updated']);
+
+    }
+
     public function profile($student_id, $profile_column, Request $request)
     {
         if (!$student = Students::find($student_id)) {
