@@ -752,12 +752,14 @@ class GroupController extends Controller
 
         //*email to participant
         foreach ($participants as $k => $v) {
-            array_push($mixed_data, array('email' => $v->email, 'name' => $v->first_name.' '.$v->last_name));
+            if ($v->id != $meeting_detail->group_project->student_id)
+                array_push($mixed_data, array('email' => $v->email, 'name' => $v->first_name.' '.$v->last_name));
         }
 
         //* email to mentor
         foreach ($mentors as $k => $v) {
-            array_push($mixed_data, array('email' => $v->email, 'name' => $v->first_name.' '.$v->last_name));
+            if ($v->id != $meeting_detail->group_project->user_id)
+                array_push($mixed_data, array('email' => $v->email, 'name' => $v->first_name.' '.$v->last_name));
         }
 
         $data = array(

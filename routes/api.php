@@ -40,6 +40,7 @@ use App\Http\Controllers\StudentActivitiesController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentPairingController;
 use App\Http\Controllers\test;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\User\GroupMeetingController;
 use App\Http\Controllers\User\GroupProjectController;
@@ -83,6 +84,8 @@ Route::prefix('v1')->group(__DIR__ . '/api/v1/student-api.php');
 // api route for user
 Route::prefix('v1')->group(__DIR__ . '/api/v1/user-api.php');
 Route::prefix('v2')->group(__DIR__ . '/api/v2/user-api.php');
+
+Route::get('testSendInvitationGroup', [TestController::class, 'index']);
 
 // api route for global such as (mentee and user)
 Route::prefix('v1')->group(function(){
