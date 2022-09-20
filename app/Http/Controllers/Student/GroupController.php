@@ -508,9 +508,11 @@ class GroupController extends Controller
         }
 
         // get group detail
-        $group = GroupProject::whereHas('group_participant', function ($query) use ($invitee_id) {
+        $group = GroupProject::withAndWhereHas('group_participant', function ($query) use ($invitee_id) {
             $query->where('participants.id', $invitee_id);
         })->first();
+
+        return response()->json($group);
 
         switch ($request->input('action')) {
             case 'accept':

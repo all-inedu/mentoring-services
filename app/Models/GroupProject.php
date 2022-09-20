@@ -24,11 +24,16 @@ class GroupProject extends Model
         'picture',
     ];
 
+    public function scopeWithAndWhereHas($query, $relation, $constraint){
+        return $query->whereHas($relation, $constraint)
+                     ->with([$relation => $constraint]);
+    }
+
     // public function getProjectDescAttribute($value)
     // {
     //     return strip_tags($value);
     // }
-
+    
     public function users()
     {
         return $this->belongsTo(User::class, 'user_id' , 'id');
