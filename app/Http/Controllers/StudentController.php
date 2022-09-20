@@ -33,8 +33,11 @@ class StudentController extends Controller
 
         $rules = [
             'student_info' => 'required|in:application-year,mentee-relationship,parent-relationship,last-update,additional-notes,email',
-            'value' => 'required',
+            'value' => ['required'],
         ];
+
+        if ($request->student_info == "email")
+            $rules['value'] = array_push('email');
 
         $validator = Validator::make(['student_info' => $request->student_info, 'value' => $request->value], $rules);
         if ($validator->fails()) {
