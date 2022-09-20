@@ -165,7 +165,7 @@
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 40px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 400; line-height: 25px;">
                             <div style="border: 1px solid #ccc;border-radius: 10px">
                             <table width="80%" border="0" cellspacing="0" cellpadding="0" style="margin: 0px auto;">
-                                <tr>
+                                <tr valign="top">
                                     <td width="30%" align="center" style="padding:5px 10px;">Project Name</td>
                                     <td width="10%" align="center">:</td>
                                     <td width="50%" align="left">{{ $group_info['group_detail']['project_name'] }}</td>
@@ -175,12 +175,12 @@
                                     <td align="center">:</td>
                                     <td align="left">{{ $group_info['group_detail']['project_type'] }}</td>
                                 </tr> --}}
-                                <tr>
+                                <tr valign="top">
                                     <td align="center" style="padding:5px 10px;">Project Desc</td>
                                     <td align="center">:</td>
-                                    <td align="left">{{ $group_info['group_detail']['project_desc'] }}</td>
+                                    <td align="left">{!! $group_info['group_detail']['project_desc'] !!}</td>
                                 </tr>
-                                <tr>
+                                <tr valign="top">
                                     <td align="center" style="padding:5px 10px;">Created By</td>
                                     <td align="center">:</td>
                                     <td align="left">{{ $group_info['group_detail']['project_owner'] }}</td>
