@@ -167,27 +167,27 @@
                                     </td>
                                     <td style="padding:30px 20px;">
                                         <table cellpadding="3">
-                                            <tr>
+                                            <tr valign="top">
                                                 <td align="right">Subject</td>
                                                 <td>:</td>
                                                 <td>{{ ucwords($module) }}</td>
                                             </tr>
-                                            <tr>
-                                                <td>Meeting Date</td>
+                                            <tr valign="top">
+                                                <td align="right">Meeting Date</td>
                                                 <td>:</td>
                                                 <td>{{ date('d F Y', strtotime($call_date)) }}</td>
                                             </tr>
-                                            <tr>
+                                            <tr valign="top">
                                                 <td align="right">Time</td>
                                                 <td>:</td>
                                                 <td>{{ date('H:i T', strtotime($call_date)) }}</td>
                                             </tr>
-                                            <tr>
+                                            <tr valign="top">
                                                 <td align="right">Location</td>
                                                 <td>:</td>
                                                 <td>{{ $location_link }}</td>
                                             </tr>
-                                            <tr>
+                                            <tr valign="top">
                                                 <td align="right">Passcode</td>
                                                 <td>:</td>
                                                 <td>{{ $location_pw }}</td>
