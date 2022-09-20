@@ -509,10 +509,16 @@ class GroupController extends Controller
 
         // get group detail
         $group = GroupProject::withAndWhereHas('group_participant', function ($query) use ($invitee_id) {
-            $query->where('participants.id', $invitee_id);
+            $query->where('participants.id', $invitee_id)->select(['participants.*', 'participants.status as status_participant']);
         })->first();
+        
+        if ($group->group_participant[0]->status_participant == 1) {
+            return Redirect::to($this->NOTIFICATION_HANDLER."You already confirm the invitation");
+        }
 
-        return response()->json($group);
+        if ($group->group_participant[0]->status_participant == 2) {
+            return Redirect::to($this->NOTIFICATION_HANDLER."You already decline the invitation");
+        }
 
         switch ($request->input('action')) {
             case 'accept':
