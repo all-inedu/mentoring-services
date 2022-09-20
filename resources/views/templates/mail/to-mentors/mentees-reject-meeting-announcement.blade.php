@@ -156,13 +156,13 @@
                             <p>We are sorry to inform you that {{ ucwords($mentee_name) }} is <b>NOT</b> available to attend your meeting at/on:</p>
                         </td>
                     </tr>
+                    @if ($reason)
                     <tr>
                         <td bgcolor="#ffffff" align="left" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
-                            @if ($reason)
-                                <p style="margin: 0">Reason: {{ $reason }}</p>
-                            @endif
+                            <p style="margin: 0">Reason: {{ $reason }}</p>
                         </td>
                     </tr>
+                    @endif
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 20px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400; line-height: 25px;">
                             <div style="border: 1px solid #ccc; border-radius: 10px;">
