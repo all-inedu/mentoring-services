@@ -32,7 +32,7 @@ class StudentController extends Controller
         }
 
         $rules = [
-            'student_info' => 'required|in:application-year,mentee-relationship,parent-relationship,last-update,additional-notes',
+            'student_info' => 'required|in:application-year,mentee-relationship,parent-relationship,last-update,additional-notes,email',
             'value' => 'required',
         ];
 
@@ -63,6 +63,10 @@ class StudentController extends Controller
 
                 case "additional-notes":
                     $student->additional_notes = $request->value;
+                    break;
+
+                case "email":
+                    $student->email = $request->value;
                     break;
             }
     
