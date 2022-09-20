@@ -565,6 +565,7 @@ class StudentActivitiesController extends Controller
                     // }
                     $activities->std_act_status = $status;
                     $activities->std_reason = $request->reason;
+                    $message = "You successfully refuse to attend the meeting";
                     break;
 
                 case "mentor":
@@ -576,6 +577,7 @@ class StudentActivitiesController extends Controller
                     // }
                     $activities->mt_confirm_status = $status;
                     $activities->mt_reason = $request->reason;
+                    $message = "You successfully cancel the meeting";
                     break;
             }
 
@@ -603,7 +605,7 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to '.$status.' meeting. Please try again.']);
         }
 
-        return response()->json(['success' => true, 'message' => "You successfully refuse to attend the meeting"]);
+        return response()->json(['success' => true, 'message' => $message]);
     }
 
     //////
