@@ -450,6 +450,7 @@ class StudentActivitiesController extends Controller
                     }
 
                     $activities->std_act_status = 'confirmed';
+                    $mentee_name = $activities->students->first_name.' '.$activities->students->last_name;
 
                     // send mail notification to mentees
                     $mentor_info = [
@@ -459,17 +460,19 @@ class StudentActivitiesController extends Controller
                     
                     $data_mail = [
                         'name' => $activities->users->first_name.' '.$activities->users->last_name,
-                        'mentee_name' => $activities->students->first_name.' '.$activities->students->last_name,
+                        'mentee_name' => $mentee_name,
                         'module' => $activities->module,
                         'call_date' => $activities->start_call_date,
                         'location_link' => $activities->location_link,
                         'location_pw' => $activities->location_pw 
                     ];
 
+                    
+
                     Mail::send('templates.mail.to-mentors.mentees-confirmed-announcement', $data_mail, function($mail) use ($mentor_info, $data_mail)  {
                         $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
                         $mail->to($mentor_info['email'], $mentor_info['name']);
-                        $mail->subject($this->TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT);
+                        $mail->subject(ucwords($data_mail['mentee_name']).$this->TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT);
                     });
 
                     if (count(Mail::failures()) > 0) { 
