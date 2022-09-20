@@ -178,7 +178,7 @@
                                 <tr>
                                     <td align="center" style="padding:5px 10px;">Project Desc</td>
                                     <td align="center">:</td>
-                                    <td align="left">{{ $group_info['group_detail']['project_desc'] }}</td>
+                                    <td align="left">{!! $group_info['group_detail']['project_desc'] !!}</td>
                                 </tr>
                                 <tr>
                                     <td align="center" style="padding:5px 10px;">Created By</td>
