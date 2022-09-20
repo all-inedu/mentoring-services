@@ -36,8 +36,9 @@ class StudentController extends Controller
             'value' => ['required'],
         ];
 
-        if ($request->student_info == "email")
-            $rules['value'] = array_push('email');
+        if ($request->student_info == "email") {
+            array_push($rules['value'], 'email');
+        }
 
         $validator = Validator::make(['student_info' => $request->student_info, 'value' => $request->value], $rules);
         if ($validator->fails()) {
