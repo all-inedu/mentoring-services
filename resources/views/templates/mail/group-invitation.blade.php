@@ -170,11 +170,11 @@
                                     <td width="10%" align="center">:</td>
                                     <td width="50%" align="left">{{ $group_info['group_detail']['project_name'] }}</td>
                                 </tr>
-                                <tr>
+                                {{-- <tr>
                                     <td align="center" style="padding:5px 10px;">Project Type</td>
                                     <td align="center">:</td>
                                     <td align="left">{{ $group_info['group_detail']['project_type'] }}</td>
-                                </tr>
+                                </tr> --}}
                                 <tr>
                                     <td align="center" style="padding:5px 10px;">Project Desc</td>
                                     <td align="center">:</td>

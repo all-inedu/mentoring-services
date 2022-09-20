@@ -62,20 +62,22 @@ class SendInvitationGroupProject extends Command
             );
             foreach ($group_project as $group_info) {
                 $group_owner = $group_info->owner_type;
-
-                $mail_data['student_owner_name'] = $group_info->students->first_name.' '.$group_info->students->last_name;                
-                $mail_data['group_detail'] = array(
-                    'project_name' => $group_info->project_name,
-                    'project_type' => $group_info->project_type,
-                    'project_desc' => $group_info->project_desc,
-                    'project_owner' => $group_info->student_id != NULL ? $group_info->students->first_name.' '.$group_info->students->first_name : $group_info->users->first_name.' '.$group_info->users->last_name,
-                );
                 
                 $today = date('Y-m-d');
                 // get participant by todays date only
                 // find where system hasn't sending the email ( 0 not delivered, 1 delivered )
+
                 if ($group_info->group_participant()->wherePivot('mail_sent_status', 0)->wherePivot('status', 0)->count() > 0) {
                     $participants = $group_info->group_participant()->wherePivot('mail_sent_status', 0)->wherePivot('status', 0)->get();
+
+                    $mail_data['student_owner_name'] = $group_info->students->first_name.' '.$group_info->students->last_name;                
+                    $mail_data['group_detail'] = array(
+                        'project_name' => $group_info->project_name,
+                        // 'project_type' => $group_info->project_type,
+                        'project_desc' => $group_info->project_desc,
+                        'project_owner' => $group_info->student_id != NULL ? $group_info->students->first_name.' '.$group_info->students->first_name : $group_info->users->first_name.' '.$group_info->users->last_name,
+                    );
+
                     foreach ($participants as $student) {
                         $mail_data['student_detail'] = array(
                             'participant_id' => $student->pivot->id,
