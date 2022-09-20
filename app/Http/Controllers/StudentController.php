@@ -310,7 +310,7 @@ class StudentController extends Controller
 
     public function _all()
     {
-        $students = Students::orderBy('first_name', 'asc')->where('status', 1)->select(['id', 'first_name', 'last_name', 'email'])->get();
+        $students = Students::orderBy('first_name', 'asc')->where('status', 1)->select(['id', 'first_name', 'last_name', 'email'])->paginate(10);
         return response()->json(['success' => true, 'data' => $students]);
     }
 }
