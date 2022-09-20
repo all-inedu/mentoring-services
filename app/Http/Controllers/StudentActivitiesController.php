@@ -472,7 +472,7 @@ class StudentActivitiesController extends Controller
                     Mail::send('templates.mail.to-mentors.mentees-confirmed-announcement', $data_mail, function($mail) use ($mentor_info, $data_mail)  {
                         $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
                         $mail->to($mentor_info['email'], $mentor_info['name']);
-                        $mail->subject(ucwords($data_mail['mentee_name']).$this->TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT);
+                        $mail->subject(ucwords($data_mail['mentee_name']).' '.$this->TO_MENTORS_MENTEE_HAS_CONFIRM_1ON1CALL_SUBJECT);
                     });
 
                     if (count(Mail::failures()) > 0) { 
