@@ -614,7 +614,7 @@ class StudentActivitiesController extends Controller
             case "cancel":
                 if ($person == "mentor") {
                     
-                    Mail::send('templates.mail.cancel-meeting-announcement', $data_mail, function($mail) use ($person_info)  {
+                    Mail::send('templates.mail.to-mentees.cancel-meeting-announcement', $data_mail, function($mail) use ($person_info)  {
                         $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
                         $mail->to($person_info['email'], $person_info['name']);
                         $mail->subject($this->TO_MENTEES_CANCEL_1ON1CALL_SUBJECT);
