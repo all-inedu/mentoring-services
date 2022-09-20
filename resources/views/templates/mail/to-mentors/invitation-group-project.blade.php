@@ -153,7 +153,9 @@
                     <tr>
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
                             <p style="margin: 0;">Hi {{ ucwords($group_info['mentor_name']) }}!</p>
-                            <p>Your mentee just created a new group project. Take a look at the details below!</p>
+                            <p>Your mentee just created a new group project.</p>
+                            <p>Take a look at the details below!</p>
+
                         </td>
                     </tr>
                     {{-- <tr>
