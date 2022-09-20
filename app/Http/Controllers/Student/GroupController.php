@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\File;
 use App\Http\Controllers\MailLogController;
 use App\Models\MailLog;
+use Illuminate\Support\Facades\Redirect;
 
 class GroupController extends Controller
 {
@@ -537,7 +538,7 @@ class GroupController extends Controller
             return response()->json(['success' => false, 'error' => 'Failed to confirm invitee. Please try again.']);
         }
 
-        $response = $from_mail ? redirect()->away($this->NOTIFICATION_HANDLER.$message) : response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
+        $response = $from_mail ? Redirect::to($this->NOTIFICATION_HANDLER.urlencode($message)) : response()->json(['success' => true, 'message' => $message, 'data' => $participant]);
         return $response;
     }
 
