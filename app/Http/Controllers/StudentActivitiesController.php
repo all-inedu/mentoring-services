@@ -426,6 +426,20 @@ class StudentActivitiesController extends Controller
             return response()->json(['success' => false, 'error' => 'Couldn\'t find the activities Id']);
         }
 
+        switch ($activities->call_status) {
+            case "finished":
+                return response()->json(['success' => false, 'error' => 'You cannot confirm the meeting that already finished']);
+                break;
+
+            case "canceled":
+                return response()->json(['success' => false, 'error' => 'The meeting has already canceled']);
+                break;
+
+            case "rejected":
+                return response()->json(['success' => false, 'error' => 'The meeting has already rejected']);
+                break;
+        }
+
         DB::beginTransaction();
         try {
 
@@ -502,7 +516,7 @@ class StudentActivitiesController extends Controller
         $rules = [
             'person' => 'required|in:student,mentor',
             'status' => 'in:cancel,reject',
-            'reason' => 'required'
+            'reason' => 'nullable'
             // 'std_act_id' => [new PersonalMeetingChecker($person)]
         ];
 

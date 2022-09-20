@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class EmailHandlerController extends Controller
 {
@@ -23,9 +24,11 @@ class EmailHandlerController extends Controller
         
         $response = $response->getData();
         if ($response->success === false) {
-            echo $response->error;
+            return Redirect::to('https://mentoring.all-inedu.com/notification/'.$response->error);
+            // echo $response->error;
         } else {
-            echo $response->message;
+            return Redirect::to('https://mentoring.all-inedu.com/notification/'.$response->message);
+            // echo $response->message;
         }
     }
 }

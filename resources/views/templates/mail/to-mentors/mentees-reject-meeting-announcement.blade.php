@@ -154,7 +154,13 @@
                         <td bgcolor="#ffffff" align="center" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
                             <p style="margin: 0;">Hi, {{ $name }}!</p>
                             <p>We are sorry to inform you that {{ ucwords($mentee_name) }} is <b>NOT</b> available to attend your meeting at/on:</p>
-                            <p>Because of {{ $reason }}</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td bgcolor="#ffffff" align="left" style="padding: 20px 30px 10px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;">
+                            @if ($reason)
+                                <p style="margin: 0">Reason: {{ $reason }}</p>
+                            @endif
                         </td>
                     </tr>
                     <tr>
@@ -167,13 +173,13 @@
                                     </td>
                                     <td style="padding:30px 20px;">
                                         <table cellpadding="3">
-                                            <tr>
+                                            <tr valign="top">
                                                 <td align="right">Subject</td>
                                                 <td>:</td>
                                                 <td>{{ ucwords($module) }}</td>
                                             </tr>
-                                            <tr>
-                                                <td>Meeting Date</td>
+                                            <tr valign="top">
+                                                <td align="right">Meeting Date</td>
                                                 <td>:</td>
                                                 <td>{{ date('d F Y', strtotime($call_date)) }}</td>
                                             </tr>
@@ -182,7 +188,7 @@
                                                 <td>:</td>
                                                 <td>{{ date('H:i T', strtotime($call_date)) }}</td>
                                             </tr>
-                                            <tr>
+                                            <tr valign="top">
                                                 <td align="right">Location</td>
                                                 <td>:</td>
                                                 <td>{{ $location_link }}</td>
@@ -206,7 +212,7 @@
                         <td bgcolor="#FFFFFF" style="color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 15px; font-weight: 400;" align="center">
                             <div style="border-top: 1px solid #ccc; margin:0 50px;"></div><br>
                             <p style="margin: 5px 40px 50px 40px">
-                                Please follow up with your {{ ucwords($mentee_name) }} to reschedule the meeting!
+                                Please follow up with {{ ucwords($mentee_name) }} to reschedule the meeting!
                             </p>
                             
                         </td>
