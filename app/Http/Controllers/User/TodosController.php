@@ -154,9 +154,13 @@ class TodosController extends Controller
                     });
             });
         })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')->get();
-            
+        // $collection = $students;
+        
+        $index = 0;
         foreach ($students as $student) {
-            $student_collection = array(
+            $student_name = $student->first_name.' '.$student->last_name;
+
+            $student_array[$index] = array(
                 'id' => $student->id,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,
@@ -167,21 +171,12 @@ class TodosController extends Controller
 
             for ($i = 0; $i < count($student->users); $i++) {
                 $mentor_name = $student->users[$i]->first_name.' '.$student->users[$i]->last_name;
-                // if using keyword
-                // filter the query in database
-                // and filter the entire collection too
-                if (!str_contains(strtolower($mentor_name), strtolower($keyword))) {
-                    continue;
-                }
-
-                $mentor_collection = array(
-                    'mentor_name' => $mentor_name,
-                );
-
-                $collection[] = collect($student_collection)->merge($mentor_collection);
-                
-            }            
+                $student_array[$index]['mentor_name'] = $mentor_name;
+            }
+            $index++;
         }
+
+        $collection = $student_array;
 
         $helper = new HelperController;
         $response = $helper->paginate($collection);
