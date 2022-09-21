@@ -7,6 +7,7 @@ use App\Http\Controllers\HelperController;
 use App\Http\Controllers\Student\UniversityController;
 use App\Models\PlanToDoList;
 use App\Models\Students;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -134,7 +135,7 @@ class TodosController extends Controller
     {
         $keyword = $request->get('keyword');
 
-        $students = Students::select('id', 'first_name', 'last_name')->with('users:first_name,last_name')->withCount([
+        $students = Students::select('id', 'first_name', 'last_name')->withCount([
             'todos as waiting' => function ($query) {
                 $query->where(function($query2) {
                     $query2->where('plan_to_do_lists.status', 0)->orWhere('plan_to_do_lists.status', 2);
@@ -154,29 +155,43 @@ class TodosController extends Controller
                     });
             });
         })->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')->get();
-        // $collection = $students;
         
-        $index = 0;
         foreach ($students as $student) {
-            $student_name = $student->first_name.' '.$student->last_name;
 
-            $student_array[$index] = array(
+            $student_collection = array(
                 'id' => $student->id,
                 'first_name' => $student->first_name,
                 'last_name' => $student->last_name,
                 'waiting' => $student->waiting,
                 'need_confirmation' => $student->need_confirmation,
-                'finished' => $student->finished
+                'finished' => $student->finished,
             );
+            
 
             for ($i = 0; $i < count($student->users); $i++) {
                 $mentor_name = $student->users[$i]->first_name.' '.$student->users[$i]->last_name;
-                $student_array[$index]['mentor_name'] = $mentor_name;
+                // if using keyword
+                // filter the query in database
+                // and filter the entire collection too
+                // if (!str_contains(strtolower($mentor_name), strtolower($keyword))) {
+                //     continue;
+                // }
+
+                $mentor_collection = array(
+                    'mentor_name' => $mentor_name,
+                );
+
+                $collection[] = array_merge($student_collection, $mentor_collection);
+                
             }
-            $index++;
+
         }
 
-        $collection = $student_array;
+        $collection = collect($collection)->filter(function($item) use ($keyword) {
+            return str_contains(strtolower($item['mentor_name']), strtolower($keyword));
+        });
+
+        $collection = $collection->unique('id')->values();
 
         $helper = new HelperController;
         $response = $helper->paginate($collection);
