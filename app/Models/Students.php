@@ -97,6 +97,11 @@ class Students extends Authenticatable
         return $this->belongsToMany(User::class, 'student_mentors', 'student_id', 'user_id')->withPivot('id');
     }
 
+    public function student_mentors()
+    {
+        return $this->hasMany(StudentMentors::class, 'student_id', 'id');
+    }
+
     public function todos()
     {
         return $this->hasManyThrough(PlanToDoList::class, StudentMentors::class, 'student_id', 'student_mentors_id', 'id', 'id');

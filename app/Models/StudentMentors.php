@@ -29,4 +29,14 @@ class StudentMentors extends Model
     {
         return $this->hasMany(PlanToDoList::class, 'student_mentors_id', 'id');
     }
+
+    public function students()
+    {
+        return $this->belongsTo(Students::class, 'student_id', 'id');
+    }
+
+    public function users()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

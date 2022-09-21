@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\HelperController;
 use App\Http\Controllers\Student\UniversityController;
 use App\Models\PlanToDoList;
+use App\Models\StudentMentors;
 use App\Models\Students;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -134,8 +135,15 @@ class TodosController extends Controller
     public function index(Request $request)
     {
         $keyword = $request->get('keyword');
+        $type = $request->get('type') != NULL ? "mentor" : NULL;
 
-        $students = Students::select('id', 'first_name', 'last_name')->withCount([
+        $students = Students::select('id', 'first_name', 'last_name');
+        if ($type == "mentor") {
+            $students = $students->with(['users' => function($query) use ($keyword) {
+                return $query->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%');
+            }]);
+        }
+        $students = $students->withCount([
             'todos as waiting' => function ($query) {
                 $query->where(function($query2) {
                     $query2->where('plan_to_do_lists.status', 0)->orWhere('plan_to_do_lists.status', 2);
@@ -166,21 +174,19 @@ class TodosController extends Controller
                 'need_confirmation' => $student->need_confirmation,
                 'finished' => $student->finished,
             );
-            
 
             for ($i = 0; $i < count($student->users); $i++) {
                 $mentor_name = $student->users[$i]->first_name.' '.$student->users[$i]->last_name;
                 // if using keyword
                 // filter the query in database
                 // and filter the entire collection too
-                if (!str_contains(strtolower($mentor_name), strtolower($keyword))) {
-                    continue;
-                }
+                // if (!str_contains(strtolower($mentor_name), strtolower($keyword))) {
+                //     continue;
+                // }
 
                 $mentor_collection = array(
                     'mentor_name' => $mentor_name,
                 );
-
                 $collection[] = collect($student_collection)->merge($mentor_collection);
                 
             }
@@ -190,7 +196,12 @@ class TodosController extends Controller
         $helper = new HelperController;
         $response = $helper->paginate($collection);
         if ($keyword != NULL) {
-            $response = $helper->paginate($collection)->appends(array('keyword' => $keyword));
+            $filter['keyword'] = $keyword;
+            if ($type != NULL) 
+                $filter['type'] = $type;
+
+            $response = $helper->paginate($collection)->appends($filter);
+
         }
 
         return response()->json(['success' => true, 'data' => $response]);
