@@ -173,25 +173,19 @@ class TodosController extends Controller
                 // if using keyword
                 // filter the query in database
                 // and filter the entire collection too
-                // if (!str_contains(strtolower($mentor_name), strtolower($keyword))) {
-                //     continue;
-                // }
+                if (!str_contains(strtolower($mentor_name), strtolower($keyword))) {
+                    continue;
+                }
 
                 $mentor_collection = array(
                     'mentor_name' => $mentor_name,
                 );
 
-                $collection[] = array_merge($student_collection, $mentor_collection);
+                $collection[] = collect($student_collection)->merge($mentor_collection);
                 
             }
 
         }
-
-        $collection = collect($collection)->filter(function($item) use ($keyword) {
-            return str_contains(strtolower($item['mentor_name']), strtolower($keyword));
-        });
-
-        $collection = $collection->unique('id')->values();
 
         $helper = new HelperController;
         $response = $helper->paginate($collection);
