@@ -86,7 +86,7 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         Route::get('user/{role_name?}', [UserController::class, 'index']); //user = mentor, alumni, editor
         Route::get('promotion', [PromotionController::class, 'index']);
         Route::get('speaker', [SpeakerController::class, 'index']);
-        Route::get('student', [StudentController::class, 'index']);
+        Route::get('admin/student', [StudentController::class, 'index']);
         Route::get('activities/{programme}/{recent?}', [StudentActivitiesController::class, 'index']);
         Route::get('transaction/{status}/{recent?}', [TransactionController::class, 'index']);
         Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
