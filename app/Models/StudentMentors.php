@@ -17,7 +17,7 @@ class StudentMentors extends Model
     protected $fillable = [
         'student_id',
         'user_id',
-        'user_id',
+        'priority',
         'start_mentoring',
         'end_mentoring',
         'status',
