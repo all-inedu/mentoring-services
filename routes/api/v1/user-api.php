@@ -135,6 +135,9 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         Route::put('social-media/{soc_med_id}', [SocialMediaController::class, 'update']);
         Route::post('user/profile', [UserController::class, 'update']);
         Route::get('mail/log/{mail_id}', [MailLogController::class, 'update']);
+
+        //* New
+        Route::put('admin/student/mentor/{student_id}', [StudentController::class, 'update_student_mentor']);
     });
 
     Route::prefix('delete')->group(function() {

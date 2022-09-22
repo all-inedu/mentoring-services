@@ -25,6 +25,12 @@ class StudentController extends Controller
     }
 
     //* new
+
+    public function update_student_mentor($student_id, Request $request)
+    {
+        
+    }
+
     public function update_students_info(Request $request)
     {
         $student_id = $request->route('student_id');

@@ -52,10 +52,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function scopeCustomPaginate($query, $use_paginate, $paginate)
+    public function scopeCustomPaginate($query, $options, $use_paginate, $paginate)
     {
         if ($use_paginate == "yes") {
-            $response = $query->paginate($paginate);
+            $response = $query->paginate($paginate)->appends($options);
             return $response;
         } else {
             return $query->get();

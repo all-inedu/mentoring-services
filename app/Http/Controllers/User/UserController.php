@@ -60,13 +60,16 @@ class UserController extends Controller
 
         //find by keyword
         $keyword = $request->get('keyword');
+        if ($keyword) {
+            $options['keyword'] = $keyword;
+        }
 
         try {
             $users = User::where(function($query) use ($keyword) {
                 $query->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->orWhere('email', 'like', '%'.$keyword.'%');
             })->whereHas('roles', function($query) use ($role_name) {
                 $query->where('role_name', $role_name);
-            })->paginate($this->ADMIN_LIST_USER_VIEW_PER_PAGE);
+            })->paginate($this->ADMIN_LIST_USER_VIEW_PER_PAGE)->appends($options);
         } catch (Exception $e) {
             Log::error('Find User by Keyword Issue : ['.$keyword.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to find user by Keyword. Please try again.']);
@@ -121,12 +124,19 @@ class UserController extends Controller
 
     public function index($role_name = 'all', Request $request)
     {   
-        $status = $request->get('status') != null ? 'all' : null;
+        $status = $request->get('status') != null ? $request->get('status') : 'all';
         $use_paginate = $request->get('paginate') != null ? $request->get('paginate') : 'yes';
 
+        $keyword = $request->get('keyword');
+        if ($keyword)
+            $options['keyword'] = $keyword;
 
         $role_name = strtolower($role_name);
-        $user = User::whereHas('roles', function($query) use ($role_name) {
+        $user = User::withCount(['students as students_pass' => function($query) {
+            $query->where('students.status', 0);
+        }, 'students as students_active' => function ($query) {
+            $query->where('students.status', 1);
+        }])->whereHas('roles', function($query) use ($role_name) {
             $query->when($role_name != 'all', function($q) use ($role_name) {
                 
                 // if ($role_name == 'mentor') {
@@ -137,7 +147,9 @@ class UserController extends Controller
             });
         })->when($status != 'all', function ($q) use ($status) {
             $q->where('status', $status);
-        })->orderBy('created_at', 'desc')->customPaginate($use_paginate, $this->ADMIN_LIST_USER_VIEW_PER_PAGE);
+        })->when($keyword, function ($q) use ($keyword) {
+            $q->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->orWhere('email', 'like', '%'.$keyword.'%');
+        })->orderBy('created_at', 'desc')->customPaginate($use_paginate, $options, $this->ADMIN_LIST_USER_VIEW_PER_PAGE);
         return response()->json(['success' => true, 'data' => $user]);
     }
 
