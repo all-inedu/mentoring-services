@@ -124,6 +124,7 @@ class UserController extends Controller
 
     public function index($role_name = 'all', Request $request)
     {   
+        $options = array();
         $status = $request->get('status') != null ? $request->get('status') : 'all';
         $use_paginate = $request->get('paginate') != null ? $request->get('paginate') : 'yes';
 
