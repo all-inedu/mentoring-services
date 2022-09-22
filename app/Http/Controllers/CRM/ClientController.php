@@ -440,6 +440,30 @@ class ClientController extends Controller
             
             // Students::insert($students);
             foreach ($students as $in_student) {
+                if ($student_exists = Students::where('imported_id', $in_student['imported_id'])->first()) {
+
+                    if ($in_student['mentor_1'] != "" || ($in_student['mentor_1'] != NULL)) {
+
+                        $student_mentor_1 = new StudentMentors;
+                        $student_mentor_1->student_id = $student_exists->id;
+                        if ($mentor_data_1 = User::where('imported_id', $in_student['mentor_1'])->count() > 0) {
+
+                            if (StudentMentors::where('student_id', $student_exists->id)->count() > 0) {
+                                
+                                
+
+                            } else {
+
+                            }
+
+                        } else {
+                            $student_mentor_1->imported_id = $in_student['mentor_1'];
+                            $student_mentor_1->priority = 1;
+                            $student_mentor_1->save();
+                        }
+                    }
+                }
+                
                 $student = new Students;
                 $student->first_name = $in_student['first_name'];
                 $student->last_name = $in_student['last_name'];
@@ -467,7 +491,6 @@ class ClientController extends Controller
                 if (($in_student['mentor_1'] != "") || ($in_student['mentor_1'] != NULL)) {
                     $mentor_data_1 = User::where('imported_id', $in_student['mentor_1']);
                     if ($mentor_data_1->count() > 0) {
-
                         $mentor_id_1 = $mentor_data_1->first()->id;
                         $student_mentor_1->user_id = $mentor_id_1;
                         $student_mentor_1->priority = 1;

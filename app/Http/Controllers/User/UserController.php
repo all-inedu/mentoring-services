@@ -119,7 +119,8 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'Profile has been updated', 'data' => $user]);
     }
 
-    public function index($role_name = 'all')
+    //! harus ditambahin status dan pagination
+    public function index($role_name = 'all', $status = 'all', $use_paginate = "yes")
     {   
         $role_name = strtolower($role_name);
         $user = User::whereHas('roles', function($query) use ($role_name) {
@@ -131,7 +132,9 @@ class UserController extends Controller
                     $q->where('role_name', $role_name);
                 // }
             });
-        })->orderBy('created_at', 'desc')->paginate($this->ADMIN_LIST_USER_VIEW_PER_PAGE);
+        })->when($status != 'all', function ($q) use ($status) {
+            $q->where('status', $status);
+        })->orderBy('created_at', 'desc')->customPaginate($use_paginate, $this->ADMIN_LIST_USER_VIEW_PER_PAGE);
         return response()->json(['success' => true, 'data' => $user]);
     }
 

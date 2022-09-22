@@ -52,6 +52,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public function scopeCustomPaginate($query, $use_paginate, $paginate)
+    {
+        if ($use_paginate == "yes") {
+            $response = $query->paginate($paginate);
+            return $response;
+        } else {
+            return $query->get();
+        }
+    }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
