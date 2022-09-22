@@ -60,7 +60,7 @@ class StudentController extends Controller
 
         try {
             // get data mentees
-            $students = Students::
+            $students = Students::with('users')->
                 when($is_searching, function ($query) use ($keyword) {
                     $query->where(function($query1) use ($keyword){
                         $query1->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->
