@@ -73,10 +73,10 @@ class StudentActivities extends Model
         return $this->hasOne(WatchDetail::class, 'std_act_id', 'id');
     }
 
-    public function scopeRecent($query, $recent, $paginate)
+    public function scopeRecent($query, $recent, $options, $paginate)
     {
         if (!$recent)
-            return $query->paginate($paginate);
+            return $query->paginate($paginate)->appends($options);
         else
             return $query->limit(3)->get();
     }
