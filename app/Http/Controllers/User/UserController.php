@@ -120,8 +120,12 @@ class UserController extends Controller
     }
 
     //! harus ditambahin status dan pagination
-    public function index($role_name = 'all', $status = 'all', $use_paginate = "yes")
+    public function index($role_name = 'all', Request $request)
     {   
+        $status = $request->get('status') != null ? 'all' : null;
+        $use_paginate = $request->get('paginate') != null ? $request->get('paginate') : 'yes';
+
+
         $role_name = strtolower($role_name);
         $user = User::whereHas('roles', function($query) use ($role_name) {
             $query->when($role_name != 'all', function($q) use ($role_name) {

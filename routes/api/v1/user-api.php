@@ -83,7 +83,7 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         Route::get('programme/module', [ProgrammeModuleController::class, 'index']);
         // Route::get('programme/{type?}', [ProgrammeController::class, 'index']); //? di hide karena ada version 2 yang include di file ini (do not delete)
         Route::get('role', [PermissionController::class, 'index']);
-        Route::get('user/{role_name?}/{status?}/{use_paginate?}', [UserController::class, 'index']); //user = mentor, alumni, editor
+        Route::get('user/{role_name?}', [UserController::class, 'index']); //user = mentor, alumni, editor
         Route::get('promotion', [PromotionController::class, 'index']);
         Route::get('speaker', [SpeakerController::class, 'index']);
         Route::get('admin/student', [StudentController::class, 'index']);
