@@ -119,7 +119,6 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'Profile has been updated', 'data' => $user]);
     }
 
-    //! harus ditambahin status dan pagination
     public function index($role_name = 'all', Request $request)
     {   
         $status = $request->get('status') != null ? 'all' : null;

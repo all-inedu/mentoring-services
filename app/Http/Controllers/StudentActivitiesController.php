@@ -105,6 +105,8 @@ class StudentActivitiesController extends Controller
     public function index($programme, $recent = NULL, Request $request)
     {
 
+        $status = $request->get('status');
+
         $student_email = $request->get('mail') != NULL ? $request->get('mail') : null;
         $is_student = $request->get('mail') ? true : false;
 
@@ -134,6 +136,16 @@ class StudentActivitiesController extends Controller
                 });
             })->when($find_detail, function($query) use ($user_id) {
                 $query->where('user_id', $user_id);
+
+            })->when($status == "upcoming", function ($query) {
+                $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'waiting');
+            })->when($status == "canceled", function ($query) {
+                $query->where('call_status', 'canceled');
+            })->when($status == "rejected", function ($query) {
+                $query->where('call_status', 'rejected');
+            })->when($status == "completed", function ($query) {
+                $query->where('std_act_status', 'confirmed')->where('mt_confirm_status', 'confirmed')->where('call_status', 'finished');
+
             })->orderBy('created_at', 'desc')->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
 
         return response()->json(['success' => true, 'data' => $activities]);

@@ -440,29 +440,34 @@ class ClientController extends Controller
             
             // Students::insert($students);
             foreach ($students as $in_student) {
-                if ($student_exists = Students::where('imported_id', $in_student['imported_id'])->first()) {
+                // if ($student_exists = Students::where('imported_id', $in_student['imported_id'])->first()) {
 
-                    if ($in_student['mentor_1'] != "" || ($in_student['mentor_1'] != NULL)) {
+                //     if ($in_student['mentor_1'] != "" || ($in_student['mentor_1'] != NULL)) {
 
-                        $student_mentor_1 = new StudentMentors;
-                        $student_mentor_1->student_id = $student_exists->id;
-                        if ($mentor_data_1 = User::where('imported_id', $in_student['mentor_1'])->count() > 0) {
+                //         $student_mentor_1 = new StudentMentors;
+                //         $student_mentor_1->student_id = $student_exists->id;
+                //         $query_user_1 = User::where('imported_id', $in_student['mentor_1']);
+                //         if ($mentor_data_1 = $query_user_1->count() > 0) {
+                //             $user_1 = $query_user_1->first();
 
-                            if (StudentMentors::where('student_id', $student_exists->id)->count() > 0) {
-                                
-                                
+                //             if ($priority_mentor = StudentMentors::where('student_id', $student_exists->id)->count() > 0) {
 
-                            } else {
+                //                 if (!StudentMentors::where('student_id', $student_exists->id)->where('user_id', $user_1->id)->first()) {
+                //                     $student_update_1 = new StudentMentors;
 
-                            }
+                //                 }
 
-                        } else {
-                            $student_mentor_1->imported_id = $in_student['mentor_1'];
-                            $student_mentor_1->priority = 1;
-                            $student_mentor_1->save();
-                        }
-                    }
-                }
+                //             } else {
+
+                //             }
+
+                //         } else {
+                //             $student_mentor_1->imported_id = $in_student['mentor_1'];
+                //             $student_mentor_1->priority = 1;
+                //             $student_mentor_1->save();
+                //         }
+                //     }
+                // }
                 
                 $student = new Students;
                 $student->first_name = $in_student['first_name'];
