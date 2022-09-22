@@ -470,9 +470,11 @@ class ClientController extends Controller
 
                         $mentor_id_1 = $mentor_data_1->first()->id;
                         $student_mentor_1->user_id = $mentor_id_1;
+                        $student_mentor_1->priority = 1;
                         $student_mentor_1->save();
                     } else {
                         $student_mentor_1->imported_id = $in_student['mentor_1'];
+                        $student_mentor_1->priority = 1;
                         $student_mentor_1->save();
                     }
                 }
@@ -486,9 +488,11 @@ class ClientController extends Controller
 
                         $mentor_id_2 = $mentor_data_2->first()->id;
                         $student_mentor_2->user_id = $mentor_id_2;
+                        $student_mentor_2->priority = 2;
                         $student_mentor_2->save();
                     } else {
                         $student_mentor_2->imported_id = $in_student['mentor_2'];
+                        $student_mentor_2->priority = 2;
                         $student_mentor_2->save();
                     }
                 }
