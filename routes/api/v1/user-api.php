@@ -200,6 +200,7 @@ Route::middleware(['auth:api', 'scope:admin,mentor'])->group(function() {
 
         Route::put('info/{student_info}/{student_id}', [StudentController::class, 'update_students_info']);
         Route::put('status/mentoring/{student_id}', [StudentController::class, 'update_status_mentoring']);
+        Route::put('admin/status/mentoring/{student_id}', [StudentContr::class, 'update_status_mentoring_admin']);
     });
 
     Route::prefix('delete')->group(function() {

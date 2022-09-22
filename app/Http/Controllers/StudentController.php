@@ -176,8 +176,31 @@ class StudentController extends Controller
             Students::find($student_id)->update(['status' => $request->value]);
 
         } catch (Exception $e) {
-            Log::error('Update Status Mentoring  Issue : ['.$student->first_name.' '.$student->last_name.'] '.$e->getMessage());
+            Log::error('Update Status Mentoring Issue : ['.$student->first_name.' '.$student->last_name.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to update status mentoring. Please try again.']);
+        }
+
+        $status_message = $request->value == 1 ? "activated" : "non-active";
+
+        return response()->json(['success' => true, 'message' => ucwords($student->first_name.' '.$student->last_name).' has been '.$status_message]);
+
+    }
+
+    //* admin 
+    public function update_status_mentoring_admin ($student_id, Request $request)
+    {
+        if (!$student = Students::find($student_id)) {
+            return response()->json(['success' => false, 'error' => 'Failed to find Student']);
+        }
+
+        try {
+            // Auth::guard('api')->user()->students()->updateExistingPivot($student, ['status' => $request->value], true);
+            StudentMentors::where('student_id', $student_id)->update(['status' => $request->value]);
+            Students::find($student_id)->update(['status' => $request->value]);
+
+        } catch (Exception $e) {
+            Log::error('Update Status Mentoring Admin Issue : ['.$student->first_name.' '.$student->last_name.'] '.$e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to update admin status mentoring. Please try again.']);
         }
 
         $status_message = $request->value == 1 ? "activated" : "non-active";
