@@ -150,7 +150,7 @@ class UserController extends Controller
             $q->where('status', $status);
         })->when($keyword, function ($q) use ($keyword) {
             $q->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->orWhere('email', 'like', '%'.$keyword.'%');
-        })->orderBy('created_at', 'desc')->customPaginate($use_paginate, $options, $this->ADMIN_LIST_USER_VIEW_PER_PAGE);
+        })->orderBy('created_at', 'desc')->customPaginate($use_paginate, $this->ADMIN_LIST_USER_VIEW_PER_PAGE, $options);
         return response()->json(['success' => true, 'data' => $user]);
     }
 
