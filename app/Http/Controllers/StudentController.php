@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StudentMentors;
 use App\Models\Students;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
@@ -170,8 +171,10 @@ class StudentController extends Controller
         }
 
         try {
+            // Auth::guard('api')->user()->students()->updateExistingPivot($student, ['status' => $request->value], true);
+            StudentMentors::where('student_id', $student_id)->update(['status' => $request->value]);
+            Students::find($student_id)->update(['status' => $request->value]);
 
-            Auth::guard('api')->user()->students()->updateExistingPivot($student, ['status' => $request->value], true);
         } catch (Exception $e) {
             Log::error('Update Status Mentoring  Issue : ['.$student->first_name.' '.$student->last_name.'] '.$e->getMessage());
             return response()->json(['success' => false, 'error' => 'Failed to update status mentoring. Please try again.']);
@@ -182,7 +185,6 @@ class StudentController extends Controller
         return response()->json(['success' => true, 'message' => ucwords($student->first_name.' '.$student->last_name).' has been '.$status_message]);
 
     }
-
 
     public function select_by_auth (Request $request)
     {
@@ -298,6 +300,9 @@ class StudentController extends Controller
     
     public function index($student_id = NULL, Request $request)
     {
+
+        
+
         $is_detail = (($student_id != NULL) || ($request->get('mail') != NULL)) ? 1 : 0;
         $email = $request->get('mail') != NULL ? $request->get('mail') : null;
         //! old - commented
@@ -309,6 +314,7 @@ class StudentController extends Controller
         // return response()->json(['success' => true, 'data' => $students]);
 
         //* New
+        $keyword = $request->get('keyword');
         $students = Students::with(['social_media', 'users' => function ($query) {
                     $query->orderBy('priority', 'asc');
             }])->orderBy('created_at', 'desc')->when($student_id != NULL, function($query) use ($student_id) {

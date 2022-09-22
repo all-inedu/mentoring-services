@@ -94,7 +94,7 @@ class Students extends Authenticatable
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'student_mentors', 'student_id', 'user_id')->withPivot('id');
+        return $this->belongsToMany(User::class, 'student_mentors', 'student_id', 'user_id')->withPivot('id', 'start_mentoring');
     }
 
     public function student_mentors()

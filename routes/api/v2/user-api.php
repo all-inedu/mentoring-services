@@ -13,6 +13,7 @@ Route::middleware(['auth:api', 'scopes:admin'])->group(function() {
     Route::prefix('list')->group(function() {
         Route::get('programme/{type}', [V2ProgrammeController::class, 'index']);
         Route::get('students', [V2StudentController::class, 'index']);
+        Route::get('admin/students', [V2StudentController::class, 'select_all']);
     });
 
     Route::prefix('create')->group(function() {
