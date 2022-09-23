@@ -72,7 +72,7 @@ class TestReminderNextGroupMeeting extends Command
 
                 Mail::send('templates.mail.next-group-meeting-announcement', ['name' => $name, 'person' => 'student', 'group_info' => $group_info, 'meeting_detail' => $meeting_detail, 'token' => $token],
                     function($mail) use ($email, $name, $subject) {
-                        $mail->from(getenv('FROM_EMAIL_ADDRESS'), "no-reply@all-inedu.com");
+                        $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
                         $mail->to($email, $name);
                         $mail->subject($subject);
                     }); 
