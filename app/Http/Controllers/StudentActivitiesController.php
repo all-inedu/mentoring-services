@@ -105,6 +105,7 @@ class StudentActivitiesController extends Controller
     public function index($programme, $recent = NULL, Request $request)
     {
 
+        $options = null;
         $status = $request->get('status');
         if ($status) {
             $options['status'] = $status;
