@@ -137,7 +137,7 @@ Route::middleware(['auth:api', 'scopes:admin', 'cors'])->group(function() {
         Route::get('mail/log/{mail_id}', [MailLogController::class, 'update']);
 
         //* New
-        Route::put('admin/student/mentor/{student_id}', [StudentController::class, 'update_student_mentor']);
+        Route::put('admin/student-mentor/{student_id}', [StudentController::class, 'update_student_mentor']);
     });
 
     Route::prefix('delete')->group(function() {

@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 
 class StudentController extends Controller
 {
@@ -28,6 +29,44 @@ class StudentController extends Controller
 
     public function update_student_mentor($student_id, Request $request)
     {
+        if (!$student = Students::find($student_id)) {
+            return response()->json(['success' => false, 'error' => 'Failed to find student.']);
+        }
+
+        $new_mentor_id = $request->new_mentor_id; 
+        $new_priority = $request->new_priority;
+
+        $has_mentor = $student->users()->count(); # total mentor yg handle 
+        if ($has_mentor != 0) { # if mentee has at least 1 mentor
+            //* assumed if mentee has mentor  *//
+            //* then request already bring student mentor id *//
+            $st_mt_id = $request->st_mt_id; # id student mentor
+            if (!$st_mt = StudentMentors::find($st_mt_id)) { # make sure that student mentor that brought is the existing student mentor
+                return response()->json(['success' => false, 'error' => 'Invalid student mentor id']);
+            }
+            
+            if (StudentMentors::where('student_id', $student_id)->where('user_id', $new_mentor_id)->first()) {
+                $mentor = User::find($new_mentor_id);
+                return response()->json(['success' => false, 'error' => 'This mentee has already handled by '.$mentor->first_name.' '.$mentor->last_name]);
+            }
+
+            $st_mt->user_id = $new_mentor_id;
+            // $st_mt->priority = $new_priority;
+            $st_mt->save();
+            $message = 'Student mentor has been updated';
+
+        } else { # if mentee doesn't have mentor then should insert a new one
+
+            $student->users()->attach($new_mentor_id, [
+                                        'priority' => $new_priority,
+                                        'created_at' => Carbon::now(),
+                                        'updated_at' => Carbon::now(),
+                                    ]);
+            $message = 'Mentor has been inserted to student mentor';
+
+        }
+
+        return response()->json(['success' => true, 'message' => $message]);
         
     }
 
@@ -35,7 +74,7 @@ class StudentController extends Controller
     {
         $student_id = $request->route('student_id');
         if (!$student = Students::find($student_id)) {
-            return response()->json(['succes' => false, 'error' => 'Failed to find student.']);
+            return response()->json(['success' => false, 'error' => 'Failed to find student.']);
         }
 
         $rules = [
@@ -329,7 +368,6 @@ class StudentController extends Controller
     
     public function index($student_id = NULL, Request $request)
     {
-
         $is_detail = (($student_id != NULL) || ($request->get('mail') != NULL)) ? 1 : 0;
         $email = $request->get('mail') != NULL ? $request->get('mail') : null;
         //! old - commented
@@ -343,7 +381,14 @@ class StudentController extends Controller
         //* New
         $keyword = $request->get('keyword');
         $students = Students::with(['social_media', 'users' => function ($query) {
-                    $query->orderBy('priority', 'asc');
+                    $query->orderBy('priority', 'asc')->select(
+                        'student_mentors.id as st_mt_id', 
+                        'student_mentors.priority', 
+                        'student_mentors.start_mentoring',
+                        'student_mentors.end_mentoring',
+                        'student_mentors.status as status_mentoring',
+                        'users.*'
+                    );
             }])->orderBy('created_at', 'desc')->when($student_id != NULL, function($query) use ($student_id) {
                 $query->where('id', $student_id);
             })->when($keyword, function ($query) use ($keyword) {
