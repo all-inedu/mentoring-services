@@ -335,7 +335,7 @@ class StudentActivitiesController extends Controller
         ->whereHas('programmes', function($query) use ($programme) {
             $query->where('prog_name', $programme);
         })
-        ->recent($recent, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
+        ->recent($recent, null, $this->ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE);
 
         return $activities;
     }
