@@ -34,10 +34,10 @@ class StudentController extends Controller
         }
 
         $new_mentor_id = $request->new_mentor_id; 
-        $new_priority = $request->new_priority;
+        $new_priority = $request->new_priority; 
 
         $has_mentor = $student->users()->count(); # total mentor yg handle 
-        if ($has_mentor != 0) { # if mentee has at least 1 mentor
+        if ($has_mentor != 0 && ($request->st_mt_id != NULL)) { # if mentee has at least 1 mentor
             //* assumed if mentee has mentor  *//
             //* then request already bring student mentor id *//
             $st_mt_id = $request->st_mt_id; # id student mentor
