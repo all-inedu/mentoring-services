@@ -207,7 +207,7 @@
                             <p style="margin: 5px 40px 50px 40px">
                                 Come prepared with any questions you have about the project. 
                                 <br><br>
-                                Please let us know if you can attend by clicking this <a href="{{ route('attend', ['person' => $person, 'encrypted_data' => $token]) }}">link</a>
+                                Please let us know if you can attend by clicking this <a href="{{ route('attend', ['person' => $person, 'encrypted_data' => $token, 'by_mail' => true]) }}">link</a>
                                 <br><br>
                                 Thank you for your time, and we hope to see you on {{ date('F d', strtotime($meeting_detail->start_meeting_date)) }}.
                             </p>

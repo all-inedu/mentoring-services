@@ -34,7 +34,7 @@ Route::get('crm/{role}/{type}', [ClientController::class, 'synchronize']);
 Route::get('test/sync', [ClientController::class, 'import_student']);
 Route::get('payment-checker', [TransactionController::class, 'payment_checker']);
 Route::get('social-media/{person}/{id}', [SocialMediaController::class, 'index']);
-Route::get('student/group/project/meeting/{person}/{encrypted_data}', [GroupController::class, 'attended'])->name('attend');
+Route::get('student/group/project/meeting/{person}/{encrypted_data}/{by_mail?}', [GroupController::class, 'attended'])->name('attend');
 
 // authentication register & log-in
 Route::prefix('auth/s')->group(function() {

@@ -678,7 +678,7 @@ class GroupController extends Controller
         ]);
     }
 
-    public function attended ($person, $encrypted_data)
+    public function attended ($person, $encrypted_data, $by_mail = false)
     {
         $rules = [ 
             'person' => 'in:mentor,student'
@@ -697,7 +697,7 @@ class GroupController extends Controller
                 if (!GroupMeeting::where('group_meetings.id', $decrypted_data['group_meet_id'])->whereHas('user_attendances', function($query) use ($decrypted_data) {
                     $query->where('user_attendances.id', $decrypted_data['attend_id']);
                 })->where('status', 0)->first()) {
-                    return response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting or you are not joined in the group project']);
+                    return $by_mail ? 'Couldn\'t find the group meeting or you are not joined in the group project' : response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting or you are not joined in the group project']);
                 }
                 break;
 
@@ -705,7 +705,7 @@ class GroupController extends Controller
                 if (!GroupMeeting::where('group_meetings.id', $decrypted_data['group_meet_id'])->whereHas('student_attendances', function($query) use ($decrypted_data) {
                     $query->where('student_attendances.id', $decrypted_data['attend_id']);
                 })->where('status', 0)->first()) {
-                    return response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting or you are not joined in the group project']);
+                    return $by_mail ? 'Couldn\'t find the group meeting or you are not joined in the group project' : response()->json(['success' => false, 'error' => 'Couldn\'t find the group meeting or you are not joined in the group project']);
                 }
                 break;
         }
@@ -721,10 +721,10 @@ class GroupController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Update Attendance Status Issue : ['.json_encode($decrypted_data).'] '.$e->getMessage());
-            return response()->json(['success' => false, 'error' => 'Failed to update attendance status. Please try again.']);
+            return $by_mail ? Redirect::to($this->NOTIFICATION_HANDLER.'Failed to update attendance status. Please try again.') : response()->json(['success' => false, 'error' => 'Failed to update attendance status. Please try again.']);
         }
         
-        return response()->json(['success' => true, 'message' => 'Attendance status has updated']);
+        return $by_mail ? Redirect::to($this->NOTIFICATION_HANDLER.'Attendance status has updated') : response()->json(['success' => true, 'message' => 'Attendance status has updated']);
     }
 
     public function cancel_meeting ($person, $meeting_id)
