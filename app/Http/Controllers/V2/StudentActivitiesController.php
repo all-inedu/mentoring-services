@@ -290,7 +290,7 @@ class StudentActivitiesController extends Controller
 
         // kondisi buat nampilin data khusus yg di dashboard mentor
         if (($recent != NULL) && ($status == "upcoming")) {
-            $data['upcoming'] = $this->get_index($programme, $status, $recent, null);
+            $data['upcoming'] = $this->get_index($programme, $status, $recent, $meeting_minutes, null);
             $data['latest_meeting'] = $this->get_index($programme, 'history', $recent, "yes")->where('meeting_minute', 0)->unique('id')->values();
         } else {
             $data = $this->get_index($programme, $status, $recent, $meeting_minutes, $filter_status);
