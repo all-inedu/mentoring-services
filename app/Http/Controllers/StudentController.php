@@ -330,8 +330,6 @@ class StudentController extends Controller
     public function index($student_id = NULL, Request $request)
     {
 
-        
-
         $is_detail = (($student_id != NULL) || ($request->get('mail') != NULL)) ? 1 : 0;
         $email = $request->get('mail') != NULL ? $request->get('mail') : null;
         //! old - commented
@@ -348,6 +346,8 @@ class StudentController extends Controller
                     $query->orderBy('priority', 'asc');
             }])->orderBy('created_at', 'desc')->when($student_id != NULL, function($query) use ($student_id) {
                 $query->where('id', $student_id);
+            })->when($keyword, function ($query) use ($keyword) {
+                $query->where(DB::raw("CONCAT(`first_name`, ' ', `last_name`)"), 'like', '%'.$keyword.'%')->orWhere('email', 'like', '%'.$keyword.'%');
             })->when($email != NULL, function($query) use ($email) {
                     $query->where('email', $email);
             })->paginateChecker($is_detail, $this->ADMIN_LIST_STUDENT_VIEW_PER_PAGE);
