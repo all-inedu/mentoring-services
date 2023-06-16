@@ -8,10 +8,8 @@ use App\Models\CRM\Alumni;
 use App\Models\CRM\Client;
 use App\Models\CRM\Editor;
 use App\Models\CRM\Mentor;
-use App\Models\CRM\StudentMentor;
 use App\Models\Education;
 use App\Models\Roles;
-use App\Models\StudentMentors;
 use App\Models\Students;
 use App\Models\SynchronizeLogs;
 use App\Models\User;
@@ -23,7 +21,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Faker\Generator as Faker;
-use Illuminate\Database\QueryException;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -43,7 +40,7 @@ class ClientController extends Controller
             'role' => $role,
             'type' => $type
         ];
-
+        
         $rules = [
             'role' => 'required|in:student,mentor,editor,alumni',
             'type' => 'required|in:sync,import'
@@ -94,7 +91,7 @@ class ClientController extends Controller
         $alumni = Alumni::with('student', 'student.school')->
         when(!$isNull, function ($query) {
                 $query->whereHas('student', function($q1) {
-                    $q1->where(DB::raw("CONCAT(`st_firstname`, ' ', `st_last_name`)"), '!=', '')->where('st_mail', '!=', '')->where('st_mail', '!=', '-')->whereNull('st_mail');
+                    $q1->where('st_firstname', '!=', '')->where('st_lastname', '!=', '')->where('st_mail', '!=', '');
                 });
             })->distinct()->get();
         foreach ($alumni as $data) {
@@ -115,14 +112,14 @@ class ClientController extends Controller
                     'imported_id' => $this->remove_blank($data->student->st_id),
                     'position' => null,
                     'imported_from' => 'u5794939_allin_bd',
-                    'educations' => !empty($data->student->school->sch_name) ? array(
+                    'educations' => array(
                         'graduated_from' => $data->student->school->sch_name,
                         'major' => null,
                         'degree' => null,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                         'graduation_date' => $data->alu_graduatedate
-                    ) : null
+                    )
                 );
             }
         }
@@ -152,12 +149,9 @@ class ClientController extends Controller
                 $alumni->imported_from = $alumni_data['imported_from'];
                 $alumni->save();
 
-                if (($alumni_data['educations'] != null) && ($alumni_data['educations'] != "")) {
-                    Education::insert(
-                        ['user_id' => $alumni->id] + $alumni_data['educations']
-                    );
-                }
-
+                Education::insert(
+                    ['user_id' => $alumni->id] + $alumni_data['educations']
+                );
 
                 $alumni->roles()->attach($alumni->id, ['role_id' => 4, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
 
@@ -176,7 +170,7 @@ class ClientController extends Controller
     {
         $editors = array();
         $editor_crm = Editor::where('status', 1)->where(function($query) {
-            $query->whereNotNull('email')->orwhere('email', '!=', '');
+            $query->whereNotNull('email')->orWhere('email', '!=', '');
         })->get();
         foreach ($editor_crm as $data) {
             // $find = User::where('email', $data->email)->first();
@@ -189,8 +183,7 @@ class ClientController extends Controller
                     'phone_number' => $this->remove_blank($data->phone),
                     'email' => $this->remove_blank($data->email),
                     'email_verified_at' => $data->email === '' ? null : Carbon::now(),
-                    // 'password' => $this->remove_blank($data->password),
-                    'password' => NULL, //! set to null for now
+                    'password' => $this->remove_blank($data->password),
                     'status' => $data->status,
                     'is_verified' => $data->email === '' ? 0 : 1,
                     'remember_token' => null,
@@ -198,14 +191,14 @@ class ClientController extends Controller
                     'imported_id' => null,
                     'position' => null,
                     'imported_from' => 'u5794939_editing',
-                    'educations' => !empty($data->graduated_from) ? array(
+                    'educations' => array(
                         'graduated_from' => $data->graduated_from,
                         'major' => $data->major,
                         'degree' => null,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                         'graduation_date' => null
-                    ) : null
+                    )
                 );
             // }
             
@@ -251,11 +244,9 @@ class ClientController extends Controller
 
                 $editors = $editor;
 
-                if (($editor_data['educations'] != null) && ($editor_data['educations'] != "")) {
-                    Education::insert(
-                        ['user_id' => $editor->id] + $editor_data['educations']
-                    );
-                }
+                Education::insert(
+                    ['user_id' => $editor->id] + $editor_data['educations']
+                );
 
                 $editor->roles()->attach($editor->id, ['role_id' => 3, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
 
@@ -278,7 +269,7 @@ class ClientController extends Controller
         $mentors = array();
 
         $email_empty = Mentor::where(function($query) {
-            $query->where('mt_email', '=', '')->orwhere('mt_email', '=', '-')->orwhereNull('mt_email');
+            $query->where('mt_email', '=', '')->orWhere('mt_email', '=', '-');
         })->where('mt_status', 1)->select('mt_email')->get();
 
         $mentor_crm = Mentor::with('university')->where(function($query) use ($email_empty) {
@@ -302,14 +293,14 @@ class ClientController extends Controller
                     'imported_id' => $this->remove_blank($data->mt_id),
                     'position' => null,
                     'imported_from' => 'u5794939_allin_bd',
-                    'educations' => !empty($data->university->univ_name) ? array(
+                    'educations' => array(
                         'graduated_from' => $data->university->univ_name,
                         'major' => $data->major,
                         'degree' => null,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                         'graduation_date' => null
-                    ) : null
+                    )
                 );
             }
         }
@@ -319,11 +310,12 @@ class ClientController extends Controller
 
     public function import_mentor()
     {
-        $new_roles = array();
+        $new_roles = $editors = array();
         $bulk_data = $this->recap_mentor(false);
         DB::beginTransaction();
         try {
             foreach ($bulk_data as $mentor_data) {
+
                 if ($user = User::where('email', $mentor_data['email'])->first()) {
                     $id = $user->id;
                     if (UserRoles::where('user_id', $id)->where('role_id', 2)->count() == 0) {
@@ -332,7 +324,7 @@ class ClientController extends Controller
                         );
                         $user->roles()->attach($id, ['role_id' => 2, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
                     }
-                    continue;
+                    break;
                 }
 
                 $mentor = new User;
@@ -351,11 +343,9 @@ class ClientController extends Controller
                 $mentor->imported_from = $mentor_data['imported_from'];
                 $mentor->save();
 
-                if (($mentor_data['educations'] != null) && ($mentor_data['educations'] != "")) {
-                    Education::insert(
-                        ['user_id' => $mentor->id] + $mentor_data['educations']
-                    );
-                }
+                Education::insert(
+                    ['user_id' => $mentor->id] + $mentor_data['educations']
+                );
 
                 $mentor->roles()->attach($mentor->id, ['role_id' => 2, 'created_at' => Carbon::now(), 'updated_at' => Carbon::now()]);
             }
@@ -367,43 +357,32 @@ class ClientController extends Controller
             throw New Exception('Failed to import mentor data');
         }
 
-        return 'Mentor data has been imported';
+        return $bulk_data;
     }
 
     public function recap_student($isNull = true, $paginate = "no")
     {
         $students = array();
         $alumni = Alumni::select('st_id')->get();
-        $client_empty_mail = Client::select('st_mail')->where('st_mail', '=', '')->orWhere('st_mail', '=', '-')->orWhereNull('st_mail')->get();
-
-        $client = Client::with('student_programs.student_mentors')->withAndWhereHas('student_programs', function ($query) {
-            $query->where('stprog_status', 1)->whereHas('programs', function ($query1) {
-                $query1->where(function($query2) {
-                    $query2->where('prog_main', 'Admissions Mentoring')->where('prog_sub', 'Admissions Mentoring');
-                });
-            });
-        })->whereNotIn('st_id', $alumni)
-        ->when(!$isNull, function ($query) {
+        $client = Client::whereHas('programs', function($query) {
+            $query->where('prog_main', 'Admissions Mentoring')->where('stprog_status', 1);
+        })->whereNotIn('st_id', $alumni)->when(!$isNull, function ($query) {
                 $query->where(function($q1) {
-                    $q1->where(DB::raw("CONCAT(`st_firstname`, ' ', `st_lastname`)"), '!=', '')->where('st_mail', '!=', '')->where('st_mail', '!=', '-')->whereNotNull('st_mail');
+                    $q1->where('st_firstname', '!=', '')->where('st_lastname', '!=', '')->where('st_mail', '!=', '');
                 });
-        })->where(function($query) use ($client_empty_mail) {
-            $query->whereNotNull('st_mail')->orWhere('st_mail', '!=', '')->whereNotIn('st_mail', $client_empty_mail);
-        })
-        ->distinct()->get();
+        })->where(function($query) {
+            $query->whereNotNull('st_mail')->orWhere('st_mail', '!=', '');
+        })->distinct()->get();
 
-        $index = 0;
         foreach ($client->unique('st_mail') as $client_data) {
-
-            // $find = Students::where('email', $client_data->st_mail)->count();
-            // if ($find == 0) { // if there are no data with client data email then save record
-                $students[$index] = array(
+            $find = Students::where('email', $client_data->st_mail)->count();
+            if ($find == 0) { // if there are no data with client data email then save record
+                $students[] = array(
                     'first_name' => $client_data->st_firstname,
                     'last_name' => $client_data->st_lastname,
                     'birthday' => $this->remove_invalid_date($client_data->st_dob),
                     'phone_number' => $client_data->st_phone,
-                    // 'grade' => isset($client_data->school->sch_level) ? $this->remove_string_grade($client_data->school->sch_level) : null,
-                    'grade' => $client_data->st_grade,
+                    'grade' => isset($client_data->school->sch_level) ? $this->remove_string_grade($client_data->school->sch_level) : null,
                     'email' => $this->remove_blank($client_data->st_mail),
                     'email_verified_at' => $client_data->st_mail != null ? Carbon::now() : null,
                     'address' => $this->remove_blank($client_data->st_address, 'text'),
@@ -415,19 +394,9 @@ class ClientController extends Controller
                     'is_verified' => $client_data->st_mail == '' ? 0 : 1,
                     'created_at' => $client_data->st_datecreate,
                     'updated_at' => $client_data->st_datelastedit,
-                    'school_name' => isset($client_data->school->sch_name) ? ($client_data->school->sch_name == '-' ? null : $client_data->school->sch_name) : null,
-                    'mentor_1' => null,
-                    'mentor_2' => null
+                    'school_name' => isset($client_data->school->sch_name) ? ($client_data->school->sch_name == '-' ? null : $client_data->school->sch_name) : null
                 );
-
-                foreach ($client_data->student_programs as $client_programs) {
-                    foreach ($client_programs->student_mentors as $client_mentors) {
-                        $students[$index]['mentor_1'] = $client_mentors->mt_id1;
-                        $students[$index]['mentor_2'] = $client_mentors->mt_id2;
-                    }
-                }
-            $index++;
-            // }
+            }
         }
 
         return $paginate == "yes" ? $this->helper->paginate($students) : $students;
@@ -435,175 +404,19 @@ class ClientController extends Controller
 
     public function import_student()
     {
-        //* get students data that we want to import from big data to mentoring
         $students = $this->recap_student(false);
-        
+
         DB::beginTransaction();
         try {
-            
-            // Students::insert($students);
-            foreach ($students as $in_student) {
-                
-                if ($student = Students::where('first_name', $in_student['first_name'])->where('last_name', $in_student['last_name'])->first()) {
-                    $inserted_student_id = $student->id;
-                } else {
-                    $student = new Students;
-                    $student->first_name = $in_student['first_name'];
-                    $student->last_name = $in_student['last_name'];
-                    $student->birthday = $in_student['birthday'];
-                    $student->phone_number = $in_student['phone_number'];
-                    $student->grade = $in_student['grade'];
-                    $student->email = $in_student['email'];
-                    $student->email_verified_at = $in_student['email_verified_at'];
-                    $student->address = $in_student['address'];
-                    $student->city = $in_student['city'];
-                    $student->password = $in_student['password'];
-                    $student->imported_from = $in_student['imported_from'];
-                    $student->imported_id = $in_student['imported_id'];
-                    $student->status = $in_student['status'];
-                    $student->is_verified = $in_student['is_verified'];
-                    $student->created_at = $in_student['created_at'];
-                    $student->updated_at = $in_student['updated_at'];
-                    $student->school_name = $in_student['school_name'];
-                    $student->save();
-                    $inserted_student_id = $student->id;
-                }
-                
-                
-                
-                //* insert mentor_1 from bigdata into student mentors
-                if (($in_student['mentor_1'] != "") || ($in_student['mentor_1'] != NULL)) {
-                    $mentor_data_1 = User::where('imported_id', $in_student['mentor_1']);
-                    $mentor_id_1 = ($mentor_data_1->count() > 0) ? $mentor_data_1->first()->id : $in_student['mentor_1'];
-                
-                    if (!$student_mentor_1 = StudentMentors::where('student_id', $inserted_student_id)->when($mentor_data_1->count() == 0, function ($query) use ($mentor_id_1) {
-                            $query->where('imported_id', '=', $mentor_id_1);
-                        }, function($query) use ($mentor_id_1) {
-                            $query->where('user_id', $mentor_id_1);
-                        })->first()){
-                        $student_mentor_1 = new StudentMentors;
-                        $student_mentor_1->student_id = $inserted_student_id;
-                        if ($mentor_data_1->count() > 0) {
-                            $student_mentor_1->user_id = $mentor_id_1;
-                            $student_mentor_1->priority = 1;
-                            $student_mentor_1->save();
-                        } else {
-                            $student_mentor_1->imported_id = $mentor_id_1;
-                            $student_mentor_1->priority = 1;
-                            $student_mentor_1->save();
-                        }
-                    }
-                } 
-                
-                
-                //* insert mentor_2 from bigdata into student mentors
-                if (($in_student['mentor_2'] != "") || ($in_student['mentor_2'] != NULL)) {
-                    $mentor_data_2 = User::where('imported_id', $in_student['mentor_2']);
-                    $mentor_id_2 = ($mentor_data_2->count() > 0) ? $mentor_data_2->first()->id : $in_student['mentor_2'];
-                
-                    if (!$student_mentor_2 = StudentMentors::where('student_id', $inserted_student_id)->when($mentor_data_2->count() == 0, function ($query) use ($mentor_id_2) {
-                            $query->where('imported_id', '=', $mentor_id_2);
-                        }, function($query) use ($mentor_id_2) {
-                            $query->where('user_id', $mentor_id_2);
-                        })->first()){
-                        $student_mentor_2 = new StudentMentors;
-                        $student_mentor_2->student_id = $inserted_student_id;
-                        if ($mentor_data_2->count() > 0) {
-                            $student_mentor_2->user_id = $mentor_id_2;
-                            $student_mentor_2->priority = 2;
-                            $student_mentor_2->save();
-                        } else {
-                            $student_mentor_2->imported_id = $mentor_id_2;
-                            $student_mentor_2->priority = 2;
-                            $student_mentor_2->save();
-                        }
-                    }
-                } 
-                
-                
-                // vvvvv old
-                
-                // $student_mentor_1 = new StudentMentors;
-                // $student_mentor_1->student_id = $inserted_student_id;
-                // if (($in_student['mentor_1'] != "") || ($in_student['mentor_1'] != NULL)) {
-                //     $mentor_data_1 = User::where('imported_id', $in_student['mentor_1']);
-                //     if ($mentor_data_1->count() > 0) {
-                //         $mentor_id_1 = $mentor_data_1->first()->id;
-                //         $student_mentor_1->user_id = $mentor_id_1;
-                //         $student_mentor_1->priority = 1;
-                //         $student_mentor_1->save();
-                //     } else {
-                //         $student_mentor_1->imported_id = $in_student['mentor_1'];
-                //         $student_mentor_1->priority = 1;
-                //         $student_mentor_1->save();
-                //     }
-                // }
-
-                // //* insert mentor_2 from bigdata into student mentors
-                // $student_mentor_2 = new StudentMentors;
-                // $student_mentor_2->student_id = $inserted_student_id;
-                // if (($in_student['mentor_2'] != "") || ($in_student['mentor_2'] != NULL)) {
-                //     $mentor_data_2 = User::where('imported_id', $in_student['mentor_2']);
-                //     if ($mentor_data_2->count() > 0) {
-
-                //         $mentor_id_2 = $mentor_data_2->first()->id;
-                //         $student_mentor_2->user_id = $mentor_id_2;
-                //         $student_mentor_2->priority = 2;
-                //         $student_mentor_2->save();
-                //     } else {
-                //         $student_mentor_2->imported_id = $in_student['mentor_2'];
-                //         $student_mentor_2->priority = 2;
-                //         $student_mentor_2->save();
-                //     }
-                // }
-                
-            }
+            Students::insert($students);
             DB::commit();
-        } catch (QueryException $e) {
-            DB::rollBack();
-            Log::error($e->getMessage());
-            // return response()->json($e->getMessage());
-            throw New Exception('Failed to import students data');
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Import Data Student Issue : '.$e->getMessage());
             throw New Exception('Failed to import students data');
-            // return response()->json($e->getMessage());
         }
 
         return 'Students data has been imported';
-    }
-
-    public function insert_student_mentor($stmentor, $inserted_student_id = null)
-    {
-        foreach ($stmentor as $client_mentor) {
-            $student_id = Students::where('email', $client_mentor['st_mail'])->first()->id;
-            if ( ($client_mentor['mentor_1'] != "") || ($client_mentor['mentor_1'] != NULL) ) {
-                $mentor_id_1 = User::where('imported_id', $client_mentor['mentor_1'])->first()->id;
-                if (StudentMentors::where('student_id', $student_id)->where('user_id', $mentor_id_1)->count() == 0) {
-                    $student_mentor[] = array(
-                        'student_id' => $student_id,
-                        'user_id' => $mentor_id_1,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    );
-                } 
-            }
-
-            if ( ($client_mentor['mentor_2'] != "") || ($client_mentor['mentor_2'] != NULL) ) {
-                $mentor_id_2 = User::where('imported_id', $client_mentor['mentor_2'])->first()->id;
-                if (StudentMentors::where('student_id', $student_id)->where('user_id', $mentor_id_2)->count() == 0) {
-                    $student_mentor[] = array(
-                        'student_id' => $student_id,
-                        'user_id' => $mentor_id_2,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    );
-                }
-            }
-        }
-
-        return StudentMentors::insert($student_mentor);
     }
 
     //** HELPER */

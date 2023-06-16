@@ -22,7 +22,8 @@ class StudentMentors extends Model
         'end_mentoring',
         'status',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'imported_id',
     ];
 
     public function plan_to_do_list()

@@ -366,8 +366,9 @@ class StudentController extends Controller
         return response()->json(['success' => true, 'data' => $response]);
     }
     
-    public function index($student_id = NULL, Request $request)
+    public function index(Request $request)
     {
+        $student_id = $request->get('student_id') != NULL ? $request->get('student_id') : null;
         $is_detail = (($student_id != NULL) || ($request->get('mail') != NULL)) ? 1 : 0;
         $email = $request->get('mail') != NULL ? $request->get('mail') : null;
         //! old - commented

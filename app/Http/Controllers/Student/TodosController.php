@@ -13,7 +13,7 @@ class TodosController extends Controller
 
     public function __construct()
     {
-        $this->student = Auth::guard('student-api')->user();
+        $this->student = Auth::guard('student-api')->check() ? Auth::guard('student-api')->user() : NULL;
         $this->student_id = $this->student->id;
     }
     

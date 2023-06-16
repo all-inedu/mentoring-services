@@ -29,6 +29,8 @@ class StudentActivitiesController extends Controller
 {
     use GetDataMeeting_GroupProject_SummaryTrait;
     protected $student_id;
+    protected $user_id;
+    protected $ADMIN_LIST_PROGRAMME_VIEW_PER_PAGE;
     protected $STUDENT_MEETING_VIEW_PER_PAGE;
     protected $TO_MENTEES_1ON1CALL_SUBJECT;
 
@@ -265,8 +267,13 @@ class StudentActivitiesController extends Controller
         return response()->json(['success' => true, 'message' => '1 on 1 Call has been made', 'data' => $response['activities']]);
     }
 
-    public function index($programme, $status = NULL, $recent = NULL, Request $request)
+    public function index(Request $request)
     {
+        $programme = $request->route('programme') != null ? $request->route('programme') : null;
+        $status = $request->route('status') != null ? $request->route('status') : null;
+        $recent = $request->route('recent') != null ? $request->route('recent') : null;
+
+
         $meeting_minutes = $request->get('meeting-minutes') == "yes" ? $request->get('meeting-minutes') : null;
 
         $rules = [
@@ -340,8 +347,12 @@ class StudentActivitiesController extends Controller
         return $activities;
     }
     
-    public function index_by_student ($person, $programme, $status = NULL, $recent = NULL, Request $request)
+    public function index_by_student (Request $request)
     {
+        $person = $request->route('person') ?? null; 
+        $programme = $request->route('programme') ?? null; 
+        $status = $request->route('status') ?? null; 
+        $recent = $request->route('recent') ?? null; 
         $webinar_category = $request->get('category');
         $rules = [
             'person' => 'required|in:mentor,student',
