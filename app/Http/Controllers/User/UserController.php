@@ -40,8 +40,12 @@ class UserController extends Controller
         }
     }
 
-    public function find($role_name, $id = null, $detail = null, Request $request)
+    public function find(Request $request)
     {
+        $role_name = $request->route('role_name') ?? null;
+        $id = $request->route('id') ?? null;
+        $detail = $request->route('detail') ?? null;
+        
         $rules = [
             'role_name' => 'required|in:admin,mentor,editor,alumni'
         ];

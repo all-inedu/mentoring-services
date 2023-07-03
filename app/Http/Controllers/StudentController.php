@@ -368,7 +368,7 @@ class StudentController extends Controller
     
     public function index(Request $request)
     {
-        $student_id = $request->get('student_id') != NULL ? $request->get('student_id') : null;
+        $student_id = $request->route('student_id') ?? NULL;
         $is_detail = (($student_id != NULL) || ($request->get('mail') != NULL)) ? 1 : 0;
         $email = $request->get('mail') != NULL ? $request->get('mail') : null;
         //! old - commented

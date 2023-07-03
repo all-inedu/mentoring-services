@@ -125,4 +125,103 @@ class ForgotPasswordController extends Controller
         DB::commit();
         return response()->json(['success' => true, 'message' => 'A reset link has been sent to your email address']);
     }
+    
+     public function mentorSendResetPasswordLink(Request $request)
+    {
+        //Error messages
+        $messages = [
+            "email.exists" => "Email doesn't exists"
+        ];
+
+        $rules = [
+            'email' => 'required|string|email|max:255|exists:users,email'
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 401);
+        }
+        DB::beginTransaction();
+        // Create Password Reset Token
+        $token = Str::random(60);
+        DB::table('password_resets')->insert([
+            'email'      => $request->email,
+            'token'      => $token,
+            'created_at' => Carbon::now()
+        ]);
+
+        $email = $request->email;
+        $mentor = User::where('email', $email)->first();
+        $name = $mentor->first_name . ' ' . $mentor->last_name;
+
+        $generated_link = $this->reset_password_link . $token; //? needs to be change
+
+        try {
+            $subject = "Your Reset Password Link";
+            Mail::send(
+                'templates.mail.reset-password',
+                ['generated_link' => $generated_link],
+                function ($mail) use ($email, $name, $subject) {
+                    $mail->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+                    $mail->to($email, $name);
+                    $mail->subject($subject);
+                }
+            );
+
+            $log = array(
+                'sender'    => 'system',
+                'recipient' => $email,
+                'subject'   => $subject,
+                'message'   => NULL,
+                'date_sent' => Carbon::now(),
+                'status'    => Mail::failures() ? "delivered" : "not delivered",
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            );
+
+            $save_log = new MailLogController;
+            $save_log->saveLogMail($log);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Send Reset Password Link Issue : [' . $email . ' ' . $name . '] ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to send reset password link. Please try again.'], 400);
+        }
+
+        DB::commit();
+        return response()->json(['success' => true, 'message' => 'A reset link has been sent to your email address']);
+    }
+
+    public function ResetPasswordMentor($token, Request $request)
+    {
+        $validator = Validator::make($request->all() + ['token' => $token], [
+            'token' => 'required|exists:password_resets,token',
+            'email' => 'required|exists:password_resets,email',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'error' => $validator->errors()], 401);
+        }
+
+        // $token = $request->get('token');
+        $email = $request->email;
+        $new_password = $request->password;
+
+        DB::beginTransaction();
+        try {
+
+            $mentor = User::where('email', $email)->firstOrFail();
+            $mentor->password = Hash::make($new_password);
+            $mentor->save();
+
+            DB::table('password_resets')->where('email', $email)->where('token', $token)->delete();
+        } catch (Exception $e) {
+
+            DB::rollBack();
+            Log::error('Reset Password Issue : [' . $request->email . '] ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Failed to reset your password. Please try again.']);
+        }
+
+        DB::commit();
+        return response()->json(['success' => true, 'message' => 'Your password has been reset.']);
+    }
 }

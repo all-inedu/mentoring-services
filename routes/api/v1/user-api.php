@@ -37,6 +37,8 @@ use App\Http\Controllers\UserScheduleController;
 use App\Http\Controllers\V2\ProgrammeController as V2ProgrammeController;
 use App\Http\Controllers\Student\GroupController;
 use App\Http\Controllers\V2\StudentActivitiesController as V2StudentActivitiesController;
+use App\Http\Controllers\Student\ForgotPasswordController;
+
 
 Route::prefix('auth/u')->group(function() {
     Route::get('check/token', [UserController::class, 'check_token'])->middleware(['auth:api', 'scopes:mentor']);
@@ -45,6 +47,9 @@ Route::prefix('auth/u')->group(function() {
     Route::post('send/verification-code', [UserController::class, 'resendVerificationCode'])->middleware(['auth:api']);
     Route::post('login', [UserController::class, 'authenticate']);
 });
+
+Route::post('mentor/reset-password', [ForgotPasswordController::class, 'mentorSendResetPasswordLink']);
+Route::post('mentor/reset-password/{token}', [ForgotPasswordController::class, 'ResetPasswordMentor']);
 
 Route::get('transaction/{trx_id}/{type}', [TransactionController::class, 'invoice']);
 
