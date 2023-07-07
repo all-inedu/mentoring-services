@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Http\Controllers\CRM\ClientController;
+use App\Http\Controllers\CRM\V2\ClientController as V2ClientController;
 
 class SynchronizeMentorFromBigData extends Command
 {
@@ -38,8 +39,10 @@ class SynchronizeMentorFromBigData extends Command
      */
     public function handle()
     {
-        $sync = new ClientController;
-        $import_mentor = $sync->synchronize('mentor', 'import', true);
-        return $import_mentor;
+        // $sync = new ClientController;
+        $sync = new V2ClientController;
+        $this->info(json_encode($sync->synchronize('mentor', 'import', true)));
+        
+        return COMMAND::SUCCESS;
     }
 }

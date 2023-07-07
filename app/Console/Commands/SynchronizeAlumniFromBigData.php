@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Http\Controllers\CRM\ClientController;
+use App\Http\Controllers\CRM\V2\ClientController as V2ClientController;
 
 class SynchronizeAlumniFromBigData extends Command
 {
@@ -38,8 +39,10 @@ class SynchronizeAlumniFromBigData extends Command
      */
     public function handle()
     {
-        $sync = new ClientController;
-        $import_alumni = $sync->synchronize('alumni', 'import', true);
-        return $import_alumni;
+        // $sync = new ClientController;
+        $sync = new V2ClientController;
+        $this->info(json_encode($sync->synchronize('alumni', 'import', true)));
+
+        return COMMAND::SUCCESS;
     }
 }

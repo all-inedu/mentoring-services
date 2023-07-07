@@ -9,7 +9,6 @@
         "barryvdh/laravel-dompdf": "^1.0",
         "arcanedev/log-viewer": "8.x",
         "doctrine/dbal": "^2.4|^3.3",
-        "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.4",
         "james-heinrich/getid3": "^1.9",
         "laravel/framework": "^8.75",
